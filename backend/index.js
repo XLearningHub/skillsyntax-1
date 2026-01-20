@@ -1,6 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
+const OpenAI = require("openai");
+require("dotenv").config();
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 const app = express();
 app.use(cors());
@@ -18,6 +24,24 @@ const db = admin.firestore();
 // Ruta de prueba
 app.get("/", (req, res) => {
   res.send("Backend SkillSyntax AI funcionando correctamente");
+});
+
+// API para probar conexión con OpenAI
+
+app.get("/test_openai", async (req, res) => {
+  try {
+    await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Responde solo con: OK" }],
+      max_tokens: 5
+    });
+
+    res.json({ mensaje: "✅ Conexión con OpenAI exitosa" });
+
+  } catch (error) {
+    console.error("Error OpenAI:", error);
+    res.status(500).json({ error: "❌ Error conectando con OpenAI" });
+  }
 });
 
 // API para guardar usuario
@@ -62,3 +86,4 @@ app.get("/usuarios", async (req, res) => {
 app.listen(3000, () => {
   console.log("Servidor corriendo en http://localhost:3000");
 });
+
