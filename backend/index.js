@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
   res.send("Backend SkillSyntax AI funcionando correctamente");
 });
 
-// API para probar conexión con OpenAI
+// API para probar conexión con OpenAI para las lecciones
 
 app.get("/test_openai", async (req, res) => {
   try {
@@ -36,11 +36,11 @@ app.get("/test_openai", async (req, res) => {
       max_tokens: 5
     });
 
-    res.json({ mensaje: "✅ Conexión con OpenAI exitosa" });
+    res.json({ mensaje: "Conexión con OpenAI exitosa" });
 
   } catch (error) {
     console.error("Error OpenAI:", error);
-    res.status(500).json({ error: "❌ Error conectando con OpenAI" });
+    res.status(500).json({ error: "Error conectando con OpenAI" });
   }
 });
 
@@ -82,7 +82,7 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
-// ▶️ Iniciar servidor
+// Iniciar servidor
 app.listen(3000, () => {
   console.log("Servidor corriendo en http://localhost:3000");
 });
