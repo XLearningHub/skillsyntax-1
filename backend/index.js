@@ -2,17 +2,20 @@ const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
 const OpenAI = require("openai");
+const path = require("path");
 require("dotenv").config();
 
+//  Iniciar OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+//  Iniciar Express
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión a Firebase
+//  Conexión a Firebase
 const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
@@ -21,13 +24,20 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// Ruta de prueba
+
+// RUTAS DE PRUEBA
+
+// Ruta raíz
 app.get("/", (req, res) => {
   res.send("Backend SkillSyntax AI funcionando correctamente");
 });
 
-// API para probar conexión con OpenAI para las lecciones
+// Conexion con frontend
+app.get("/test", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/test.html"));
+});
 
+// Probar conexión con OpenAI
 app.get("/test_openai", async (req, res) => {
   try {
     await openai.chat.completions.create({
@@ -44,7 +54,33 @@ app.get("/test_openai", async (req, res) => {
   }
 });
 
-// API para guardar usuario
+
+// API GENERAR LECCIÓN
+
+app.post("/generar_leccion", async (req, res) => {
+  try {
+    const { tema, nivel } = req.body;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{
+        role: "user",
+        content: `Genera una lección sobre ${tema} para nivel ${nivel}. Incluye teoría, ejemplos y ejercicios prácticos.`
+      }],
+      max_tokens: 1024
+    });
+
+    res.json({ leccion: response.choices[0].message.content });
+
+  } catch (error) {
+    console.error("Error generando lección:", error);
+    res.status(500).json({ error: "Error generando la lección" });
+  }
+});
+
+
+// APIs USUARIOS 
+
 app.post("/guardar_usuario", async (req, res) => {
   try {
     const { nombre, email, nivel_general } = req.body;
@@ -82,8 +118,9 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
-// Iniciar servidor
+
+// INICIAR SERVIDOR
+
 app.listen(3000, () => {
   console.log("Servidor corriendo en http://localhost:3000");
 });
-

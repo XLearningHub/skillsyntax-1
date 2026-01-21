@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Generar Lección</title>
+</head>
+<body>
+
+  <h2>Generador de Lecciones SkillSyntax</h2>
+
+  <input id="tema" placeholder="Tema">
+  <input id="nivel" placeholder="Nivel">
+  <button id="btnGenerar">GENERAR LECCIÓN</button>
+
+  <div id="resultado"></div>
+
+<script>
+  const btnGenerar = document.getElementById('btnGenerar');
+
+  btnGenerar.addEventListener('click', async () => {
+    const tema = document.getElementById('tema').value;
+    const nivel = document.getElementById('nivel').value;
+
+    const response = await fetch('http://localhost:3000/generar_leccion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tema, nivel })
+    });
+
+    const data = await response.json();
+    document.getElementById('resultado').innerText = data.leccion;
+  });
+</script>
+
+</body>
+</html>
