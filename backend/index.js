@@ -78,6 +78,10 @@ app.post("/generar_leccion", async (req, res) => {
   }
 });
 
+app.get("/generar_leccion", (req, res) => {
+  res.send("Ruta generar_leccion funcionando. Usa método POST para generar la lección.");
+});
+
 
 // APIs USUARIOS 
 
@@ -117,6 +121,9 @@ app.get("/usuarios", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+const leccionesRoutes = require("./routes/lecciones.routes");
+app.use(leccionesRoutes);
 
 
 // INICIAR SERVIDOR
