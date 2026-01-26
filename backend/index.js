@@ -15,6 +15,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+//  Rutas especificas
+const readingRoutes = require("./routes/reading.routes");
+const listeningRoutes = require("./routes/listening.routes");
+const speakingRoutes = require("./routes/speaking.routes");
+const writingRoutes = require("./routes/writing.routes");
+
+app.use("/api", readingRoutes);
+app.use("/api", listeningRoutes);
+app.use("/api", speakingRoutes);
+app.use("/api", writingRoutes);
+
 //  Conexión a Firebase
 const serviceAccount = require("./serviceAccountKey.json");
 
