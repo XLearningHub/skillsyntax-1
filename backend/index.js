@@ -66,34 +66,6 @@ app.get("/test_openai", async (req, res) => {
 });
 
 
-// API GENERAR LECCIÓN
-
-app.post("/generar_leccion", async (req, res) => {
-  try {
-    const { tema, nivel } = req.body;
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{
-        role: "user",
-        content: `Genera una lección sobre ${tema} para nivel ${nivel}. Incluye teoría, ejemplos y ejercicios prácticos.`
-      }],
-      max_tokens: 1024
-    });
-
-    res.json({ leccion: response.choices[0].message.content });
-
-  } catch (error) {
-    console.error("Error generando lección:", error);
-    res.status(500).json({ error: "Error generando la lección" });
-  }
-});
-
-app.get("/generar_leccion", (req, res) => {
-  res.send("Ruta generar_leccion funcionando. Usa método POST para generar la lección.");
-});
-
-
 // APIs USUARIOS 
 
 app.post("/guardar_usuario", async (req, res) => {
