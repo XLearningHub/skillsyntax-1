@@ -1,21 +1,24 @@
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
-const OpenAI = require("openai");
 const path = require("path");
 require("dotenv").config();
 
-//  Iniciar OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-//  Iniciar Express
+// Iniciar Express
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-//  Rutas especificas
+// Conexión Firebase
+const serviceAccount = require("./serviceAccountKey.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+const db = admin.firestore();
+
+// Rutas de secciones
 const readingRoutes = require("./routes/reading.routes");
 const listeningRoutes = require("./routes/listening.routes");
 const speakingRoutes = require("./routes/speaking.routes");
@@ -26,48 +29,35 @@ app.use("/api", listeningRoutes);
 app.use("/api", speakingRoutes);
 app.use("/api", writingRoutes);
 
-//  Conexión a Firebase
-const serviceAccount = require("./serviceAccountKey.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-const db = admin.firestore();
-
-
-// RUTAS DE PRUEBA
-
-// Ruta raíz
+// Ruta principal
 app.get("/", (req, res) => {
   res.send("Backend SkillSyntax AI funcionando correctamente");
 });
 
-// Conexion con frontend
+// Test frontend
 app.get("/test", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/test.html"));
 });
 
-// Probar conexión con OpenAI
-app.get("/test_openai", async (req, res) => {
+// Guardar nivel por sección
+app.post("/guardar_nivel_seccion", async (req, res) => {
   try {
-    await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: "Responde solo con: OK" }],
-      max_tokens: 5
+    const { email, seccion, nivel } = req.body;
+
+    await db.collection("niveles_secciones").add({
+      email,
+      seccion,
+      nivel
     });
 
-    res.json({ mensaje: "Conexión con OpenAI exitosa" });
+    res.json({ mensaje: "Nivel guardado correctamente" });
 
   } catch (error) {
-    console.error("Error OpenAI:", error);
-    res.status(500).json({ error: "Error conectando con OpenAI" });
+    res.status(500).json({ error: "Error al guardar nivel" });
   }
 });
 
-
-// APIs USUARIOS 
-
+//  Guardar usuario
 app.post("/guardar_usuario", async (req, res) => {
   try {
     const { nombre, email, nivel_general } = req.body;
@@ -88,29 +78,7 @@ app.post("/guardar_usuario", async (req, res) => {
   }
 });
 
-// API para obtener usuarios
-app.get("/usuarios", async (req, res) => {
-  try {
-    const snapshot = await db.collection("users").get();
-    const usuarios = [];
-
-    snapshot.forEach(doc => {
-      usuarios.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.status(200).json(usuarios);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-const leccionesRoutes = require("./routes/lecciones.routes");
-app.use(leccionesRoutes);
-
-
-// INICIAR SERVIDOR
-
+// Iniciar servidor
 app.listen(3000, () => {
   console.log("Servidor corriendo en http://localhost:3000");
 });

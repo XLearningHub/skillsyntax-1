@@ -21,7 +21,14 @@ async function generar(tipo) {
 
   const data = await response.json();
 
-  document.getElementById('resultado').innerText =
-    data.reading || data.listening || data.speaking || data.writing;
+  document.getElementById('resultado').innerText = data[tipo];
+
+  // Guardar nivel
+  await fetch("http://localhost:3000/api/guardar_nivel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ seccion: tipo, nivel: nivel })
+  });
 }
 </script>
+
