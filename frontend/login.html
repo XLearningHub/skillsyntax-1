@@ -1,0 +1,43 @@
+<h2>Login SkillSyntax</h2>
+
+<input id="email" placeholder="Correo">
+<input id="password" type="password" placeholder="Contraseña">
+
+<button onclick="login()">Iniciar sesión</button>
+
+<p id="msg"></p>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBwkcdgnS4emDVWO2Thi3aNdAMV1N_Jf5M",
+    authDomain: "skillsyntax-ai.firebaseapp.com",
+    projectId: "skillsyntax-ai",
+    storageBucket: "skillsyntax-ai.firebasestorage.app",
+    messagingSenderId: "1027375145468",
+    appId: "1:1027375145468:web:60b7023e38a3654ccbd279"
+};
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.login = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      localStorage.setItem("user_id", user.uid);
+
+      document.getElementById("msg").innerText = "Login correcto";
+      window.location.href = "test.html"; // tu generador
+    } catch (error) {
+        console.error(error);
+        document.getElementById("msg").innerText = error.message;
+    }
+  };
+</script>
