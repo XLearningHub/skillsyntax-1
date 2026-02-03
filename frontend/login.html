@@ -18,7 +18,7 @@
     storageBucket: "skillsyntax-ai.firebasestorage.app",
     messagingSenderId: "1027375145468",
     appId: "1:1027375145468:web:60b7023e38a3654ccbd279"
-};
+  };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -28,16 +28,33 @@
     const password = document.getElementById("password").value;
 
     try {
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Guardar ID local
       localStorage.setItem("user_id", user.uid);
 
+      // ⭐ Guardar usuario en tu backend
+      await fetch("http://localhost:3000/guardar_usuario", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nombre: "Usuario",
+          email: user.email,
+          nivel_general: "Pendiente"
+        })
+      });
+
       document.getElementById("msg").innerText = "Login correcto";
-      window.location.href = "test.html"; // tu generador
+
+      window.location.href = "test.html";
+
     } catch (error) {
-        console.error(error);
-        document.getElementById("msg").innerText = error.message;
+      console.error(error);
+      document.getElementById("msg").innerText = error.message;
     }
   };
 </script>
