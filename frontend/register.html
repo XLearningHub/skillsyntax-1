@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro | SkillSyntax</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0a1f3b; 
+    }
+
+    .register-card {
+      background: #fbfaf7; 
+      width: 380px;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+    }
+
+    .register-card h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #161616; 
+    }
+
+    .register-card input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .register-card input:focus {
+      outline: none;
+      border-color: #59d2ec;
+      box-shadow: 0 0 0 2px rgba(89,210,236,0.3);
+    }
+
+    .register-card button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #029e99; 
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .register-card button:hover {
+      background: #027d79;
+    }
+
+    .register-card p {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #161616;
+    }
+
+    .register-card a {
+      color: #59d2ec;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    #msg {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="register-card">
+    <h2>Crear cuenta</h2>
+
+    <input id="nombre" placeholder="Nombre de usuario">
+    <input id="email" type="email" placeholder="Correo">
+    <input id="password" type="password" placeholder="Contraseña">
+
+    <button onclick="registrar()">Crear cuenta</button>
+
+    <p>
+      ¿Ya tienes cuenta?
+      <a href="login.html">Inicia sesión</a>
+    </p>
+
+    <p id="msg"></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBwkcdgnS4emDVWO2Thi3aNdAMV1N_Jf5M",
+      authDomain: "skillsyntax-ai.firebaseapp.com",
+      projectId: "skillsyntax-ai",
+      storageBucket: "skillsyntax-ai.firebasestorage.app",
+      messagingSenderId: "1027375145468",
+      appId: "1:1027375145468:web:60b7023e38a3654ccbd279"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.registrar = async () => {
+      const nombre = document.getElementById("nombre").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!nombre || !email || !password) {
+        msg.innerText = "Completa todos los campos";
+        msg.style.color = "red";
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+        await updateProfile(userCredential.user, {
+          displayName: nombre
+        });
+
+        msg.innerText = "Registro exitoso";
+        msg.style.color = "green";
+
+        document.getElementById("nombre").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("password").value = "";
+
+        // Guardar en backend
+        await fetch("http://localhost:3000/guardar_usuario", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nombre,
+            email,
+            rol: "usuario",
+            nivel_general: "Pendiente"
+          })
+        });
+
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1500);
+
+      } catch (error) {
+        msg.style.color = "red";
+        if (error.code === "auth/email-already-in-use") {
+          msg.innerText = "Este correo ya está registrado";
+        } else if (error.code === "auth/weak-password") {
+          msg.innerText = "La contraseña debe tener al menos 6 caracteres";
+        } else {
+          msg.innerText = error.message;
+        }
+      }
+    };
+  </script>
+
+</body>
+</html>

@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
 const path = require("path");
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 // INICIAR EXPRESS
 const app = express();

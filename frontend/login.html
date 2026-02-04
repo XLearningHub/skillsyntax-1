@@ -1,60 +1,167 @@
-<h2>Login SkillSyntax</h2>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login SkillSyntax</title>
 
-<input id="email" placeholder="Correo">
-<input id="password" type="password" placeholder="Contraseña">
+  <style>
+  * {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+  }
 
-<button onclick="login()">Iniciar sesión</button>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0a1f3b; 
+  }
 
-<p id="msg"></p>
+  .login-card {
+    background: #fbfaf7;
+    width: 360px;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+  }
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  .login-card h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #161616;
+  }
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBwkcdgnS4emDVWO2Thi3aNdAMV1N_Jf5M",
-    authDomain: "skillsyntax-ai.firebaseapp.com",
-    projectId: "skillsyntax-ai",
-    storageBucket: "skillsyntax-ai.firebasestorage.app",
-    messagingSenderId: "1027375145468",
-    appId: "1:1027375145468:web:60b7023e38a3654ccbd279"
-  };
+  .login-card input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  .login-card input:focus {
+    outline: none;
+    border-color: #59d2ec;
+    box-shadow: 0 0 0 2px rgba(89,210,236,0.3);
+  }
 
-  window.login = async () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  .login-card button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #029e99; 
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
 
-    try {
+  .login-card button:hover {
+    background: #027d79;
+  }
 
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+  .login-card p {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #161616;
+  }
 
-      // Guardar ID local
-      localStorage.setItem("user_id", user.uid);
+  .login-card a {
+    color: #59d2ec;
+    text-decoration: none;
+    font-weight: 600;
+  }
 
-      // ⭐ Guardar usuario en tu backend
-      await fetch("http://localhost:3000/guardar_usuario", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          nombre: "Usuario",
-          email: user.email,
-          nivel_general: "Pendiente"
-        })
-      });
+  #msg {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+</style>
 
-      document.getElementById("msg").innerText = "Login correcto";
+</head>
 
-      window.location.href = "test.html";
+<body>
 
-    } catch (error) {
-      console.error(error);
-      document.getElementById("msg").innerText = error.message;
-    }
-  };
-</script>
+  <div class="login-card">
+    <h2>SkillSyntax</h2>
+
+    <input id="email" type="email" placeholder="Correo">
+    <input id="password" type="password" placeholder="Contraseña">
+
+    <button onclick="login()">Iniciar sesión</button>
+
+    <p>
+      ¿No tienes cuenta?
+      <a href="register.html">Regístrate</a>
+    </p>
+
+    <p id="msg"></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBwkcdgnS4emDVWO2Thi3aNdAMV1N_Jf5M",
+      authDomain: "skillsyntax-ai.firebaseapp.com",
+      projectId: "skillsyntax-ai",
+      storageBucket: "skillsyntax-ai.firebasestorage.app",
+      messagingSenderId: "1027375145468",
+      appId: "1:1027375145468:web:60b7023e38a3654ccbd279"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+   
+    /*
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.href = "test.html";
+      }
+    })
+    */
+
+    window.login = async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!email || !password) {
+        msg.innerText = "⚠️ Ingresa correo y contraseña";
+        msg.style.color = "red";
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        localStorage.setItem("user_id", userCredential.user.uid);
+        msg.innerText = "Login correcto";
+        msg.style.color = "green";
+        window.location.href = "test.html";
+      } catch (error) {
+        msg.style.color = "red";
+        if (error.code === "auth/user-not-found") {
+          msg.innerText = "El usuario no existe";
+        } else if (error.code === "auth/wrong-password") {
+          msg.innerText = "Contraseña incorrecta";
+        } else {
+          msg.innerText = error.message;
+        }
+      }
+    };
+  </script>
+
+</body>
+</html>
