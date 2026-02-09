@@ -146,7 +146,6 @@
 
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        localStorage.setItem("user_id", userCredential.user.uid);
         msg.innerText = "Login correcto";
         msg.style.color = "green";
         window.location.href = "test.html";
