@@ -6,38 +6,122 @@ const openai = new OpenAI({
 });
 
 
+// GENERAR LISTENING
 exports.generarListening = async (req, res) => {
-  const { tema, nivel } = req.body;
+  try {
 
-  res.json({
-    listening: `Lección simulada de listening.
-Tema: ${tema}
-Nivel: ${nivel}
-(Esta es una respuesta de prueba sin usar OpenAI)`
-  });
+    const { tema, nivel } = req.body;
+
+    if (!tema || !nivel) {
+      return res.status(400).json({ error: "Faltan datos" });
+    }
+
+    const prompt = `
+Genera un ejercicio de LISTENING en inglés para nivel ${nivel} sobre el tema "${tema}".
+
+IMPORTANTE:
+Simula que es un listening, pero devuelve el script del audio como texto.
+
+Debes responder SOLO en formato JSON.
+
+Formato EXACTO:
+
+{
+  "tipo": "opcion_multiple",
+  "audio_texto": "Texto que representa el audio que el estudiante escuchará",
+  "preguntas": [
+    {
+      "pregunta": "Pregunta 1",
+      "opciones": ["A", "B", "C"],
+      "correcta": "B"
+    }
+  ]
+}
+
+O:
+
+{
+  "tipo": "completar",
+  "audio_texto": "Texto del audio con ____ para completar",
+  "respuestas": ["palabra1", "palabra2"]
+}
+`;
+
+    const response = await openai.responses.create({
+      model: "gpt-4.1-mini",
+      input: prompt
+    });
+
+    const contenido = response.output[0].content[0].text;
+
+    const ejercicio = JSON.parse(contenido);
+
+    res.json(ejercicio);
+
+  } catch (error) {
+
+    console.error("Error Listening:", error);
+
+    res.status(500).json({
+      error: "Error generando listening"
+    });
+
+  }
 };
 
 
-/*exports.generarListening = async (req, res) => {
-  try {
-    const { tema, nivel } = req.body;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{
-        role: "user",
-        content: `Genera una lección de LISTENING sobre ${tema} para nivel ${nivel}. Incluye texto de lectura y preguntas de comprensión.`
-      }],
-      max_tokens: 800
+// CALIFICAR LISTENING
+exports.calificarListening = async (req, res) => {
+
+  try {
+
+    const { ejercicio, respuestaUsuario } = req.body;
+
+    if (!ejercicio || !respuestaUsuario) {
+      return res.status(400).json({
+        error: "Faltan datos para calificar"
+      });
+    }
+
+    const prompt = `
+Eres un profesor de inglés.
+
+Este es el ejercicio de listening:
+${JSON.stringify(ejercicio)}
+
+Esta es la respuesta del estudiante:
+${JSON.stringify(respuestaUsuario)}
+
+Evalúa la respuesta.
+
+Devuelve SOLO JSON en este formato:
+
+{
+  "score": 0-100,
+  "correcto": true,
+  "feedback": "Explicación breve"
+}
+`;
+
+    const response = await openai.responses.create({
+      model: "gpt-4.1-mini",
+      input: prompt
     });
 
+    const resultadoTexto = response.output[0].content[0].text;
 
-    res.json({ listening: response.choices[0].message.content });
+    const resultado = JSON.parse(resultadoTexto);
 
+    res.json(resultado);
 
   } catch (error) {
-    res.status(500).json({ error: "Error generando listening" });
-  }
-}; 
-*/
 
+    console.error("Error calificar listening:", error);
+
+    res.status(500).json({
+      error: "Error al calificar listening"
+    });
+
+  }
+};
