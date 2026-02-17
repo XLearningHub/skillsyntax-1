@@ -26,6 +26,11 @@ body {
   margin: 0 auto 30px auto;
 }
 
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
 .nav-logo {
   width: 45px;
   height: 45px;
@@ -36,6 +41,13 @@ body {
   justify-content: center;
   color: white;
   font-weight: bold;
+}
+
+.nav-center a {
+  margin: 0 18px;
+  text-decoration: none;
+  color: #111;
+  font-weight: 500;
 }
 
 .logout button {
@@ -85,6 +97,18 @@ audio {
   margin-top: 10px;
 }
 
+.resultado-box {
+  margin-top: 20px;
+  padding: 15px;
+  background: #eefafa;
+  border-radius: 10px;
+}
+
+.score-badge {
+  font-weight: bold;
+  color: #029e99;
+}
+
 </style>
 </head>
 
@@ -92,7 +116,16 @@ audio {
 
 <header class="navbar">
 
+<div class="nav-left">
 <div class="nav-logo">S</div>
+</div>
+
+<nav class="nav-center">
+<a href="#">Home</a>
+<a href="#">Practice</a>
+<a href="#">Progress</a>
+<a href="#">Report</a>
+</nav>
 
 <div class="logout">
 <button onclick="logout()">Cerrar sesión</button>
@@ -119,7 +152,7 @@ audio {
 <div id="resultado"></div>
 
 <div style="text-align:center; margin-top:15px;">
-<button id="btnEnviar" onclick="enviarReading()" style="display:none;">
+<button id="btnEnviar" style="display:none;">
 Enviar respuestas
 </button>
 </div>
@@ -127,7 +160,6 @@ Enviar respuestas
 </div>
 
 
-<!-- FIREBASE (NO TOCADO) -->
 <script type="module">
 
 import { initializeApp }
@@ -157,9 +189,7 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, (user) => {
 
-if (!user) {
-window.location.href = "login.html";
-}
+if (!user) window.location.href = "login.html";
 
 });
 
@@ -176,11 +206,11 @@ window.location.href = "login.html";
 <script>
 
 let ejercicioActual = null;
-
-
-// GENERAR EJERCICIO
+let tipoActual = null;
 
 async function generar(tipo) {
+
+tipoActual = tipo;
 
 const tema = document.getElementById("tema").value;
 const nivel = document.getElementById("nivel").value;
@@ -189,7 +219,7 @@ const resultado = document.getElementById("resultado");
 resultado.innerHTML = "Generando...";
 
 
-// ===== READING =====
+// READING
 
 if (tipo === "reading") {
 
@@ -207,8 +237,6 @@ ejercicioActual = data;
 
 resultado.innerHTML = `<p>${data.texto}</p>`;
 
-if (data.tipo === "opcion_multiple") {
-
 data.preguntas.forEach((p, i) => {
 
 resultado.innerHTML += `
@@ -225,14 +253,13 @@ ${op}
 
 });
 
-}
-
 document.getElementById("btnEnviar").style.display = "inline-block";
+document.getElementById("btnEnviar").onclick = enviarReading;
 
 }
 
 
-// ===== LISTENING CON AUDIO =====
+// LISTENING
 
 else if (tipo === "listening") {
 
@@ -253,17 +280,10 @@ resultado.innerHTML = `
 <h3>Listening Exercise</h3>
 
 <audio controls>
-<source src="${data.audioUrl}" type="audio/mpeg">
-Tu navegador no soporta audio
+<source src="${data.audio_url}" type="audio/mpeg">
 </audio>
 
-<div class="pregunta">
-${data.texto}
-</div>
-
 `;
-
-if (data.preguntas) {
 
 data.preguntas.forEach((p, i) => {
 
@@ -282,36 +302,14 @@ ${op}
 });
 
 document.getElementById("btnEnviar").style.display = "inline-block";
+document.getElementById("btnEnviar").onclick = enviarListening;
 
 }
 
 }
 
 
-// ===== SPEAKING =====
-
-else if (tipo === "speaking") {
-
-resultado.innerHTML = "Speaking próximamente";
-document.getElementById("btnEnviar").style.display = "none";
-
-}
-
-
-// ===== WRITING =====
-
-else if (tipo === "writing") {
-
-resultado.innerHTML = "Writing próximamente";
-document.getElementById("btnEnviar").style.display = "none";
-
-}
-
-}
-
-
-
-// CALIFICAR
+// CALIFICAR READING
 
 async function enviarReading() {
 
@@ -340,12 +338,63 @@ respuestaUsuario: respuestas
 
 const resultadoIA = await response.json();
 
+mostrarResultado(resultadoIA);
+
+}
+
+
+// CALIFICAR LISTENING
+
+async function enviarListening() {
+
+let respuestas = [];
+
+ejercicioActual.preguntas.forEach((_, i) => {
+
+const seleccion =
+document.querySelector(`input[name="p${i}"]:checked`);
+
+respuestas.push(seleccion ? seleccion.value : "");
+
+});
+
+const response = await fetch(
+"http://localhost:3000/api/listening/calificar",
+{
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+ejercicio: ejercicioActual,
+respuestaUsuario: respuestas
+})
+}
+);
+
+const resultadoIA = await response.json();
+
+mostrarResultado(resultadoIA);
+
+}
+
+
+// MOSTRAR RESULTADO
+
+function mostrarResultado(resultadoIA) {
+
 document.getElementById("resultado").innerHTML += `
-<div class="pregunta">
+
+<div class="resultado-box">
+
+<div class="score-badge">
 Score: ${resultadoIA.score}/100
-<br>
-Feedback: ${resultadoIA.feedback}
 </div>
+
+<div>
+${resultadoIA.feedback}
+</div>
+
+</div>
+
 `;
 
 document.getElementById("btnEnviar").style.display = "none";

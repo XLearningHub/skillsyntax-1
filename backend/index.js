@@ -14,6 +14,9 @@ app.use(express.json());
 // Servir archivos del frontend
 app.use(express.static(path.join(__dirname, "../frontend")));
 
+// SERVIR ARCHIVOS DE AUDIO
+app.use("/audio", express.static(path.join(__dirname, "public/audio")));
+
 // Configuración de Firebase Admin
 const serviceAccount = require("./serviceAccountKey.json");
 
@@ -49,6 +52,7 @@ app.get("/test", (req, res) => {
 // Guardar nivel por sección
 app.post("/api/guardar_nivel_seccion", async (req, res) => {
   try {
+
     const { email, seccion, nivel } = req.body;
 
     if (!email || !seccion || !nivel) {
@@ -65,18 +69,26 @@ app.post("/api/guardar_nivel_seccion", async (req, res) => {
     res.json({ mensaje: "Nivel guardado correctamente" });
 
   } catch (error) {
+
     console.error(error);
-    res.status(500).json({ error: "Error al guardar nivel" });
+
+    res.status(500).json({
+      error: "Error al guardar nivel"
+    });
+
   }
 });
 
 // Guardar usuario en Firestore
 app.post("/api/guardar_usuario", async (req, res) => {
   try {
+
     const { nombre, email, nivel_general } = req.body;
 
     if (!nombre || !email) {
-      return res.status(400).json({ error: "Faltan datos" });
+      return res.status(400).json({
+        error: "Faltan datos"
+      });
     }
 
     const nuevoUsuario = await db.collection("users").add({
@@ -92,11 +104,17 @@ app.post("/api/guardar_usuario", async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
 });
 
 // Levantar servidor
 app.listen(3000, () => {
+
   console.log("Servidor corriendo en http://localhost:3000");
+
 });

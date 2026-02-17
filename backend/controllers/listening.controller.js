@@ -1,4 +1,6 @@
 const OpenAI = require("openai");
+const fs = require("fs");
+const path = require("path");
 require("dotenv").config();
 
 const openai = new OpenAI({
@@ -55,6 +57,27 @@ O:
     const contenido = response.output[0].content[0].text;
 
     const ejercicio = JSON.parse(contenido);
+
+
+    // GENERAR AUDIO 
+    const audioResponse = await openai.audio.speech.create({
+      model: "gpt-4o-mini-tts",
+      voice: "alloy",
+      input: ejercicio.audio_texto
+    });
+
+    const fileName = `audio_${Date.now()}.mp3`;
+
+    const filePath = path.join(__dirname, "../public/audio", fileName);
+
+    const buffer = Buffer.from(await audioResponse.arrayBuffer());
+
+    fs.writeFileSync(filePath, buffer);
+
+
+    // AGREGAR URL DEL AUDIO AL MISMO JSON
+    ejercicio.audio_url = `/audio/${fileName}`;
+
 
     res.json(ejercicio);
 
