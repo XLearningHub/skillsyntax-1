@@ -136,6 +136,30 @@ button {
   color: white;
 }
 
+.opcion.correcta {
+  border-color: #28a745;
+  background: #eafaf0;
+  color: #1e7e34;
+}
+
+.opcion.incorrecta {
+  border-color: #dc3545;
+  background: #fdeaea;
+  color: #a71d2a;
+}
+
+.opcion.correcta::after {
+  content: " ✔";
+  float: right;
+  font-weight: bold;
+}
+
+.opcion.incorrecta::after {
+  content: " ✖";
+  float: right;
+  font-weight: bold;
+}
+
 .opcion input {
   display: none;
 }
@@ -462,25 +486,60 @@ mostrarResultado(resultadoIA);
 
 function mostrarResultado(resultadoIA) {
 
-document.getElementById("resultado").innerHTML += `
+  // RESPUESTAS
+  ejercicioActual.preguntas.forEach((pregunta, i) => {
 
-<div class="resultado-box">
+    const inputs =
+    document.querySelectorAll(`input[name="p${i}"]`);
 
-<div class="score-badge">
-Score: ${resultadoIA.score}/100
-</div>
+    inputs.forEach(input => {
 
-<div>
-${resultadoIA.feedback}
-</div>
+      const opcionDiv = input.parentElement;
 
-</div>
+      // desactivar cambios
+      input.disabled = true;
+      opcionDiv.onclick = null;
 
-`;
+      // marcar correcta
+      if (input.value === pregunta.correcta) {
 
-document.getElementById("btnEnviar").style.display = "none";
+        opcionDiv.classList.add("correcta");
+
+      }
+
+      // marcar incorrecta seleccionada
+      if (input.checked && input.value !== pregunta.correcta) {
+
+        opcionDiv.classList.add("incorrecta");
+
+      }
+
+    });
+
+  });
+
+
+  // MOSTRAR SCORE
+  document.getElementById("resultado").innerHTML += `
+
+  <div class="resultado-box">
+
+    <div class="score-badge">
+      Score: ${resultadoIA.score}/100
+    </div>
+
+    <div>
+      ${resultadoIA.feedback}
+    </div>
+
+  </div>
+
+  `;
+
+  document.getElementById("btnEnviar").style.display = "none";
 
 }
+
 
 </script>
 

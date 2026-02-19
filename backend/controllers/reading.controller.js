@@ -5,9 +5,11 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+
 // GENERAR READING
 exports.generarReading = async (req, res) => {
   try {
+
     const { tema, nivel } = req.body;
 
     if (!tema || !nivel) {
@@ -17,11 +19,9 @@ exports.generarReading = async (req, res) => {
     const prompt = `
 Genera un ejercicio de READING en inglés para nivel ${nivel} sobre el tema "${tema}".
 
-Debes responder SOLO en formato JSON, sin texto adicional.
-
-Hay DOS tipos posibles:
-1. opcion_multiple
-2. completar
+Responde SOLO con JSON válido.
+NO uses \`\`\`json ni \`\`\`
+NO agregues texto extra.
 
 Formato EXACTO:
 
@@ -51,41 +51,65 @@ O:
       input: prompt
     });
 
-    const contenido = response.output[0].content[0].text;
+    let contenido = response.output[0].content[0].text;
+
+    // LIMPIAR JSON
+    contenido = contenido
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
     const ejercicio = JSON.parse(contenido);
 
     res.json(ejercicio);
 
   } catch (error) {
+
     console.error("Error Reading:", error);
-    res.status(500).json({ error: "Error generando reading" });
+
+    res.status(500).json({
+      error: "Error generando reading"
+    });
+
   }
 };
 
+
+
 // CALIFICAR READING 
 exports.calificarReading = async (req, res) => {
+
   try {
+
     const { ejercicio, respuestaUsuario } = req.body;
 
     if (!ejercicio || !respuestaUsuario) {
-      return res.status(400).json({ error: "Faltan datos para calificar" });
+      return res.status(400).json({
+        error: "Faltan datos para calificar"
+      });
     }
 
     const prompt = `
 Eres un profesor de inglés.
 
-Este es el ejercicio de reading:
+Este es el ejercicio:
 ${JSON.stringify(ejercicio)}
 
 Esta es la respuesta del estudiante:
 ${JSON.stringify(respuestaUsuario)}
 
-Evalúa la respuesta y devuelve SOLO JSON con este formato:
+Evalúa según el nivel.
+
+Responde SOLO con JSON válido.
+NO uses \`\`\`json ni \`\`\`
+NO agregues texto extra.
+
+Formato:
 
 {
   "score": 0-100,
-  "correcto": true | false,
-  "feedback": "Explicación breve para el estudiante"
+  "correcto": true,
+  "feedback": "Explicación breve"
 }
 `;
 
@@ -94,13 +118,26 @@ Evalúa la respuesta y devuelve SOLO JSON con este formato:
       input: prompt
     });
 
-    const resultadoTexto = response.output[0].content[0].text;
+    let resultadoTexto = response.output[0].content[0].text;
+
+    // LIMPIAR JSON
+    resultadoTexto = resultadoTexto
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
     const resultado = JSON.parse(resultadoTexto);
 
     res.json(resultado);
 
   } catch (error) {
+
     console.error("Error al calificar reading:", error);
-    res.status(500).json({ error: "Error al calificar reading" });
+
+    res.status(500).json({
+      error: "Error al calificar reading"
+    });
+
   }
+
 };
