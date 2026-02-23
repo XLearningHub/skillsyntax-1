@@ -103,7 +103,7 @@ O:
 
     const ejercicio = JSON.parse(contenido);
 
-    // GUARDAR NIVEL EN EL EJERCICIO
+    // GUARDAR NIVEL
     ejercicio.nivel = nivel;
 
 
@@ -122,8 +122,7 @@ O:
 
     fs.writeFileSync(filePath, buffer);
 
-
-    // AGREGAR URL DEL AUDIO
+    // URL AUDIO
     ejercicio.audio_url = `/audio/${fileName}`;
 
     res.json(ejercicio);
@@ -154,40 +153,67 @@ exports.calificarListening = async (req, res) => {
       });
     }
 
-    const prompt = `
-Eres un profesor de inglés.
+    let correctas = 0;
+    let detalle = [];
 
-Nivel del ejercicio: ${ejercicio.nivel || "no especificado"}
+    // OPCION MULTIPLE
+    if (ejercicio.tipo === "opcion_multiple") {
 
-Ejercicio:
-${JSON.stringify(ejercicio)}
+      ejercicio.preguntas.forEach((pregunta, index) => {
 
-Respuestas del estudiante:
-${JSON.stringify(respuestaUsuario)}
+        const esCorrecta = pregunta.correcta === respuestaUsuario[index];
 
-Evalúa según el nivel CEFR.
+        detalle.push(esCorrecta);
 
-Devuelve SOLO JSON valido:
+        if (esCorrecta) correctas++;
 
-{
-  "score": 0-100,
-  "correcto": true,
-  "feedback": "Explicación breve"
-}
-`;
+      });
 
-    const response = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: prompt
+    }
+
+    // COMPLETAR
+    if (ejercicio.tipo === "completar") {
+
+      ejercicio.respuestas.forEach((respuesta, index) => {
+
+        const esCorrecta =
+          respuesta.toLowerCase().trim() ===
+          (respuestaUsuario[index] || "").toLowerCase().trim();
+
+        detalle.push(esCorrecta);
+
+        if (esCorrecta) correctas++;
+
+      });
+
+    }
+
+    const total = detalle.length;
+
+    const score = Math.round((correctas / total) * 100);
+
+    // FEEDBACK 
+    let feedback = "";
+
+    if (score === 100) {
+      feedback = "Excellent. All answers are correct.";
+    }
+    else if (score >= 70) {
+      feedback = "Good job. You understood most of the audio.";
+    }
+    else if (score >= 40) {
+      feedback = "Fair. Review the audio and try again.";
+    }
+    else {
+      feedback = "Keep practicing. Focus on key words in the audio.";
+    }
+
+    res.json({
+      score,
+      correcto: score >= 70,
+      feedback,
+      detalle
     });
-
-    // LIMPIAR JSON
-    let resultadoTexto = response.output[0].content[0].text;
-    resultadoTexto = limpiarJSON(resultadoTexto);
-
-    const resultado = JSON.parse(resultadoTexto);
-
-    res.json(resultado);
 
   } catch (error) {
 
@@ -198,4 +224,5 @@ Devuelve SOLO JSON valido:
     });
 
   }
+
 };
