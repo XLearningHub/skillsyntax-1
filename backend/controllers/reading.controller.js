@@ -74,8 +74,6 @@ O:
   }
 };
 
-
-
 // CALIFICAR READING 
 exports.calificarReading = async (req, res) => {
 
@@ -89,46 +87,96 @@ exports.calificarReading = async (req, res) => {
       });
     }
 
-    const prompt = `
-Eres un profesor de inglés.
+    let correctas = 0;
+    let detalle = [];
 
-Este es el ejercicio:
-${JSON.stringify(ejercicio)}
+    // OPCION MULTIPLE
+    if (ejercicio.tipo === "opcion_multiple") {
 
-Esta es la respuesta del estudiante:
+      ejercicio.preguntas.forEach((pregunta, index) => {
+
+        const correcta =
+          pregunta.correcta.trim().toLowerCase();
+
+        const usuario =
+          (respuestaUsuario[index] || "")
+          .trim()
+          .toLowerCase();
+
+        const esCorrecta = correcta === usuario;
+
+        detalle.push(esCorrecta);
+
+        if (esCorrecta) correctas++;
+
+      });
+
+    }
+
+    // COMPLETAR
+    if (ejercicio.tipo === "completar") {
+
+      ejercicio.respuestas.forEach((respuesta, index) => {
+
+        const correcta =
+          respuesta.trim().toLowerCase();
+
+        const usuario =
+          (respuestaUsuario[index] || "")
+          .trim()
+          .toLowerCase();
+
+        const esCorrecta = correcta === usuario;
+
+        detalle.push(esCorrecta);
+
+        if (esCorrecta) correctas++;
+
+      });
+
+    }
+
+    const total = detalle.length;
+    const score = Math.round((correctas / total) * 100);
+
+    // IA SOLO PARA FEEDBACK
+    const promptFeedback = `
+You are an English teacher.
+
+Reading level: ${ejercicio.nivel || "unknown"}
+
+Score: ${score}/100
+
+Correct answers: ${correctas}
+Total questions: ${total}
+
+Student answers:
 ${JSON.stringify(respuestaUsuario)}
 
-Evalúa según el nivel.
-
-Responde SOLO con JSON válido.
-NO uses \`\`\`json ni \`\`\`
-NO agregues texto extra.
-
-Formato:
-
-{
-  "score": 0-100,
-  "correcto": true,
-  "feedback": "Explicación breve"
+Correct answers:
+${
+  ejercicio.tipo === "opcion_multiple"
+    ? JSON.stringify(ejercicio.preguntas.map(p => p.correcta))
+    : JSON.stringify(ejercicio.respuestas)
 }
+
+Write short professional feedback (max 2 sentences).
+Be encouraging and helpful.
 `;
 
     const response = await openai.responses.create({
       model: "gpt-4.1-mini",
-      input: prompt
+      input: promptFeedback
     });
 
-    let resultadoTexto = response.output[0].content[0].text;
+    let feedback = response.output[0].content[0].text.trim();
 
-    // LIMPIAR JSON
-    resultadoTexto = resultadoTexto
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
-    const resultado = JSON.parse(resultadoTexto);
-
-    res.json(resultado);
+    res.json({
+      score,
+      correcto: score >= 70,
+      feedback,
+      detalle
+    });
 
   } catch (error) {
 

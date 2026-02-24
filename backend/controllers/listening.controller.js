@@ -27,7 +27,7 @@ exports.generarListening = async (req, res) => {
       return res.status(400).json({ error: "Faltan datos" });
     }
 
-    // DESCRIPCION DEL NIVEL CEFR
+    // DESCRIPCION DEL NIVEL 
     let descripcionNivel = "";
 
     if (nivel === "A1") {
@@ -97,15 +97,12 @@ O:
       input: prompt
     });
 
-    // LIMPIAR JSON
     let contenido = response.output[0].content[0].text;
     contenido = limpiarJSON(contenido);
 
     const ejercicio = JSON.parse(contenido);
 
-    // GUARDAR NIVEL
     ejercicio.nivel = nivel;
-
 
     // GENERAR AUDIO
     const audioResponse = await openai.audio.speech.create({
@@ -115,14 +112,12 @@ O:
     });
 
     const fileName = `audio_${Date.now()}.mp3`;
-
     const filePath = path.join(__dirname, "../public/audio", fileName);
 
     const buffer = Buffer.from(await audioResponse.arrayBuffer());
 
     fs.writeFileSync(filePath, buffer);
 
-    // URL AUDIO
     ejercicio.audio_url = `/audio/${fileName}`;
 
     res.json(ejercicio);
@@ -161,7 +156,9 @@ exports.calificarListening = async (req, res) => {
 
       ejercicio.preguntas.forEach((pregunta, index) => {
 
-        const esCorrecta = pregunta.correcta === respuestaUsuario[index];
+        const esCorrecta =
+          pregunta.correcta.trim().toLowerCase() ===
+          (respuestaUsuario[index] || "").trim().toLowerCase();
 
         detalle.push(esCorrecta);
 
@@ -189,24 +186,58 @@ exports.calificarListening = async (req, res) => {
     }
 
     const total = detalle.length;
-
     const score = Math.round((correctas / total) * 100);
 
-    // FEEDBACK 
-    let feedback = "";
 
-    if (score === 100) {
-      feedback = "Excellent. All answers are correct.";
-    }
-    else if (score >= 70) {
-      feedback = "Good job. You understood most of the audio.";
-    }
-    else if (score >= 40) {
-      feedback = "Fair. Review the audio and try again.";
-    }
-    else {
-      feedback = "Keep practicing. Focus on key words in the audio.";
-    }
+    // FEEDBACK GENERADO POR IA 
+
+    let descripcionNivel = "";
+
+    if (ejercicio.nivel === "A1")
+      descripcionNivel = "beginner student";
+
+    else if (ejercicio.nivel === "A2")
+      descripcionNivel = "basic student";
+
+    else if (ejercicio.nivel === "B1")
+      descripcionNivel = "intermediate student";
+
+    else if (ejercicio.nivel === "B2")
+      descripcionNivel = "upper-intermediate student";
+
+    else if (ejercicio.nivel === "C1")
+      descripcionNivel = "advanced student";
+
+    else if (ejercicio.nivel === "C2")
+      descripcionNivel = "proficient student";
+
+
+    const promptFeedback = `
+You are a professional English teacher.
+
+The student is a ${descripcionNivel}.
+
+Score: ${score}%
+Correct answers: ${correctas}/${total}
+
+Write motivational and professional feedback.
+
+Rules:
+
+- Adapt to the student level
+- Max 2 sentences
+- Be encouraging
+- Sound professional
+- Return ONLY feedback text
+`;
+
+    const responseIA = await openai.responses.create({
+      model: "gpt-4.1-mini",
+      input: promptFeedback
+    });
+
+    const feedback = responseIA.output[0].content[0].text.trim();
+
 
     res.json({
       score,
