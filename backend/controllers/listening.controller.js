@@ -151,14 +151,39 @@ exports.calificarListening = async (req, res) => {
     let correctas = 0;
     let detalle = [];
 
+    // FUNCION PARA NORMALIZAR TEXTO
+    function normalizar(texto) {
+      return (texto || "")
+        .toString()
+        .trim()
+        .toLowerCase();
+    }
+
     // OPCION MULTIPLE
     if (ejercicio.tipo === "opcion_multiple") {
 
       ejercicio.preguntas.forEach((pregunta, index) => {
 
+        let respuestaCorrectaTexto = pregunta.correcta;
+
+        // Si la correcta es A, B, C convertir a texto real
+        if (
+          typeof pregunta.correcta === "string" &&
+          ["a", "b", "c"].includes(normalizar(pregunta.correcta))
+        ) {
+
+          const indexCorrecto =
+            normalizar(pregunta.correcta).charCodeAt(0) - 97;
+
+          respuestaCorrectaTexto =
+            pregunta.opciones[indexCorrecto];
+        }
+
+        const respuestaUser = respuestaUsuario[index];
+
         const esCorrecta =
-          pregunta.correcta.trim().toLowerCase() ===
-          (respuestaUsuario[index] || "").trim().toLowerCase();
+          normalizar(respuestaCorrectaTexto) ===
+          normalizar(respuestaUser);
 
         detalle.push(esCorrecta);
 
@@ -173,9 +198,11 @@ exports.calificarListening = async (req, res) => {
 
       ejercicio.respuestas.forEach((respuesta, index) => {
 
+        const respuestaUser = respuestaUsuario[index];
+
         const esCorrecta =
-          respuesta.toLowerCase().trim() ===
-          (respuestaUsuario[index] || "").toLowerCase().trim();
+          normalizar(respuesta) ===
+          normalizar(respuestaUser);
 
         detalle.push(esCorrecta);
 
@@ -186,11 +213,14 @@ exports.calificarListening = async (req, res) => {
     }
 
     const total = detalle.length;
-    const score = Math.round((correctas / total) * 100);
+
+    const score =
+      total > 0
+        ? Math.round((correctas / total) * 100)
+        : 0;
 
 
-    // FEEDBACK GENERADO POR IA 
-
+    // DESCRIPCION NIVEL
     let descripcionNivel = "";
 
     if (ejercicio.nivel === "A1")
@@ -212,6 +242,7 @@ exports.calificarListening = async (req, res) => {
       descripcionNivel = "proficient student";
 
 
+    // FEEDBACK IA
     const promptFeedback = `
 You are a professional English teacher.
 
@@ -236,7 +267,8 @@ Rules:
       input: promptFeedback
     });
 
-    const feedback = responseIA.output[0].content[0].text.trim();
+    const feedback =
+      responseIA.output[0].content[0].text.trim();
 
 
     res.json({

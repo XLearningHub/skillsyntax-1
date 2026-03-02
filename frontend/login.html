@@ -1,166 +1,275 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Login SkillSyntax</title>
+<meta charset="UTF-8">
+<title>SkillSyntax | Login</title>
 
-  <style>
-  * {
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
-  }
+<style>
 
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #0a1f3b; 
-  }
+*{
+  box-sizing:border-box;
+  font-family:'Segoe UI',sans-serif;
+}
 
-  .login-card {
-    background: #fbfaf7;
-    width: 360px;
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.35);
-  }
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#0a1f3b,#0f2f59,#029e99);
+}
 
-  .login-card h2 {
-    text-align: center;
-    margin-bottom: 25px;
-    color: #161616;
-  }
+/* CONTENEDOR */
+.container{
+  display:flex;
+  width:850px;
+  height:500px;
+  background:white;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,0.35);
+}
 
-  .login-card input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-  }
+/* LADO IZQUIERDO */
+.left{
+  flex:1;
+  background:linear-gradient(135deg,#029e99,#59d2ec);
+  color:white;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:40px;
+}
 
-  .login-card input:focus {
-    outline: none;
-    border-color: #59d2ec;
-    box-shadow: 0 0 0 2px rgba(89,210,236,0.3);
-  }
+.logo{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  background:white;
+  color:#029e99;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:32px;
+  font-weight:bold;
+  margin-bottom:20px;
+}
 
-  .login-card button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background: #029e99; 
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
+.logo-img{
+  width:180px;
+  margin-bottom:20px;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,0.25));
+}
 
-  .login-card button:hover {
-    background: #027d79;
-  }
+.left h1{
+  margin:0;
+  font-size:28px;
+}
 
-  .login-card p {
-    text-align: center;
-    margin-top: 15px;
-    font-size: 14px;
-    color: #161616;
-  }
+.left p{
+  margin-top:10px;
+  text-align:center;
+  opacity:0.9;
+}
 
-  .login-card a {
-    color: #59d2ec;
-    text-decoration: none;
-    font-weight: 600;
-  }
+/* LADO DERECHO */
+.right{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:40px;
+}
 
-  #msg {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 14px;
-  }
+.login-box{
+  width:100%;
+  max-width:300px;
+}
+
+.login-box h2{
+  margin-bottom:10px;
+  color:#0a1f3b;
+}
+
+.subtitle{
+  margin-bottom:25px;
+  color:#777;
+  font-size:14px;
+}
+
+/* INPUTS */
+.input-group{
+  margin-bottom:15px;
+}
+
+.input-group input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:14px;
+  transition:0.2s;
+}
+
+.input-group input:focus{
+  outline:none;
+  border-color:#029e99;
+  box-shadow:0 0 0 3px rgba(2,158,153,0.15);
+}
+
+/* BOTON */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#029e99;
+  color:white;
+  font-size:15px;
+  cursor:pointer;
+  transition:0.25s;
+}
+
+button:hover{
+  background:#027d79;
+  transform:translateY(-1px);
+}
+
+/* LINK */
+.register{
+  margin-top:15px;
+  text-align:center;
+  font-size:14px;
+}
+
+.register a{
+  color:#029e99;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.register a:hover{
+  text-decoration:underline;
+}
+
+#msg{
+  margin-top:10px;
+  text-align:center;
+  font-size:14px;
+}
+
 </style>
-
 </head>
 
 <body>
 
-  <div class="login-card">
-    <h2>SkillSyntax</h2>
+<div class="container">
 
-    <input id="email" type="email" placeholder="Correo">
-    <input id="password" type="password" placeholder="Contraseña">
+  <!-- IZQUIERDA -->
+<div class="left">
+  <img src="logo2.png" class="logo-img">
+  <h1>SkillSyntax</h1>
+  <p>
+    Improve your English.<br>
+    Practice smarter. Learn faster.
+  </p>
+</div>
 
-    <button onclick="login()">Iniciar sesión</button>
+  <!-- DERECHA -->
+  <div class="right">
 
-    <p>
-      ¿No tienes cuenta?
-      <a href="register.html">Regístrate</a>
-    </p>
+    <div class="login-box">
 
-    <p id="msg"></p>
+      <h2>Iniciar sesión</h2>
+      <div class="subtitle">Continúa tu aprendizaje</div>
+
+      <div class="input-group">
+        <input id="email" type="email" placeholder="Correo">
+      </div>
+
+      <div class="input-group">
+        <input id="password" type="password" placeholder="Contraseña">
+      </div>
+
+      <button onclick="login()">Entrar</button>
+
+      <div class="register">
+        ¿No tienes cuenta?
+        <a href="register.html">Crear cuenta</a>
+      </div>
+
+      <div id="msg"></div>
+
+    </div>
+
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-      getAuth, 
-      signInWithEmailAndPassword,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBwkcdgnS4emDVWO2Thi3aNdAMV1N_Jf5M",
-      authDomain: "skillsyntax-ai.firebaseapp.com",
-      projectId: "skillsyntax-ai",
-      storageBucket: "skillsyntax-ai.firebasestorage.app",
-      messagingSenderId: "1027375145468",
-      appId: "1:1027375145468:web:60b7023e38a3654ccbd279"
-    };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+<script type="module">
 
-   
-    /*
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        window.location.href = "test.html";
-      }
-    })
-    */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    window.login = async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const msg = document.getElementById("msg");
+const firebaseConfig={
+  apiKey:"AIzaSyBwkcdgnS4emDVWO2Thi3aNdAMV1N_Jf5M",
+  authDomain:"skillsyntax-ai.firebaseapp.com",
+  projectId:"skillsyntax-ai",
+  storageBucket:"skillsyntax-ai.firebasestorage.app",
+  messagingSenderId:"1027375145468",
+  appId:"1:1027375145468:web:60b7023e38a3654ccbd279"
+};
 
-      if (!email || !password) {
-        msg.innerText = "⚠️ Ingresa correo y contraseña";
-        msg.style.color = "red";
-        return;
-      }
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        msg.innerText = "Login correcto";
-        msg.style.color = "green";
-        window.location.href = "test.html";
-      } catch (error) {
-        msg.style.color = "red";
-        if (error.code === "auth/user-not-found") {
-          msg.innerText = "El usuario no existe";
-        } else if (error.code === "auth/wrong-password") {
-          msg.innerText = "Contraseña incorrecta";
-        } else {
-          msg.innerText = error.message;
-        }
-      }
-    };
-  </script>
+window.login=async()=>{
+
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value.trim();
+  const msg=document.getElementById("msg");
+
+  if(!email||!password){
+    msg.innerText="Ingresa correo y contraseña";
+    msg.style.color="red";
+    return;
+  }
+
+  try{
+
+    await signInWithEmailAndPassword(auth,email,password);
+
+    msg.innerText="Bienvenido";
+    msg.style.color="green";
+
+    setTimeout(()=>{
+      window.location.href="test.html";
+    },800);
+
+  }catch(error){
+
+    msg.style.color="red";
+
+    if(error.code==="auth/user-not-found")
+      msg.innerText="Usuario no existe";
+
+    else if(error.code==="auth/wrong-password")
+      msg.innerText="Contraseña incorrecta";
+
+    else
+      msg.innerText="Error al iniciar sesión";
+
+  }
+
+};
+
+</script>
 
 </body>
 </html>

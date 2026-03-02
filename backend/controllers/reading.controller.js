@@ -100,8 +100,8 @@ exports.calificarReading = async (req, res) => {
 
         const usuario =
           (respuestaUsuario[index] || "")
-          .trim()
-          .toLowerCase();
+            .trim()
+            .toLowerCase();
 
         const esCorrecta = correcta === usuario;
 
@@ -123,8 +123,8 @@ exports.calificarReading = async (req, res) => {
 
         const usuario =
           (respuestaUsuario[index] || "")
-          .trim()
-          .toLowerCase();
+            .trim()
+            .toLowerCase();
 
         const esCorrecta = correcta === usuario;
 
@@ -154,11 +154,10 @@ Student answers:
 ${JSON.stringify(respuestaUsuario)}
 
 Correct answers:
-${
-  ejercicio.tipo === "opcion_multiple"
-    ? JSON.stringify(ejercicio.preguntas.map(p => p.correcta))
-    : JSON.stringify(ejercicio.respuestas)
-}
+${ejercicio.tipo === "opcion_multiple"
+        ? JSON.stringify(ejercicio.preguntas.map(p => p.correcta))
+        : JSON.stringify(ejercicio.respuestas)
+      }
 
 Write short professional feedback (max 2 sentences).
 Be encouraging and helpful.
