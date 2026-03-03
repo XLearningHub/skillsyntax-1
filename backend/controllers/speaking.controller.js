@@ -20,56 +20,32 @@ exports.generarSpeaking = async (req, res) => {
       });
     }
 
-    // descripcion nivel
-    let descripcionNivel = "";
-
-    if (nivel === "A1")
-      descripcionNivel = "beginner, very simple questions";
-
-    else if (nivel === "A2")
-      descripcionNivel = "basic student, simple sentences";
-
-    else if (nivel === "B1")
-      descripcionNivel = "intermediate student, everyday topics";
-
-    else if (nivel === "B2")
-      descripcionNivel = "upper intermediate, more detailed answers";
-
-    else if (nivel === "C1")
-      descripcionNivel = "advanced student, complex ideas";
-
-    else if (nivel === "C2")
-      descripcionNivel = "proficient student, natural fluent conversation";
-
-
     const prompt = `
-Generate a SPEAKING exercise in English.
+Generate a PROFESSIONAL English speaking practice.
 
 Topic: ${tema}
 Level: ${nivel}
-Student level: ${descripcionNivel}
 
-Return ONLY valid JSON.
+Respond ONLY with valid JSON.
+Do NOT use \`\`\`json or \`\`\`
+Do NOT add extra text.
 
-Format:
+Exact format:
 
 {
-  "titulo":"Speaking Practice",
-  "instruccion":"Instruction text",
-  "preguntas":[
-    {
-      "pregunta":"Question",
-      "ejemplo":"Example answer"
-    }
-  ]
+  "titulo":"Pronunciation & Fluency Challenge",
+  "instruccion":"Clear instruction for the student",
+  "palabras_clave":["word1","word2","word3","word4","word5"],
+  "reto_fluidez":"Short speaking task where the student speaks naturally (NOT questions)",
+  "frase_modelo":"Example of a good response adapted to the level"
 }
 
 Rules:
 
-- adapt difficulty to level
-- include 3 questions
-- include example answers
-- simple and clear
+- Adapt vocabulary strictly to CEFR level ${nivel}
+- Words must help pronunciation practice
+- The fluency task must promote natural speech
+- Keep it modern and professional
 `;
 
     const response = await openai.responses.create({
@@ -92,7 +68,7 @@ Rules:
 
   } catch (error) {
 
-    console.error(error);
+    console.error("Error generando speaking:", error);
 
     res.status(500).json({
       error: "Error generando speaking"
@@ -127,34 +103,10 @@ exports.calificarSpeaking = async (req, res) => {
 
     const transcripcion = transcriptionResponse.text;
 
-
-    //  DESCRIPCION NIVEL
-    let descripcionNivel = "";
-
-    if (ejercicio.nivel === "A1")
-      descripcionNivel = "beginner student";
-
-    else if (ejercicio.nivel === "A2")
-      descripcionNivel = "basic student";
-
-    else if (ejercicio.nivel === "B1")
-      descripcionNivel = "intermediate student";
-
-    else if (ejercicio.nivel === "B2")
-      descripcionNivel = "upper-intermediate student";
-
-    else if (ejercicio.nivel === "C1")
-      descripcionNivel = "advanced student";
-
-    else if (ejercicio.nivel === "C2")
-      descripcionNivel = "proficient student";
-
-
-    //  EVALUACION 
     const promptEvaluacion = `
 You are a certified English speaking examiner.
 
-The student is a ${descripcionNivel}.
+CEFR Level: ${ejercicio.nivel}
 
 Evaluate the following speaking response:
 
@@ -182,8 +134,7 @@ Return ONLY valid JSON:
       input: promptEvaluacion
     });
 
-    let resultado =
-      responseIA.output[0].content[0].text;
+    let resultado = responseIA.output[0].content[0].text;
 
     resultado = resultado
       .replace(/```json/g, "")

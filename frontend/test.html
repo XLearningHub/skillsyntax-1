@@ -431,24 +431,30 @@ else if (tipo === "speaking") {
   resultado.innerHTML = `
     <h3>${data.titulo}</h3>
     <p>${data.instruccion}</p>
-  `;
 
-  data.preguntas.forEach((p, i) => {
-
-    resultado.innerHTML += `
-      <div class="pregunta">
-        <strong>${p.pregunta}</strong>
-        <p><em>Example: ${p.ejemplo}</em></p>
-      </div>
-    `;
-  });
-
-  resultado.innerHTML += `
-    <div style="margin-top:20px;">
-      <button onclick="iniciarGrabacion()">Grabar respuesta</button>
-      <button onclick="detenerGrabacion()">Detener</button>
-      <audio id="audioPreview" controls style="display:none;"></audio>
+    <div class="pregunta">
+      <strong>Pronunciation Practice:</strong>
+      <p>${data.palabras_clave.join(" • ")}</p>
     </div>
+
+    <div class="pregunta">
+      <strong>Fluency Challenge:</strong>
+      <p>${data.reto_fluidez}</p>
+    </div>
+
+    <div class="pregunta">
+      <strong>Model Example:</strong>
+      <p><em>${data.frase_modelo}</em></p>
+    </div>
+
+    <div style="margin-top:20px;">
+  <button onclick="iniciarGrabacion()">🎤 Grabar respuesta</button>
+  <button onclick="detenerGrabacion()">⏹ Detener</button>
+
+  <div id="estadoGrabacion" style="margin-top:10px;font-weight:bold;"></div>
+
+  <audio id="audioPreview" controls style="display:none;margin-top:10px;"></audio>
+</div>
   `;
 
   document.getElementById("btnEnviar").style.display = "inline-block";
@@ -573,39 +579,63 @@ else if (tipo === "speaking") {
 
     // GRABACION SPEAKING
 
-     function detenerGrabacion() {
-      mediaRecorder.stop();
-    }
-    async function iniciarGrabacion() {
+let grabando = false;
+let contadorInterval;
+let segundos = 0;
 
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+async function iniciarGrabacion() {
 
-  mediaRecorder = new MediaRecorder(stream);
-  audioChunks = [];
+  try {
 
-  mediaRecorder.ondataavailable = event => {
-    audioChunks.push(event.data);
-  };
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-  mediaRecorder.onstop = () => {
-    audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    segundos = 0;
 
-    const audioURL = URL.createObjectURL(audioBlob);
-    const audioPreview = document.getElementById("audioPreview");
+    const estado = document.getElementById("estadoGrabacion");
+    estado.innerHTML = "🔴 Grabando... 0s";
 
-    audioPreview.src = audioURL;
-    audioPreview.style.display = "block";
-  };
+    contadorInterval = setInterval(() => {
+      segundos++;
+      estado.innerHTML = `🔴 Grabando... ${segundos}s`;
+    }, 1000);
 
-  mediaRecorder.start();
+    mediaRecorder.ondataavailable = event => {
+      audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+
+      clearInterval(contadorInterval);
+
+      estado.innerHTML = "🟢 Grabación lista";
+
+      audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
+      const audioURL = URL.createObjectURL(audioBlob);
+      const audioPreview = document.getElementById("audioPreview");
+
+      audioPreview.src = audioURL;
+      audioPreview.style.display = "block";
+    };
+
+    mediaRecorder.start();
+    grabando = true;
+
+  } catch (error) {
+
+    alert("Debes permitir el micrófono");
+
+  }
 }
 
 function detenerGrabacion() {
 
-  if (mediaRecorder) {
+  if (mediaRecorder && grabando) {
     mediaRecorder.stop();
+    grabando = false;
   }
-
 }
 
 // ENVIAR SPEAKING
