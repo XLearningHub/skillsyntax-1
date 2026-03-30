@@ -41,7 +41,6 @@ Exact format:
 }
 
 Rules:
-
 - Adapt vocabulary strictly to CEFR level ${nivel}
 - Words must help pronunciation practice
 - The fluency task must promote natural speech
@@ -84,36 +83,36 @@ exports.calificarSpeaking = async (req, res) => {
 
   try {
 
-    const { ejercicio } = req.body;
-
-    if (!req.file || !ejercicio) {
+    if (!req.file || !req.body.ejercicio) {
       return res.status(400).json({
         error: "Faltan datos para evaluar speaking"
       });
     }
 
-    const audioPath = req.file.path;
+    const ejercicio = JSON.parse(req.body.ejercicio);
 
     // TRANSCRIBIR AUDIO
     const transcriptionResponse =
-      await openai.audio.transcriptions.create({
-        file: fs.createReadStream(audioPath),
-        model: "gpt-4o-mini-transcribe"
-      });
+  await openai.audio.transcriptions.create({
+    file: fs.createReadStream(req.file.path),
+    model: "gpt-4o-mini-transcribe"
+  });
 
-    const transcripcion = transcriptionResponse.text;
+const transcripcion = transcriptionResponse.text;
 
+// borrar archivo temporal
+fs.unlinkSync(req.file.path);
+
+    // EVALUAR CON IA
     const promptEvaluacion = `
 You are a certified English speaking examiner.
 
 CEFR Level: ${ejercicio.nivel}
 
-Evaluate the following speaking response:
-
+Student response:
 "${transcripcion}"
 
 Evaluate:
-
 - Grammar accuracy
 - Vocabulary range
 - Coherence and organization
@@ -122,7 +121,6 @@ Evaluate:
 Give a score from 0 to 100.
 
 Return ONLY valid JSON:
-
 {
   "score": 85,
   "feedback": "Professional feedback here"
@@ -143,11 +141,9 @@ Return ONLY valid JSON:
 
     const evaluacion = JSON.parse(resultado);
 
-    const score = evaluacion.score;
-
     res.json({
-      score,
-      correcto: score >= 70,
+      score: evaluacion.score,
+      correcto: evaluacion.score >= 70,
       feedback: evaluacion.feedback,
       transcripcion
     });

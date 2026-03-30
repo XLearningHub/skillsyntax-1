@@ -34,10 +34,10 @@ const speakingRoutes = require("./routes/speaking.routes");
 const writingRoutes = require("./routes/writing.routes");
 
 // Usar rutas de la API
-app.use("/api", readingRoutes);
-app.use("/api", listeningRoutes);
-app.use("/api", speakingRoutes);
-app.use("/api", writingRoutes);
+app.use("/api/reading", readingRoutes);
+app.use("/api/listening", listeningRoutes);
+app.use("/api/speaking", speakingRoutes);
+app.use("/api/writing", writingRoutes);
 
 // Ruta principal → Login
 app.get("/", (req, res) => {
