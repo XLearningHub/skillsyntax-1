@@ -3,9 +3,9 @@ const router = express.Router();
 const readingController = require("../controllers/reading.controller");
 
 // Generar ejercicio de reading
-router.post("/reading", readingController.generarReading);
+router.post("/", readingController.generarReading);
 
-// Calificar reading con IA
-router.post("/reading/calificar", readingController.calificarReading);
+// Calificar reading
+router.post("/calificar", readingController.calificarReading);
 
 module.exports = router;

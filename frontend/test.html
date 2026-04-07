@@ -2,782 +2,367 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <title>SkillSyntax | Test</title>
+<meta charset="UTF-8">
+<title>SkillSyntax | Test</title>
 
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0a1f3b;
-      padding: 30px;
-    }
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0a1f3b;
+  padding: 30px;
+}
 
-    /* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 15px 30px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+}
 
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #ffffff;
-      padding: 15px 35px;
-      border-radius: 18px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-      max-width: 100%;
-      margin: 0 auto 30px auto;
-    }
+.nav-logo {
+  background: #0a1f3b;
+  color: white;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
 
-    .nav-left {
-      display: flex;
-      align-items: center;
-    }
+.card {
+  background: #fbfaf7;
+  padding: 25px;
+  border-radius: 16px;
+  max-width: 900px;
+  margin: auto;
+}
 
-    .nav-logo {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      background: #0a1f3b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-    }
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: none;
+}
 
-    .nav-center a {
-      margin: 0 18px;
-      text-decoration: none;
-      color: #111;
-      font-weight: 500;
-    }
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #029e99;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
 
-    .logout button {
-      background: #0a3a75;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+button:hover {
+  background: #027d79;
+}
 
-    /* CARD */
+.pregunta {
+  margin-top: 20px;
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+}
 
-    .card {
-      background: #fbfaf7;
-      max-width: 100%;
-      margin: auto;
-      padding: 25px;
-      border-radius: 16px;
-    }
+.opcion-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-top: 8px;
+  background: #f1f1f1;
+  color: #333;
+}
 
-    input {
-      width: 100%;
-      padding: 10px 12px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-      height: 38px;
-      box-sizing: border-box;
-    }
+.opcion-btn:hover {
+  background: #ddd;
+}
 
-    select {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      border: none;
-    }
+.opcion-btn.seleccionado {
+  background: #029e99;
+  color: white;
+}
 
-    button {
-      padding: 10px 15px;
-      margin: 5px;
-      border: none;
-      border-radius: 8px;
-      background: #029e99;
-      color: white;
-      cursor: pointer;
-    }
+.resultado-box {
+  margin-top: 20px;
+  padding: 15px;
+  background: #eefafa;
+  border-radius: 10px;
+}
 
-    .pregunta {
-      margin-top: 20px;
-      padding: 18px;
-      background: white;
-      border-radius: 12px;
-    }
+/* 🔥 NUEVO DISEÑO WRITING */
+.input-blank {
+  width: 130px;
+  padding: 6px 8px;
+  margin: 0 5px;
+  border: 2px solid #029e99;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  outline: none;
+}
 
+.input-blank:focus {
+  background: #eefafa;
+}
 
-    .opciones {
-      margin-top: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+.texto-writing {
+  font-size: 18px;
+  line-height: 1.8;
+  text-align: justify;
+}
 
-    .opcion {
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: 1.5px solid #e0e0e0;
-      background: #ffffff;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 14px;
-    }
+.banco-palabras {
+  margin-top: 15px;
+  padding: 12px;
+  background: #f1f8f8;
+  border-radius: 10px;
+}
 
-
-    .opcion:hover {
-      border-color: #029e99;
-      background: #eefafa;
-      transform: translateY(-2px);
-    }
-
-    .opcion.selected {
-      border-color: #029e99;
-      background: #029e99;
-      color: white;
-    }
-
-    .opcion.correcta {
-      border-color: #28a745;
-      background: #eafaf0;
-      color: #1e7e34;
-    }
-
-    .opcion.incorrecta {
-      border-color: #dc3545;
-      background: #fdeaea;
-      color: #a71d2a;
-    }
-
-    .opcion.correcta::after {
-      content: " ✔";
-      float: right;
-      font-weight: bold;
-    }
-
-    .opcion.incorrecta::after {
-      content: " ✖";
-      float: right;
-      font-weight: bold;
-    }
-
-    .opcion input {
-      display: none;
-    }
-
-    audio {
-      width: 100%;
-      margin-top: 15px;
-    }
-
-    .resultado-box {
-      margin-top: 20px;
-      padding: 15px;
-      background: #eefafa;
-      border-radius: 10px;
-    }
-
-    .score-badge {
-      font-weight: bold;
-      color: #029e99;
-      font-size: 18px;
-    }
-  </style>
+.palabra {
+  display: inline-block;
+  background: #029e99;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin: 5px;
+}
+</style>
 </head>
 
 <body>
 
-  <header class="navbar">
+<header class="navbar">
+  <div class="nav-logo">S</div>
+  <div>SkillSyntax AI</div>
+</header>
 
-    <div class="nav-left">
-      <div class="nav-logo">S</div>
-    </div>
+<div class="card">
 
-    <nav class="nav-center">
-      <a href="#">Home</a>
-      <a href="#">Practice</a>
-      <a href="#">Progress</a>
-      <a href="#">Report</a>
-    </nav>
+<h2>Practice Test</h2>
 
-    <div class="logout">
-      <button onclick="logout()">Cerrar sesión</button>
-    </div>
+<input id="tema" placeholder="Tema (ej. Food)">
+<select id="nivel">
+  <option value="">Selecciona nivel</option>
+  <option value="A1">A1 - Básico</option>
+  <option value="A2">A2 - Básico Alto</option>
+  <option value="B1">B1 - Intermedio</option>
+  <option value="B2">B2 - Intermedio Alto</option>
+  <option value="C1">C1 - Avanzado</option>
+  <option value="C2">C2 - Experto</option>
+</select>
 
-  </header>
-
-  <div class="card">
-
-    <h2>SkillSyntax</h2>
-
-    <input id="tema" placeholder="Tema (ej. Food)">
-
-    <select id="nivel">
-      <option value="">Selecciona nivel</option>
-      <option value="A1">A1 - Básico</option>
-      <option value="A2">A2 - Básico Alto</option>
-      <option value="B1">B1 - Intermedio</option>
-      <option value="B2">B2 - Intermedio Alto</option>
-      <option value="C1">C1 - Avanzado</option>
-      <option value="C2">C2 - Experto</option>
-    </select>
-
-    <div style="text-align:center;">
-
-      <button onclick="generar('reading')">Reading</button>
-      <button onclick="generar('listening')">Listening</button>
-      <button onclick="generar('speaking')">Speaking</button>
-      <button onclick="generar('writing')">Writing</button>
-
-    </div>
-
-    <div id="resultado"></div>
-
-    <div style="text-align:center; margin-top:15px;">
-      <button id="btnEnviar" style="display:none;">
-        Enviar respuestas
-      </button>
-    </div>
-
-  </div>
-
-
-  <script type="module">
-
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    }
-      from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-
-    const firebaseConfig = {
-
-      apiKey: "AIzaSyBwkcdgnS4emDVWO2Thi3aNdAMV1N_Jf5M",
-      authDomain: "skillsyntax-ai.firebaseapp.com",
-      projectId: "skillsyntax-ai",
-      storageBucket: "skillsyntax-ai.firebasestorage.app",
-      messagingSenderId: "1027375145468",
-      appId: "1:1027375145468:web:60b7023e38a3654ccbd279"
-
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    onAuthStateChanged(auth, (user) => {
-
-      if (!user) window.location.href = "login.html";
-
-    });
-
-    window.logout = async function () {
-
-      await signOut(auth);
-      window.location.href = "login.html";
-
-    };
-
-  </script>
-
-
-  <script>
-
-    let ejercicioActual = null;
-    let tipoActual = null;
-    let speakingActual = null;
-    let mediaRecorder;
-    let audioChunks = [];
-    let audioBlob = null;
-
-    function seleccionarOpcion(elemento, nombre, valor) {
-
-      const opciones =
-        document.querySelectorAll(`input[name="${nombre}"]`);
-
-      opciones.forEach(input => {
-        input.parentElement.classList.remove("selected");
-      });
-
-      elemento.classList.add("selected");
-
-      elemento.querySelector("input").checked = true;
-
-    }
-
-    async function generar(tipo) {
-
-      tipoActual = tipo;
-
-      const tema = document.getElementById("tema").value;
-      const nivel = document.getElementById("nivel").value;
-      const resultado = document.getElementById("resultado");
-
-      resultado.innerHTML = "Generando...";
-
-
-      // READING
-
-      if (tipo === "reading") {
-
-        const response = await fetch("http://localhost:3000/api/reading", {
-
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tema, nivel })
-
-        });
-
-        const data = await response.json();
-
-        ejercicioActual = data;
-
-        resultado.innerHTML = `<p>${data.texto}</p>`;
-
-        data.preguntas.forEach((p, i) => {
-
-          resultado.innerHTML += `
-<div class="pregunta">
-<strong>${p.pregunta}</strong>
-
-<div class="opciones">
-${p.opciones.map(op => `
-<div class="opcion" onclick="seleccionarOpcion(this,'p${i}','${op}')">
-<input type="radio" name="p${i}" value="${op}">
-${op}
+<div style="text-align:center;">
+  <button onclick="generar('reading')">Reading</button>
+  <button onclick="generar('listening')">Listening</button>
+  <button onclick="generar('speaking')">Speaking</button>
+  <button onclick="generar('writing')">Writing</button>
 </div>
-`).join("")}
+
+<div id="resultado"></div>
+
+<div style="text-align:center;">
+  <button id="btnEnviar" style="display:none;">Enviar respuestas</button>
 </div>
 
 </div>
-`;
 
-        });
+<script>
 
-        document.getElementById("btnEnviar").style.display = "inline-block";
-        document.getElementById("btnEnviar").onclick = enviarReading;
+let ejercicioActual = null;
+let respuestasUsuario = [];
+let sesionId = null;
+let tipoActual = "";
 
-      }
+async function generar(tipo) {
 
+  tipoActual = tipo;
 
-      // LISTENING
-
-      else if (tipo === "listening") {
-
-        const response = await fetch("http://localhost:3000/api/listening", {
-
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tema, nivel })
-
-        });
-
-        const data = await response.json();
-
-        ejercicioActual = data;
-
-        resultado.innerHTML = `
-
-<h3>Listening Exercise</h3>
-
-<audio controls>
-<source src="${data.audio_url}" type="audio/mpeg">
-</audio>
-
-`;
-
-        data.preguntas.forEach((p, i) => {
-
-          resultado.innerHTML += `
-<div class="pregunta">
-<strong>${p.pregunta}</strong>
-
-<div class="opciones">
-${p.opciones.map(op => `
-<div class="opcion" onclick="seleccionarOpcion(this,'p${i}','${op}')">
-<input type="radio" name="p${i}" value="${op}">
-${op}
-</div>
-`).join("")}
-</div>
-
-</div>
-`;
-
-        });
-
-        document.getElementById("btnEnviar").style.display = "inline-block";
-        document.getElementById("btnEnviar").onclick = enviarListening;
-
-      }
-
-
-
-      // WRITING
-
-else if (tipo === "writing") {
-
-  const response = await fetch("http://localhost:3000/api/writing", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tema, nivel })
-  });
-
-  const data = await response.json();
-
-  ejercicioActual = data;
-
-  // mostrar palabras disponibles
-  resultado.innerHTML = `
-  <h3>Writing Exercise</h3>
-
-  <div class="pregunta">
-    <strong>Words:</strong><br>
-    ${data.palabras.join(" • ")}
-  </div>
-
-  <div class="pregunta" id="textoWriting">
-    ${data.texto}
-  </div>
-  `;
-
-  // reemplazar ____ por inputs
-  let contador = 0;
-
-  const textoHTML = data.texto.replace(/____/g, () => {
-
-    const input = `
-      <input 
-        type="text"
-        id="w${contador}"
-        style="width:120px;margin:0 5px;"
-        placeholder="word">
-    `;
-
-    contador++;
-    return input;
-
-  });
-
-  document.getElementById("textoWriting").innerHTML = textoHTML;
-  document.getElementById("btnEnviar").style.display = "inline-block";
-  document.getElementById("btnEnviar").onclick = enviarWriting;
-
-}
-
-      // SPEAKING
-else if (tipo === "speaking") {
-
-  const response = await fetch("http://localhost:3000/api/speaking", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tema, nivel })
-  });
-
-  const data = await response.json();
-
-  speakingActual = data;
-
-  resultado.innerHTML = `
-    <h3>${data.titulo}</h3>
-    <p>${data.instruccion}</p>
-
-    <div class="pregunta">
-      <strong>Pronunciation Practice:</strong>
-      <p>${data.palabras_clave.join(" • ")}</p>
-    </div>
-
-    <div class="pregunta">
-      <strong>Fluency Challenge:</strong>
-      <p>${data.reto_fluidez}</p>
-    </div>
-
-    <div class="pregunta">
-      <strong>Model Example:</strong>
-      <p><em>${data.frase_modelo}</em></p>
-    </div>
-
-    <div style="margin-top:20px;">
-  <button onclick="iniciarGrabacion()">🎤 Grabar respuesta</button>
-  <button onclick="detenerGrabacion()">⏹ Detener</button>
-
-  <div id="estadoGrabacion" style="margin-top:10px;font-weight:bold;"></div>
-
-  <audio id="audioPreview" controls style="display:none;margin-top:10px;"></audio>
-</div>
-  `;
-
-  document.getElementById("btnEnviar").style.display = "inline-block";
-  document.getElementById("btnEnviar").onclick = enviarSpeaking;
-}
-    }
-
-    
-
-
-    // CALIFICAR READING
-
-    async function enviarReading() {
-
-      let respuestas = [];
-
-      ejercicioActual.preguntas.forEach((_, i) => {
-
-        const seleccion =
-          document.querySelector(`input[name="p${i}"]:checked`);
-
-        respuestas.push(seleccion ? seleccion.value : "");
-
-      });
-
-      const response = await fetch(
-        "http://localhost:3000/api/reading/calificar",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ejercicio: ejercicioActual,
-            respuestaUsuario: respuestas
-          })
-        }
-      );
-
-      const resultadoIA = await response.json();
-
-      mostrarResultado(resultadoIA);
-
-    }
-
-
-    // CALIFICAR LISTENING
-
-    async function enviarListening() {
-
-      let respuestas = [];
-
-      ejercicioActual.preguntas.forEach((_, i) => {
-        const seleccion =
-          document.querySelector(`input[name="p${i}"]:checked`);
-
-        respuestas.push(seleccion ? seleccion.value : "");
-      });
-
-      const response = await fetch(
-        "http://localhost:3000/api/listening/calificar",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ejercicio: ejercicioActual,
-            respuestaUsuario: respuestas
-          })
-        }
-      );
-
-      const resultadoIA = await response.json();
-
-      mostrarResultado(resultadoIA);
-
-    }
-
-    // CALIFICAR WRITING
-
-async function enviarWriting() {
-
-  let respuestas = [];
-
-  ejercicioActual.respuestas.forEach((_, i) => {
-
-    const valor =
-      document.getElementById(`w${i}`).value;
-
-    respuestas.push(valor);
-
-  });
-
-  const response = await fetch(
-    "http://localhost:3000/api/writing/calificar",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ejercicio: ejercicioActual,
-        respuestaUsuario: respuestas
-      })
-    }
-  );
-
-  const resultadoIA = await response.json();
-
-  document.getElementById("resultado").innerHTML += `
-
-  <div class="resultado-box">
-    <div class="score-badge">
-      Score: ${resultadoIA.score}/100
-    </div>
-
-    <div>
-      ${resultadoIA.feedback}
-    </div>
-  </div>
-  `;
-
-  document.getElementById("btnEnviar").style.display = "none";
-
-}
-
-    // RESULTADO
-    function mostrarResultado(resultadoIA) {
-
-      // RESPUESTAS
-      ejercicioActual.preguntas.forEach((pregunta, i) => {
-
-        const inputs =
-          document.querySelectorAll(`input[name="p${i}"]`);
-
-        inputs.forEach(input => {
-          const opcionDiv = input.parentElement;
-
-          // desactivar cambios
-          input.disabled = true;
-          opcionDiv.onclick = null;
-
-          // marcar correcta
-          if (input.value === pregunta.correcta) {
-            opcionDiv.classList.add("correcta");
-          }
-
-          // marcar incorrecta seleccionada
-          if (input.checked && input.value !== pregunta.correcta) {
-            opcionDiv.classList.add("incorrecta");
-          }
-        });
-      });
-
-
-      // MOSTRAR SCORE
-      document.getElementById("resultado").innerHTML += `
-
-  <div class="resultado-box">
-    <div class="score-badge">
-      Score: ${resultadoIA.score}/100
-    </div>
-
-    <div>
-      ${resultadoIA.feedback}
-    </div>
-  </div>
-  `;
-
-      document.getElementById("btnEnviar").style.display = "none";
-    }
-
-    // GRABACION SPEAKING
-
-let grabando = false;
-let contadorInterval;
-let segundos = 0;
-
-async function iniciarGrabacion() {
+  const tema = document.getElementById("tema").value || "daily life";
+  const nivel = document.getElementById("nivel").value || "A1";
+  const usuarioId = parseInt(localStorage.getItem("usuario_id"), 10); // ✅ convertir a número
 
   try {
+    const sesionRes = await fetch("http://localhost:3000/api/sesiones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario_id: usuarioId, tema, nivel }) // ✅ ya es número
+    });
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const sesionData = await sesionRes.json();
+    sesionId = sesionData.id;
 
-    mediaRecorder = new MediaRecorder(stream);
-    audioChunks = [];
-    segundos = 0;
-
-    const estado = document.getElementById("estadoGrabacion");
-    estado.innerHTML = "🔴 Grabando... 0s";
-
-    contadorInterval = setInterval(() => {
-      segundos++;
-      estado.innerHTML = `🔴 Grabando... ${segundos}s`;
-    }, 1000);
-
-    mediaRecorder.ondataavailable = event => {
-      audioChunks.push(event.data);
-    };
-
-    mediaRecorder.onstop = () => {
-
-      clearInterval(contadorInterval);
-
-      estado.innerHTML = "🟢 Grabación";
-
-      audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-
-      const audioURL = URL.createObjectURL(audioBlob);
-      const audioPreview = document.getElementById("audioPreview");
-
-      audioPreview.src = audioURL;
-      audioPreview.style.display = "block";
-    };
-
-    mediaRecorder.start();
-    grabando = true;
+    if(!sesionData.success){
+      console.error("Error al guardar sesión:", sesionData.error);
+    }
 
   } catch (error) {
-
-    alert("Debes permitir el micrófono");
-
+    console.error("Error en fetch de sesión:", error);
   }
+
+  document.getElementById("resultado").innerHTML = "Generando...";
+  respuestasUsuario = [];
+
+  const res = await fetch(`http://localhost:3000/api/${tipo}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tema, nivel })
+  });
+
+  const data = await res.json();
+  ejercicioActual = data;
+
+  let contenido = "";
+
+  if (tipo === "reading") {
+    contenido = `
+      <div class="pregunta">${data.texto}</div>
+      ${(data.preguntas || []).map((p, i) => `
+        <div class="pregunta">
+          <p><strong>${i + 1}. ${p.pregunta}</strong></p>
+          ${p.opciones.map(op => `
+            <button class="opcion-btn" onclick="seleccionarRespuesta(${i}, '${op}', this)">
+              ${op}
+            </button>
+          `).join("")}
+        </div>
+      `).join("")}
+    `;
+    btnEnviar.style.display = "block";
+    btnEnviar.onclick = enviarReading;
+  }
+
+  if (tipo === "listening") {
+    contenido = `
+      <div class="pregunta">
+        <audio controls src="${data.audio || ''}"></audio>
+      </div>
+      ${(data.preguntas || []).map((p, i) => `
+        <div class="pregunta">
+          <p><strong>${i + 1}. ${p.pregunta}</strong></p>
+          ${p.opciones.map(op => `
+            <button class="opcion-btn" onclick="seleccionarRespuesta(${i}, '${op}', this)">
+              ${op}
+            </button>
+          `).join("")}
+        </div>
+      `).join("")}
+    `;
+    btnEnviar.style.display = "block";
+    btnEnviar.onclick = enviarListening;
+  }
+
+  if (tipo === "speaking") {
+    const texto = data.prompt || data.texto || "";
+    contenido = `<div class="pregunta"><p><strong>${texto}</strong></p></div>`;
+    btnEnviar.style.display = "none";
+  }
+
+  if (tipo === "writing") {
+
+    let texto = data.texto || "";
+    const palabras = data.palabras || [];
+
+    let index = 0;
+
+    texto = texto.replace(/____/g, () => {
+      const i = index++;
+      return `<input class="input-blank" placeholder="..." oninput="guardarWriting(${i}, this.value)">`;
+    });
+
+    contenido = `
+      <div class="pregunta texto-writing">${texto}</div>
+
+      <div class="banco-palabras">
+        <strong>Palabras disponibles:</strong><br>
+        ${palabras.map(p => `<span class="palabra">${p}</span>`).join("")}
+      </div>
+    `;
+
+    btnEnviar.style.display = "block";
+    btnEnviar.onclick = enviarWriting;
+  }
+
+  document.getElementById("resultado").innerHTML = contenido;
 }
 
-function detenerGrabacion() {
-
-  if (mediaRecorder && grabando) {
-    mediaRecorder.stop();
-    grabando = false;
-  }
+function seleccionarRespuesta(i, op, btn) {
+  respuestasUsuario[i] = op;
+  btn.parentElement.querySelectorAll("button").forEach(b => b.classList.remove("seleccionado"));
+  btn.classList.add("seleccionado");
 }
 
-// ENVIAR SPEAKING
+function guardarWriting(i, val) {
+  respuestasUsuario[i] = val;
+}
 
-async function enviarSpeaking() {
+async function enviarReading() {
+  const res = await fetch("http://localhost:3000/api/reading/calificar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ejercicio: ejercicioActual, respuestaUsuario: respuestasUsuario })
+  });
+  mostrarResultado(await res.json());
+}
 
-  if (!audioBlob) {
-    alert("Primero graba tu respuesta");
-    return;
-  }
+async function enviarListening() {
+  const res = await fetch("http://localhost:3000/api/listening/calificar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ejercicio: ejercicioActual, respuestaUsuario: respuestasUsuario })
+  });
+  mostrarResultado(await res.json());
+}
 
-  const formData = new FormData();
-  formData.append("audio", audioBlob, "respuesta.webm");
-  formData.append("ejercicio", JSON.stringify(speakingActual));
+async function enviarWriting() {
+  const res = await fetch("http://localhost:3000/api/writing/calificar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ejercicio: ejercicioActual, respuestaUsuario: respuestasUsuario })
+  });
+  mostrarResultado(await res.json());
+}
 
-  const response = await fetch(
-    "http://localhost:3000/api/speaking/calificar-speaking",
-    {
-      method: "POST",
-      body: formData
-    }
-  );
-
-  const resultadoIA = await response.json();
-
+function mostrarResultado(data) {
   document.getElementById("resultado").innerHTML += `
     <div class="resultado-box">
-      <div class="score-badge">
-        Score: ${resultadoIA.score}/100
-      </div>
-      <div>
-        ${resultadoIA.feedback}
-      </div>
-      <div style="margin-top:10px;">
-        <strong>Transcripción:</strong><br>
-        ${resultadoIA.transcripcion}
-      </div>
+      <strong>Score: ${data.score}</strong>
+      <p>${data.feedback}</p>
     </div>
   `;
+  btnEnviar.style.display = "none";
 
-  document.getElementById("btnEnviar").style.display = "none";
+  // 🔥 GUARDAR RESULTADO EN BD
+  fetch("http://localhost:3000/api/resultados", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      sesion_id: sesionId,
+      habilidad: tipoActual,
+      puntaje: data.score,
+      respuestas: respuestasUsuario,
+      feedback: data.feedback
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(!data.success){
+      console.error("Error guardando resultado:", data.error);
+    }
+  })
+  .catch(err => {
+    console.error("Error en fetch resultados:", err);
+  });
 }
-  </script>
+
+</script>
 
 </body>
-
 </html>

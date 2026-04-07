@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const nivelesController = require("../controllers/niveles.controller");
 
-router.post("/guardar_niveles", nivelesController.guardarNiveles);
+// Obtener todos los niveles
+router.get("/todos", nivelesController.getNiveles);
+
+// Guardar nivel seleccionado por usuario
+router.post("/guardar_nivel_seccion", nivelesController.guardarNivelSeccion);
 
 module.exports = router;

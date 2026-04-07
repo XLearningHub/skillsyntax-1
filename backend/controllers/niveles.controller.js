@@ -1,22 +1,30 @@
-const admin = require("firebase-admin");
-const db = admin.firestore();
+const db = require("../db");
 
-exports.guardarNiveles = async (req, res) => {
-  try {
-    const { userId, reading, listening, speaking, writing } = req.body;
+// Traer todos los niveles (para llenar el <select>)
+exports.getNiveles = (req, res) => {
+  const sql = "SELECT id, codigo, descripcion FROM niveles ORDER BY id ASC";
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Error al traer los niveles" });
+    }
+    res.json(results);
+  });
+};
 
-    await db.collection("users").doc(userId).set({
-      niveles: {
-        reading,
-        listening,
-        speaking,
-        writing
-      }
-    }, { merge: true });
+// Guardar nivel por sección de usuario
+exports.guardarNivelSeccion = (req, res) => {
+  const { email, seccion, nivel_id } = req.body;
 
-    res.json({ mensaje: "Niveles guardados correctamente" });
-
-  } catch (error) {
-    res.status(500).json({ error: "Error guardando niveles" });
+  if (!email || !seccion || !nivel_id) {
+    return res.status(400).json({ error: "Faltan datos" });
   }
+
+  const sql = "INSERT INTO niveles_secciones (email, seccion, nivel) VALUES (?, ?, ?)";
+  db.query(sql, [email, seccion, nivel_id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ mensaje: "Nivel guardado correctamente" });
+  });
 };

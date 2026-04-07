@@ -243,10 +243,24 @@ window.login=async()=>{
 
   try{
 
-    await signInWithEmailAndPassword(auth,email,password);
+    const userCredential = await signInWithEmailAndPassword(auth,email,password);
 
     msg.innerText="Bienvenido";
     msg.style.color="green";
+
+    // 🔹 Guardamos el ID del usuario en localStorage para usarlo en test.html
+    // Aquí usamos el uid de Firebase como identificador
+    // 🔥 Obtener usuario desde tu backend usando el email
+const res = await fetch("http://localhost:3000/api/usuarios/email", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email })
+});
+
+const data = await res.json();
+
+// Guardamos el ID REAL de MySQL
+localStorage.setItem("usuario_id", data.id);
 
     setTimeout(()=>{
       window.location.href="test.html";

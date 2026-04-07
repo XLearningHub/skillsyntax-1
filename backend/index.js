@@ -1,120 +1,108 @@
 const express = require("express");
 const cors = require("cors");
-const admin = require("firebase-admin");
+const db = require("./db");
 const path = require("path");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
-// Crear servidor Express
 const app = express();
 
-// Middlewares
+// ===============================
+// 🔧 MIDDLEWARES
+// ===============================
 app.use(cors());
 app.use(express.json());
-
-// Servir archivos del frontend
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// SERVIR ARCHIVOS DE AUDIO
+// ===============================
+// 🎧 SERVIR AUDIOS
+// ===============================
 app.use("/audio", express.static(path.join(__dirname, "public/audio")));
 
-// Configuración de Firebase Admin
-const serviceAccount = require("./serviceAccountKey.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-// Inicializar Firestore
-const db = admin.firestore();
-
-// Importar rutas de cada sección
+// ===============================
+// 📦 RUTAS DE LA APP
+// ===============================
+const nivelesRoutes = require("./routes/niveles.routes");
 const readingRoutes = require("./routes/reading.routes");
 const listeningRoutes = require("./routes/listening.routes");
 const speakingRoutes = require("./routes/speaking.routes");
 const writingRoutes = require("./routes/writing.routes");
+const sesionesRoutes = require("./routes/sesiones.routes");
+const usuariosRoutes = require("./routes/usuarios.routes");
+const loginRoutes = require("./routes/login.routes");
+const resultadosRoutes = require("./routes/resultados.routes");
 
-// Usar rutas de la API
+
+app.use("/api/niveles", nivelesRoutes);
 app.use("/api/reading", readingRoutes);
 app.use("/api/listening", listeningRoutes);
 app.use("/api/speaking", speakingRoutes);
 app.use("/api/writing", writingRoutes);
+app.use("/api/sesiones", sesionesRoutes);
+app.use("/api/usuarios", usuariosRoutes);
+app.use("/api/login", loginRoutes);
+app.use("/api/resultados", resultadosRoutes);
 
-// Ruta principal → Login
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/login.html"));
-});
+// ===============================
+// 👤 REGISTRO DE USUARIO
+// ===============================
+app.post("/guardar_usuario", async (req, res) => {
 
-// Ruta del test después del login
-app.get("/test", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/test.html"));
-});
+  console.log("Datos recibidos:", req.body);
 
-// Guardar nivel por sección
-app.post("/api/guardar_nivel_seccion", async (req, res) => {
+  const { nombre, email, password, nivel_general } = req.body;
+
+  // Validación básica
+  if (!nombre || !email || !password) {
+    return res.status(400).json({ error: "Faltan datos" });
+  }
+
   try {
 
-    const { email, seccion, nivel } = req.body;
+    // 🔐 Encriptar contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (!email || !seccion || !nivel) {
-      return res.status(400).json({ error: "Faltan datos" });
-    }
+    db.query(
+      "INSERT INTO users (nombre, email, password, nivel_general) VALUES (?, ?, ?, ?)",
+      [nombre, email, hashedPassword, nivel_general],
+      (err, result) => {
 
-    await db.collection("niveles_secciones").add({
-      email,
-      seccion,
-      nivel,
-      fecha: new Date()
-    });
+        if (err) {
+          console.error("Error BD:", err);
 
-    res.json({ mensaje: "Nivel guardado correctamente" });
+          // Error: correo duplicado
+          if (err.code === "ER_DUP_ENTRY") {
+            return res.status(400).json({ error: "El correo ya está registrado" });
+          }
 
-  } catch (error) {
+          return res.status(500).json({ error: "Error al guardar usuario" });
+        }
 
-    console.error(error);
-
-    res.status(500).json({
-      error: "Error al guardar nivel"
-    });
-
-  }
-});
-
-// Guardar usuario en Firestore
-app.post("/api/guardar_usuario", async (req, res) => {
-  try {
-
-    const { nombre, email, nivel_general } = req.body;
-
-    if (!nombre || !email) {
-      return res.status(400).json({
-        error: "Faltan datos"
-      });
-    }
-
-    const nuevoUsuario = await db.collection("users").add({
-      nombre,
-      email,
-      nivel_general: nivel_general || "A1",
-      fecha: new Date()
-    });
-
-    res.json({
-      mensaje: "Usuario guardado correctamente",
-      id: nuevoUsuario.id
-    });
+        res.json({ mensaje: "Usuario guardado correctamente" });
+      }
+    );
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    console.error("Error servidor:", error);
+    res.status(500).json({ error: "Error servidor" });
   }
-});
-
-// Levantar servidor
-app.listen(3000, () => {
-
-  console.log("Servidor corriendo en http://localhost:3000");
 
 });
+
+// ===============================
+// 🌐 RUTAS HTML
+// ===============================
+app.get("/", (req, res) =>
+  res.sendFile(path.join(__dirname, "../frontend/login.html"))
+);
+
+app.get("/test", (req, res) =>
+  res.sendFile(path.join(__dirname, "../frontend/test.html"))
+);
+
+// ===============================
+// 🚀 SERVIDOR
+// ===============================
+app.listen(3000, () =>
+  console.log("Servidor corriendo en http://localhost:3000")
+);

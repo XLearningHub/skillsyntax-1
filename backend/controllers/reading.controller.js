@@ -5,19 +5,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-
+// =======================
 // GENERAR READING
+// =======================
 exports.generarReading = async (req, res) => {
   try {
-
-    const { tema, nivel } = req.body;
-
-    if (!tema || !nivel) {
-      return res.status(400).json({ error: "Faltan datos" });
-    }
+    const tema = req.body.tema || "daily life";
+    const nivel = req.body.nivel || "A1";
 
     const prompt = `
-Genera un ejercicio de READING en inglés para nivel ${nivel} sobre el tema "${tema}".
+Genera un ejercicio de READING en inglés
+nivel ${nivel} sobre el tema "${tema}".
 
 Responde SOLO con JSON válido.
 NO uses \`\`\`json ni \`\`\`
@@ -26,149 +24,129 @@ NO agregues texto extra.
 Formato EXACTO:
 
 {
-  "tipo": "opcion_multiple",
-  "texto": "Texto de lectura aquí",
+  "tipo": "reading",
+  "texto": "Texto completo con espacios normales y puntuación correcta"
   "preguntas": [
     {
       "pregunta": "Pregunta 1",
-      "opciones": ["A", "B", "C"],
-      "correcta": "B"
+      "opciones": ["Opción correcta", "Opción incorrecta", "Opción incorrecta"],
+      "correcta": "Opción correcta"
+    },
+    {
+      "pregunta": "Pregunta 2",
+      "opciones": ["Opción correcta", "Opción incorrecta", "Opción incorrecta"],
+      "correcta": "Opción correcta"
     }
   ]
 }
 
-O:
-
-{
-  "tipo": "completar",
-  "texto": "Texto con ____ para completar",
-  "respuestas": ["palabra1", "palabra2"]
-}
+Reglas:
+- Usa espacios normales entre palabras
+- Usa puntuación correcta (puntos, comas)
+- Texto claro según nivel ${nivel}
+- Mínimo 2 preguntas
+- Preguntas basadas en el texto
+- El texto debe ser natural y legible, como un párrafo normal en inglés
 `;
 
-    const response = await openai.responses.create({
+    const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
-      input: prompt
+      messages: [
+        { role: "system", content: "Eres un generador de ejercicios de inglés. Respondes SOLO JSON válido." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7
     });
 
-    let contenido = response.output[0].content[0].text;
+    let contenido = response.choices?.[0]?.message?.content?.trim();
+    if (!contenido) {
+      return res.status(500).json({ error: "No se generó contenido" });
+    }
 
-    // LIMPIAR JSON
-    contenido = contenido
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+    contenido = contenido.replace(/```json/g, "").replace(/```/g, "").trim();
 
-    const ejercicio = JSON.parse(contenido);
+    let ejercicio;
+    try {
+      ejercicio = JSON.parse(contenido);
+    } catch (parseError) {
+      console.error("❌ Error parseando JSON:", parseError);
+      console.log("Contenido recibido:", contenido);
+      return res.status(500).json({ error: "La IA no devolvió JSON válido" });
+    }
 
+    ejercicio.nivel = nivel;
     res.json(ejercicio);
 
   } catch (error) {
-
-    console.error("Error Reading:", error);
-
-    res.status(500).json({
-      error: "Error generando reading"
-    });
-
+    console.error("❌ Error Generar Reading:", error);
+    res.status(500).json({ error: "Error generando reading" });
   }
 };
 
-// CALIFICAR READING 
+// =======================
+// CALIFICAR READING
+// =======================
 exports.calificarReading = async (req, res) => {
-
   try {
-
     const { ejercicio, respuestaUsuario } = req.body;
 
     if (!ejercicio || !respuestaUsuario) {
-      return res.status(400).json({
-        error: "Faltan datos para calificar"
-      });
+      return res.status(400).json({ error: "Faltan datos para calificar" });
     }
 
     let correctas = 0;
-    let detalle = [];
+let detalle = [];
 
-    // OPCION MULTIPLE
-    if (ejercicio.tipo === "opcion_multiple") {
+if (ejercicio.preguntas) {
+  ejercicio.preguntas.forEach((pregunta, index) => {
 
-      ejercicio.preguntas.forEach((pregunta, index) => {
+    const correcta = (pregunta.correcta || "").trim();
+    const usuario = (respuestaUsuario[index] || "").trim();
 
-        const correcta =
-          pregunta.correcta.trim().toLowerCase();
+    const esCorrecta = correcta === usuario;
 
-        const usuario =
-          (respuestaUsuario[index] || "")
-            .trim()
-            .toLowerCase();
+    detalle.push({
+      pregunta: pregunta.pregunta,
+      correcta,
+      usuario,
+      esCorrecta
+    });
 
-        const esCorrecta = correcta === usuario;
+    if (esCorrecta) correctas++;
+  });
+}
 
-        detalle.push(esCorrecta);
-
-        if (esCorrecta) correctas++;
-
-      });
-
-    }
-
-    // COMPLETAR
-    if (ejercicio.tipo === "completar") {
-
-      ejercicio.respuestas.forEach((respuesta, index) => {
-
-        const correcta =
-          respuesta.trim().toLowerCase();
-
-        const usuario =
-          (respuestaUsuario[index] || "")
-            .trim()
-            .toLowerCase();
-
-        const esCorrecta = correcta === usuario;
-
-        detalle.push(esCorrecta);
-
-        if (esCorrecta) correctas++;
-
-      });
-
-    }
-
-    const total = detalle.length;
-    const score = Math.round((correctas / total) * 100);
-
-    // IA SOLO PARA FEEDBACK
+const total = detalle.length;
+const score = total > 0 ? Math.round((correctas / total) * 100) : 0;
+    // Feedback con IA
     const promptFeedback = `
 You are an English teacher.
 
-Reading level: ${ejercicio.nivel || "unknown"}
+Reading level: ${ejercicio.nivel}
 
 Score: ${score}/100
-
 Correct answers: ${correctas}
-Total questions: ${total}
+Total blanks: ${total}
 
 Student answers:
 ${JSON.stringify(respuestaUsuario)}
 
 Correct answers:
-${ejercicio.tipo === "opcion_multiple"
-        ? JSON.stringify(ejercicio.preguntas.map(p => p.correcta))
-        : JSON.stringify(ejercicio.respuestas)
-      }
+${JSON.stringify(ejercicio.respuestas)}
 
 Write short professional feedback (max 2 sentences).
 Be encouraging and helpful.
 `;
 
-    const response = await openai.responses.create({
+    const feedbackResponse = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
-      input: promptFeedback
+      messages: [
+        { role: "system", content: "You are a helpful English teacher." },
+        { role: "user", content: promptFeedback }
+      ]
     });
 
-    let feedback = response.output[0].content[0].text.trim();
+    const feedback = feedbackResponse.choices?.[0]?.message?.content?.trim() || "Good job!";
 
     res.json({
       score,
@@ -178,13 +156,7 @@ Be encouraging and helpful.
     });
 
   } catch (error) {
-
-    console.error("Error al calificar reading:", error);
-
-    res.status(500).json({
-      error: "Error al calificar reading"
-    });
-
+    console.error("❌ Error Calificar Reading:", error);
+    res.status(500).json({ error: "Error al calificar reading" });
   }
-
 };

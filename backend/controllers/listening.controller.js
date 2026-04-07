@@ -100,7 +100,16 @@ O:
     let contenido = response.output[0].content[0].text;
     contenido = limpiarJSON(contenido);
 
-    const ejercicio = JSON.parse(contenido);
+    let ejercicio;
+
+try {
+  ejercicio = JSON.parse(contenido);
+} catch (e) {
+  console.error("JSON inválido:", contenido);
+  return res.status(500).json({
+    error: "La IA devolvió un formato incorrecto"
+  });
+}
 
     ejercicio.nivel = nivel;
 

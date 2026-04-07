@@ -6,18 +6,14 @@ const openai = new OpenAI({
 });
 
 
+// =======================
 // GENERAR WRITING
+// =======================
 exports.generarWriting = async (req, res) => {
-
   try {
 
-    const { tema, nivel } = req.body;
-
-    if (!tema || !nivel) {
-      return res.status(400).json({
-        error: "Faltan datos"
-      });
-    }
+    const tema = req.body.tema || req.body.topic || "daily life";
+    const nivel = req.body.nivel || "A1";
 
     const prompt = `
 Genera un ejercicio de WRITING en inglés
@@ -38,46 +34,75 @@ Formato EXACTO:
 
 Reglas:
 - Usa inglés natural
-- 8 espacios para completar
+- EXACTAMENTE 8 espacios (____)
 - vocabulario acorde al nivel ${nivel}
 - tema relacionado con ${tema}
 `;
 
-    const response = await openai.responses.create({
+    const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
-      input: prompt
+      messages: [
+        {
+          role: "system",
+          content: "Eres un generador de ejercicios de inglés. Respondes SOLO JSON válido."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.7
     });
 
-    let contenido = response.output[0].content[0].text;
+    let contenido = response.choices?.[0]?.message?.content;
 
+    if (!contenido) {
+      console.log("Respuesta completa:", response);
+      return res.status(500).json({
+        error: "No se generó contenido"
+      });
+    }
+
+    console.log("RESPUESTA IA:", contenido);
+
+    // limpiar posibles ```json
     contenido = contenido
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-    const ejercicio = JSON.parse(contenido);
+    let ejercicio;
+
+    try {
+      ejercicio = JSON.parse(contenido);
+    } catch (parseError) {
+      console.error("Error parseando JSON:", parseError);
+      console.log("Contenido recibido:", contenido);
+
+      return res.status(500).json({
+        error: "La IA no devolvió JSON válido"
+      });
+    }
 
     ejercicio.nivel = nivel;
 
     res.json(ejercicio);
 
   } catch (error) {
-
     console.error("Error Writing:", error);
 
     res.status(500).json({
       error: "Error generando writing"
     });
-
   }
-
 };
 
 
 
+// =======================
 // CALIFICAR WRITING
+// =======================
 exports.calificarWriting = async (req, res) => {
-
   try {
 
     const { ejercicio, respuestaUsuario } = req.body;
@@ -91,31 +116,41 @@ exports.calificarWriting = async (req, res) => {
     let correctas = 0;
     let detalle = [];
 
-    ejercicio.respuestas.forEach((respuesta, index) => {
+    const respuestasCorrectas = ejercicio.respuestas || [];
+    const respuestasUsuario = respuestaUsuario || [];
 
-      const correcta =
-        respuesta.trim().toLowerCase();
+    // usamos el mínimo para evitar errores
+    const total = Math.min(respuestasCorrectas.length, respuestasUsuario.length);
 
-      const usuario =
-        (respuestaUsuario[index] || "")
-          .trim()
-          .toLowerCase();
+    for (let i = 0; i < total; i++) {
 
-      const esCorrecta = correcta === usuario;
+      const correcta = (respuestasCorrectas[i] || "")
+      .trim()
+      .toLowerCase();
 
-      detalle.push(esCorrecta);
+    const usuario = (respuestasUsuario[i] || "")
+    .trim()
+    .toLowerCase();
 
-      if (esCorrecta) correctas++;
+    const esCorrecta = correcta === usuario;
 
+      detalle.push({
+      correcta,
+      usuario,
+      esCorrecta
     });
 
-    const total = ejercicio.respuestas.length;
+    if (esCorrecta) correctas++;
+  }
 
-    const score =
-      Math.round((correctas / total) * 100);
+  // evitar división por 0
+    const score = total > 0
+      ? Math.round((correctas / total) * 100)
+      : 0;
 
-
+    // =======================
     // FEEDBACK CON IA
+    // =======================
     const promptFeedback = `
 You are an English teacher.
 
@@ -136,13 +171,16 @@ Write short professional feedback (max 2 sentences).
 Be encouraging and helpful.
 `;
 
-    const response = await openai.responses.create({
+    const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
-      input: promptFeedback
+      messages: [
+        { role: "system", content: "You are a helpful English teacher." },
+        { role: "user", content: promptFeedback }
+      ]
     });
 
     const feedback =
-      response.output[0].content[0].text.trim();
+      response.choices?.[0]?.message?.content?.trim() || "Good job!";
 
     res.json({
       score,
@@ -160,5 +198,4 @@ Be encouraging and helpful.
     });
 
   }
-
 };
