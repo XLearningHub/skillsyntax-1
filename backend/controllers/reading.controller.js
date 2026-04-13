@@ -1,5 +1,6 @@
 const OpenAI = require("openai");
 require("dotenv").config();
+const db = require("../db"); // ✅ IMPORTANTE
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -25,7 +26,7 @@ Formato EXACTO:
 
 {
   "tipo": "reading",
-  "texto": "Texto completo con espacios normales y puntuación correcta"
+  "texto": "Texto completo con espacios normales y puntuación correcta",
   "preguntas": [
     {
       "pregunta": "Pregunta 1",
@@ -46,7 +47,7 @@ Reglas:
 - Texto claro según nivel ${nivel}
 - Mínimo 2 preguntas
 - Preguntas basadas en el texto
-- El texto debe ser natural y legible, como un párrafo normal en inglés
+- El texto debe ser natural y legible
 `;
 
     const response = await openai.chat.completions.create({
@@ -59,6 +60,7 @@ Reglas:
     });
 
     let contenido = response.choices?.[0]?.message?.content?.trim();
+
     if (!contenido) {
       return res.status(500).json({ error: "No se generó contenido" });
     }
@@ -95,30 +97,32 @@ exports.calificarReading = async (req, res) => {
     }
 
     let correctas = 0;
-let detalle = [];
+    let detalle = [];
 
-if (ejercicio.preguntas) {
-  ejercicio.preguntas.forEach((pregunta, index) => {
+    if (ejercicio.preguntas) {
+      ejercicio.preguntas.forEach((pregunta, index) => {
+        const correcta = (pregunta.correcta || "").trim();
+        const usuario = (respuestaUsuario[index] || "").trim();
 
-    const correcta = (pregunta.correcta || "").trim();
-    const usuario = (respuestaUsuario[index] || "").trim();
+        const esCorrecta = correcta === usuario;
 
-    const esCorrecta = correcta === usuario;
+        detalle.push({
+          pregunta: pregunta.pregunta,
+          correcta,
+          usuario,
+          esCorrecta
+        });
 
-    detalle.push({
-      pregunta: pregunta.pregunta,
-      correcta,
-      usuario,
-      esCorrecta
-    });
+        if (esCorrecta) correctas++;
+      });
+    }
 
-    if (esCorrecta) correctas++;
-  });
-}
+    const total = detalle.length;
+    const score = total > 0 ? Math.round((correctas / total) * 100) : 0;
 
-const total = detalle.length;
-const score = total > 0 ? Math.round((correctas / total) * 100) : 0;
-    // Feedback con IA
+    // =======================
+    // FEEDBACK IA
+    // =======================
     const promptFeedback = `
 You are an English teacher.
 
@@ -126,13 +130,10 @@ Reading level: ${ejercicio.nivel}
 
 Score: ${score}/100
 Correct answers: ${correctas}
-Total blanks: ${total}
+Total questions: ${total}
 
 Student answers:
 ${JSON.stringify(respuestaUsuario)}
-
-Correct answers:
-${JSON.stringify(ejercicio.respuestas)}
 
 Write short professional feedback (max 2 sentences).
 Be encouraging and helpful.
@@ -146,8 +147,38 @@ Be encouraging and helpful.
       ]
     });
 
-    const feedback = feedbackResponse.choices?.[0]?.message?.content?.trim() || "Good job!";
+    const feedback =
+      feedbackResponse.choices?.[0]?.message?.content?.trim() || "Good job!";
 
+    // =======================
+    // 💾 GUARDAR EN DB (FIX FINAL)
+    // =======================
+    const sesion_id = 1; // 🔥 temporal
+    const respuestasJSON = JSON.stringify(respuestaUsuario);
+
+    db.query(
+      `INSERT INTO resultados 
+      (sesion_id, habilidad, puntaje, respuestas, feedback)
+      VALUES (?, ?, ?, ?, ?)`,
+      [
+        sesion_id,
+        "reading",
+        score,
+        respuestasJSON,
+        feedback
+      ],
+      (err) => {
+        if (err) {
+          console.error("❌ Error guardando resultado:", err);
+        } else {
+          console.log("✅ Resultado guardado en DB");
+        }
+      }
+    );
+
+    // =======================
+    // RESPUESTA
+    // =======================
     res.json({
       score,
       correcto: score >= 70,

@@ -43,7 +43,7 @@ app.use("/api/sesiones", sesionesRoutes);
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/login", loginRoutes);
 //app.use("/api/resultados", resultadosRoutes);
-app.use("/api", resultadosRoutes);
+app.use("/api/resultados", resultadosRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 // ===============================
@@ -109,3 +109,16 @@ app.get("/test", (req, res) =>
 app.listen(3000, () =>
   console.log("Servidor corriendo en http://localhost:3000")
 );
+
+app.use((err, req, res, next) => {
+  console.error("ERROR GLOBAL:", err);
+  res.status(500).json({ error: "Error interno" });
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("💥 ERROR NO CAPTURADO:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("💥 PROMESA NO MANEJADA:", err);
+});

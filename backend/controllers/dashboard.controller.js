@@ -1,46 +1,65 @@
-// controllers/dashboard.controller.js
-
 const db = require("../db");
 
-exports.obtenerDashboard = (req, res) => {
+/* RESUMEN */
+exports.obtenerDashboard = async (req, res) => {
+  const { usuario_id } = req.params;
 
-  const usuario_id = req.params.usuario_id;
+  try {
+    const [data] = await db.query(`
+      SELECT 
+        r.habilidad,
+        AVG(r.puntaje) as promedio
+      FROM resultados r
+      JOIN sesiones s ON r.sesion_id = s.id
+      WHERE s.usuario_id = ?
+      GROUP BY r.habilidad
+    `, [usuario_id]);
 
-  const query = `
-    SELECT r.habilidad, AVG(r.puntaje) as promedio
-    FROM resultados r
-    JOIN sesiones s ON r.sesion_id = s.id
-    WHERE s.usuario_id = ?
-    GROUP BY r.habilidad
-  `;
+    const [historial] = await db.query(`
+      SELECT 
+        r.fecha,
+        s.tema,
+        s.nivel,
+        r.habilidad,
+        r.puntaje
+      FROM resultados r
+      JOIN sesiones s ON r.sesion_id = s.id
+      WHERE s.usuario_id = ?
+      ORDER BY r.fecha DESC
+    `, [usuario_id]);
 
-  db.query(query, [usuario_id], (err, results) => {
-    if (err) {
-      return res.status(500).json({ success: false, error: err });
-    }
+    res.json({
+      data,
+      historial
+    });
 
-    res.json({ success: true, data: results });
-  });
+  } catch (error) {
+    console.error("Error dashboard:", error);
+    res.status(500).json({ error: "Error en dashboard" });
+  }
 };
 
-exports.obtenerHistorial = (req, res) => {
+/* HISTORIAL (opcional) */
+exports.obtenerHistorial = async (req, res) => {
+  const { usuario_id } = req.params;
 
-  const usuario_id = req.params.usuario_id;
+  try {
+    const [historial] = await db.query(`
+      SELECT 
+        r.fecha,
+        s.tema,
+        s.nivel,
+        r.habilidad,
+        r.puntaje
+      FROM resultados r
+      JOIN sesiones s ON r.sesion_id = s.id
+      WHERE s.usuario_id = ?
+      ORDER BY r.fecha DESC
+    `, [usuario_id]);
 
-  const query = `
-    SELECT r.habilidad, r.puntaje, r.fecha
-    FROM resultados r
-    JOIN sesiones s ON r.sesion_id = s.id
-    WHERE s.usuario_id = ?
-    ORDER BY r.fecha DESC
-    LIMIT 10
-  `;
+    res.json(historial);
 
-  db.query(query, [usuario_id], (err, results) => {
-    if (err) {
-      return res.status(500).json({ success:false, error: err });
-    }
-
-    res.json({ success:true, data: results });
-  });
+  } catch (error) {
+    res.status(500).json({ error: "Error historial" });
+  }
 };
