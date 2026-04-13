@@ -1,4 +1,4 @@
-const express = require("express");
+/*const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
@@ -22,6 +22,46 @@ router.post("/", (req, res) => {
       res.json({ success: true });
     }
   );
+});
+
+module.exports = router;*/
+
+const express = require("express");
+const router = express.Router();
+const db = require("../db");
+
+/* CREAR SESIÓN */
+router.post("/sesiones", async (req, res) => {
+  const { usuario_id, tema, nivel } = req.body;
+
+  try {
+    const [result] = await db.query(
+      "INSERT INTO sesiones (usuario_id, tema, nivel) VALUES (?, ?, ?)",
+      [usuario_id, tema, nivel]
+    );
+
+    res.json({ id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ error: "Error al crear sesión" });
+  }
+});
+
+/* GUARDAR RESULTADO */
+router.post("/resultados", async (req, res) => {
+  const { sesion_id, habilidad, puntaje, feedback, respuestas } = req.body;
+
+  try {
+    await db.query(
+      `INSERT INTO resultados 
+      (sesion_id, habilidad, puntaje, feedback, respuestas) 
+      VALUES (?, ?, ?, ?, ?)`,
+      [sesion_id, habilidad, puntaje, feedback, respuestas]
+    );
+
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: "Error al guardar resultado" });
+  }
 });
 
 module.exports = router;

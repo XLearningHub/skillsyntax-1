@@ -6,12 +6,11 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-
+// ===============================
 // GENERAR SPEAKING
+// ===============================
 exports.generarSpeaking = async (req, res) => {
-
   try {
-
     const { tema, nivel } = req.body;
 
     if (!tema || !nivel) {
@@ -21,30 +20,28 @@ exports.generarSpeaking = async (req, res) => {
     }
 
     const prompt = `
-Generate a PROFESSIONAL English speaking practice.
+Genera un ejercicio de speaking en inglés en formato JSON.
 
-Topic: ${tema}
-Level: ${nivel}
+Debe incluir:
+- titulo
+- instruccion
+- fluency
+- palabras (array de 5 palabras)
+- ejemplo
 
-Respond ONLY with valid JSON.
-Do NOT use \`\`\`json or \`\`\`
-Do NOT add extra text.
+Tema: ${tema}
+Nivel: ${nivel}
 
-Exact format:
+Responde SOLO en JSON válido, sin texto extra.
 
+Ejemplo:
 {
-  "titulo":"Pronunciation & Fluency Challenge",
-  "instruccion":"Clear instruction for the student",
-  "palabras_clave":["word1","word2","word3","word4","word5"],
-  "reto_fluidez":"Short speaking task where the student speaks naturally (NOT questions)",
-  "frase_modelo":"Example of a good response adapted to the level"
+  "titulo": "Pronunciation & Fluency Challenge",
+  "instruccion": "Practice pronouncing the key words clearly and then speak naturally.",
+  "fluency": "Describe your daily routine from morning to evening.",
+  "palabras": ["morning", "work", "coffee", "walk", "evening"],
+  "ejemplo": "Every morning I drink coffee. I go to work and take a walk."
 }
-
-Rules:
-- Adapt vocabulary strictly to CEFR level ${nivel}
-- Words must help pronunciation practice
-- The fluency task must promote natural speech
-- Keep it modern and professional
 `;
 
     const response = await openai.responses.create({
@@ -59,103 +56,121 @@ Rules:
       .replace(/```/g, "")
       .trim();
 
-    const speaking = JSON.parse(contenido);
+    let speaking;
 
+    try {
+      speaking = JSON.parse(contenido);
+    } catch (e) {
+      console.error("JSON inválido:", contenido);
+      return res.status(500).json({
+        error: "La IA devolvió formato incorrecto"
+      });
+    }
+
+    // 👇 AÑADIMOS NIVEL
     speaking.nivel = nivel;
+
+    // 👇 ESTO ES CLAVE PARA TU FRONTEND
+    speaking.prompt = speaking.fluency;
 
     res.json(speaking);
 
   } catch (error) {
-
     console.error("Error generando speaking:", error);
 
     res.status(500).json({
       error: "Error generando speaking"
     });
-
   }
-
 };
 
-
+// ===============================
 // CALIFICAR SPEAKING
+// ===============================
 exports.calificarSpeaking = async (req, res) => {
-
   try {
+    const audioPath = req.file.path;
 
-    if (!req.file || !req.body.ejercicio) {
-      return res.status(400).json({
-        error: "Faltan datos para evaluar speaking"
-      });
-    }
-
-    const ejercicio = JSON.parse(req.body.ejercicio);
-
-    // TRANSCRIBIR AUDIO
-    const transcriptionResponse =
-  await openai.audio.transcriptions.create({
-    file: fs.createReadStream(req.file.path),
-    model: "gpt-4o-mini-transcribe"
-  });
-
-const transcripcion = transcriptionResponse.text;
-
-// borrar archivo temporal
-fs.unlinkSync(req.file.path);
-
-    // EVALUAR CON IA
-    const promptEvaluacion = `
-You are a certified English speaking examiner.
-
-CEFR Level: ${ejercicio.nivel}
-
-Student response:
-"${transcripcion}"
-
-Evaluate:
-- Grammar accuracy
-- Vocabulary range
-- Coherence and organization
-- Fluency
-
-Give a score from 0 to 100.
-
-Return ONLY valid JSON:
-{
-  "score": 85,
-  "feedback": "Professional feedback here"
-}
-`;
-
-    const responseIA = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: promptEvaluacion
+    // 🎤 TRANSCRIPCIÓN
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(audioPath),
+      model: "whisper-1"
     });
 
-    let resultado = responseIA.output[0].content[0].text;
+    const texto = transcription.text;
 
-    resultado = resultado
+    // 🧠 EVALUACIÓN CON FORMATO JSON
+    const evaluacion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `
+Eres un evaluador de inglés.
+
+Evalúa el texto del usuario y responde SOLO en JSON válido con:
+
+- score (0 a 100)
+- nivel (A1, A2, B1, B2, C1, C2)
+- feedback (breve y útil)
+
+Reglas:
+- Si la respuesta es muy corta → score bajo (0-30)
+- Si es básica → 30-60
+- Intermedia → 60-80
+- Avanzada → 80-100
+
+Ejemplo:
+{
+  "score": 75,
+  "nivel": "B1",
+  "feedback": "Good structure but improve vocabulary."
+}
+`
+        },
+        {
+          role: "user",
+          content: texto
+        }
+      ]
+    });
+
+    let respuesta = evaluacion.choices[0].message.content;
+
+    // 🔧 LIMPIAR RESPUESTA
+    respuesta = respuesta
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-    const evaluacion = JSON.parse(resultado);
+    let resultado;
+
+    try {
+      resultado = JSON.parse(respuesta);
+    } catch (e) {
+      console.error("❌ JSON inválido:", respuesta);
+
+      // fallback inteligente
+      resultado = {
+        score: texto.length < 10 ? 10 : 50,
+        nivel: "A1",
+        feedback: "No se pudo evaluar correctamente, intenta hablar más."
+      };
+    }
+
+    fs.unlinkSync(audioPath);
 
     res.json({
-      score: evaluacion.score,
-      correcto: evaluacion.score >= 70,
-      feedback: evaluacion.feedback,
-      transcripcion
+      score: resultado.score,
+      feedback: `Nivel: ${resultado.nivel}\n${resultado.feedback}`,
+      transcript: texto
     });
 
   } catch (error) {
-
-    console.error("Error calificar speaking:", error);
+    console.error("🔥 ERROR SPEAKING:", error);
 
     res.status(500).json({
-      error: "Error al calificar speaking"
+      error: "Error en speaking"
     });
-
   }
-
 };

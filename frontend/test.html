@@ -4,22 +4,22 @@
 <head>
 <meta charset="UTF-8">
 <title>SkillSyntax | Test</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
   background: #0a1f3b;
-  padding: 30px;
+  margin: 0;
 }
 
+/* NAVBAR */
 .navbar {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   background: white;
   padding: 15px 30px;
-  border-radius: 15px;
-  margin-bottom: 25px;
 }
 
 .nav-logo {
@@ -33,14 +33,78 @@ body {
   border-radius: 50%;
 }
 
+.nav-center {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+}
+
+.nav-item {
+  cursor: pointer;
+  font-weight: 500;
+  color: #0a1f3b;
+  position: relative;
+}
+
+.nav-item:hover {
+  color: #029e99;
+}
+
+.nav-item.active::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: #029e99;
+  bottom: -5px;
+  left: 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-info img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.logout-btn {
+  background: #029e99;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #027d79;
+}
+
+/* VISTAS */
+.vista {
+  display: none;
+  padding: 20px;
+}
+
+.activa {
+  display: block;
+}
+
+/* CARD */
 .card {
   background: #fbfaf7;
   padding: 25px;
   border-radius: 16px;
-  max-width: 900px;
+  max-width: 1100px;
   margin: auto;
 }
 
+/* FORM */
 input, select {
   width: 100%;
   padding: 10px;
@@ -95,7 +159,6 @@ button:hover {
   border-radius: 10px;
 }
 
-/* 🔥 NUEVO DISEÑO WRITING */
 .input-blank {
   width: 130px;
   padding: 6px 8px;
@@ -104,17 +167,11 @@ button:hover {
   border-radius: 8px;
   text-align: center;
   font-weight: bold;
-  outline: none;
-}
-
-.input-blank:focus {
-  background: #eefafa;
 }
 
 .texto-writing {
   font-size: 18px;
   line-height: 1.8;
-  text-align: justify;
 }
 
 .banco-palabras {
@@ -132,29 +189,101 @@ button:hover {
   border-radius: 8px;
   margin: 5px;
 }
+
+/* DASHBOARD */
+.dashboard-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.resumen-card {
+  background: linear-gradient(135deg, #029e99, #027d79);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.dashboard-contenedor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+#grafica {
+  max-width: 100%;
+}
+
+/* TABLA */
+.tabla-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+#tablaSesiones {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+#tablaSesiones th {
+  background: #029e99;
+  color: white;
+  padding: 10px;
+}
+
+#tablaSesiones td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
 </style>
 </head>
 
 <body>
 
-<header class="navbar">
+<!-- NAVBAR -->
+<div class="navbar">
   <div class="nav-logo">S</div>
-  <div>SkillSyntax AI</div>
-</header>
 
+  <div class="nav-center">
+    <span class="nav-item active" onclick="cambiarMenu(this,'home')">Home</span>
+    <span class="nav-item" onclick="cambiarMenu(this,'practice')">Practice</span>
+    <span class="nav-item" onclick="cambiarMenu(this,'report')">Report</span>
+  </div>
+
+  <div class="user-info">
+    <img id="avatarUsuario"
+         src="https://ui-avatars.com/api/?name=User&background=0a1f3b&color=fff">
+    <span id="nombreUsuario">Usuario</span>
+    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="vista activa">
+  <div class="card">
+    <h2>Bienvenido a SkillSyntax AI</h2>
+    <p>Entrenamiento lingüístico técnico con IA en tiempo real.</p>
+  </div>
+</div>
+
+<!-- PRACTICE -->
+<div id="practice" class="vista">
 <div class="card">
-
 <h2>Practice Test</h2>
 
 <input id="tema" placeholder="Tema (ej. Food)">
 <select id="nivel">
   <option value="">Selecciona nivel</option>
-  <option value="A1">A1 - Básico</option>
-  <option value="A2">A2 - Básico Alto</option>
-  <option value="B1">B1 - Intermedio</option>
-  <option value="B2">B2 - Intermedio Alto</option>
-  <option value="C1">C1 - Avanzado</option>
-  <option value="C2">C2 - Experto</option>
+  <option value="A1">A1</option>
+  <option value="A2">A2</option>
+  <option value="B1">B1</option>
+  <option value="B2">B2</option>
+  <option value="C1">C1</option>
+  <option value="C2">C2</option>
 </select>
 
 <div style="text-align:center;">
@@ -169,199 +298,365 @@ button:hover {
 <div style="text-align:center;">
   <button id="btnEnviar" style="display:none;">Enviar respuestas</button>
 </div>
+</div>
+</div>
 
+<!-- REPORT -->
+<div id="report" class="vista">
+<div class="card">
+<h2>Dashboard</h2>
+<button onclick="verDashboard()">Cargar resultados</button>
+
+<div class="dashboard-resumen">
+  <div class="resumen-card">
+    <h3>Promedio</h3>
+    <p id="cardPromedio">0</p>
+  </div>
+  <div class="resumen-card">
+    <h3>Mejor</h3>
+    <p id="cardMejor">-</p>
+  </div>
+  <div class="resumen-card">
+    <h3>A mejorar</h3>
+    <p id="cardPeor">-</p>
+  </div>
+</div>
+
+<div class="dashboard-contenedor">
+  <div>
+    <canvas id="grafica"></canvas>
+  </div>
+  <div class="tabla-container">
+    <h3>Historial de Sesiones</h3>
+    <table id="tablaSesiones">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tema</th>
+          <th>Nivel</th>
+          <th>Habilidad</th>
+          <th>Puntaje</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+</div>
 </div>
 
 <script>
-
-let ejercicioActual = null;
-let respuestasUsuario = [];
-let sesionId = null;
-let tipoActual = "";
-
-async function generar(tipo) {
-
-  tipoActual = tipo;
-
-  const tema = document.getElementById("tema").value || "daily life";
-  const nivel = document.getElementById("nivel").value || "A1";
-  const usuarioId = parseInt(localStorage.getItem("usuario_id"), 10); // ✅ convertir a número
-
-  try {
-    const sesionRes = await fetch("http://localhost:3000/api/sesiones", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ usuario_id: usuarioId, tema, nivel }) // ✅ ya es número
-    });
-
-    const sesionData = await sesionRes.json();
-    sesionId = sesionData.id;
-
-    if(!sesionData.success){
-      console.error("Error al guardar sesión:", sesionData.error);
-    }
-
-  } catch (error) {
-    console.error("Error en fetch de sesión:", error);
-  }
-
-  document.getElementById("resultado").innerHTML = "Generando...";
-  respuestasUsuario = [];
-
-  const res = await fetch(`http://localhost:3000/api/${tipo}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tema, nivel })
-  });
-
-  const data = await res.json();
-  ejercicioActual = data;
-
-  let contenido = "";
-
-  if (tipo === "reading") {
-    contenido = `
-      <div class="pregunta">${data.texto}</div>
-      ${(data.preguntas || []).map((p, i) => `
-        <div class="pregunta">
-          <p><strong>${i + 1}. ${p.pregunta}</strong></p>
-          ${p.opciones.map(op => `
-            <button class="opcion-btn" onclick="seleccionarRespuesta(${i}, '${op}', this)">
-              ${op}
-            </button>
-          `).join("")}
-        </div>
-      `).join("")}
-    `;
-    btnEnviar.style.display = "block";
-    btnEnviar.onclick = enviarReading;
-  }
-
-  if (tipo === "listening") {
-    contenido = `
-      <div class="pregunta">
-        <audio controls src="${data.audio || ''}"></audio>
-      </div>
-      ${(data.preguntas || []).map((p, i) => `
-        <div class="pregunta">
-          <p><strong>${i + 1}. ${p.pregunta}</strong></p>
-          ${p.opciones.map(op => `
-            <button class="opcion-btn" onclick="seleccionarRespuesta(${i}, '${op}', this)">
-              ${op}
-            </button>
-          `).join("")}
-        </div>
-      `).join("")}
-    `;
-    btnEnviar.style.display = "block";
-    btnEnviar.onclick = enviarListening;
-  }
-
-  if (tipo === "speaking") {
-    const texto = data.prompt || data.texto || "";
-    contenido = `<div class="pregunta"><p><strong>${texto}</strong></p></div>`;
-    btnEnviar.style.display = "none";
-  }
-
-  if (tipo === "writing") {
-
-    let texto = data.texto || "";
-    const palabras = data.palabras || [];
-
-    let index = 0;
-
-    texto = texto.replace(/____/g, () => {
-      const i = index++;
-      return `<input class="input-blank" placeholder="..." oninput="guardarWriting(${i}, this.value)">`;
-    });
-
-    contenido = `
-      <div class="pregunta texto-writing">${texto}</div>
-
-      <div class="banco-palabras">
-        <strong>Palabras disponibles:</strong><br>
-        ${palabras.map(p => `<span class="palabra">${p}</span>`).join("")}
-      </div>
-    `;
-
-    btnEnviar.style.display = "block";
-    btnEnviar.onclick = enviarWriting;
-  }
-
-  document.getElementById("resultado").innerHTML = contenido;
+function mostrarVista(vista){
+  document.querySelectorAll(".vista").forEach(v=>v.classList.remove("activa"));
+  document.getElementById(vista).classList.add("activa");
 }
 
-function seleccionarRespuesta(i, op, btn) {
-  respuestasUsuario[i] = op;
-  btn.parentElement.querySelectorAll("button").forEach(b => b.classList.remove("seleccionado"));
+function cambiarMenu(elemento,vista){
+  mostrarVista(vista);
+  document.querySelectorAll(".nav-item")
+    .forEach(el=>el.classList.remove("active"));
+  elemento.classList.add("active");
+}
+
+function logout(){
+  localStorage.removeItem("usuario_id");
+  window.location.href="login.html";
+}
+
+/* Cargar usuario */
+async function cargarUsuario(){
+  const usuarioId=localStorage.getItem("usuario_id");
+  if(!usuarioId) return;
+
+  try{
+    const res=await fetch(`http://localhost:3000/api/usuarios/${usuarioId}`);
+    const usuario=await res.json();
+    document.getElementById("nombreUsuario").innerText=usuario.nombre;
+    document.getElementById("avatarUsuario").src=
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(usuario.nombre)}&background=0a1f3b&color=fff`;
+  }catch(error){
+    console.error("Error al cargar usuario:",error);
+  }
+}
+document.addEventListener("DOMContentLoaded",cargarUsuario);
+
+/* VARIABLES */
+let ejercicioActual=null;
+let respuestasUsuario=[];
+let sesionId=null;
+let tipoActual="";
+
+/* GENERAR EJERCICIOS */
+async function generar(tipo){
+  tipoActual=tipo;
+
+  const tema=document.getElementById("tema").value||"daily life";
+  const nivel=document.getElementById("nivel").value||"A1";
+  const usuarioId=parseInt(localStorage.getItem("usuario_id"),10);
+
+  try{
+    const sesionRes=await fetch("http://localhost:3000/api/sesiones",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({usuario_id:usuarioId,tema,nivel})
+    });
+    const sesionData=await sesionRes.json();
+    sesionId=sesionData.id;
+  }catch(error){
+    console.error("Error en sesión:",error);
+  }
+
+  document.getElementById("resultado").innerHTML="Generando...";
+  respuestasUsuario=[];
+
+  const res=await fetch(`http://localhost:3000/api/${tipo}`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({tema,nivel})
+  });
+
+  const data=await res.json();
+  ejercicioActual=data;
+  let contenido="";
+
+  if(tipo==="reading"){
+    contenido=`
+      <div class="pregunta">${data.texto}</div>
+      ${(data.preguntas||[]).map((p,i)=>`
+        <div class="pregunta">
+          <p><strong>${i+1}. ${p.pregunta}</strong></p>
+          ${p.opciones.map(op=>`
+            <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">
+              ${op}
+            </button>
+          `).join("")}
+        </div>
+      `).join("")}
+    `;
+    btnEnviar.style.display="block";
+    btnEnviar.onclick=enviarReading;
+  }
+
+  if(tipo==="listening"){
+    contenido=`
+      <div class="pregunta">
+        <audio controls src="${data.audio_url}"></audio>
+      </div>
+      ${(data.preguntas||[]).map((p,i)=>`
+        <div class="pregunta">
+          <p><strong>${i+1}. ${p.pregunta}</strong></p>
+          ${p.opciones.map(op=>`
+            <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">
+              ${op}
+            </button>
+          `).join("")}
+        </div>
+      `).join("")}
+    `;
+    btnEnviar.style.display="block";
+    btnEnviar.onclick=enviarListening;
+  }
+
+  if(tipo==="speaking"){
+    contenido=`
+      <div class="pregunta">
+        <h3>${data.titulo||"Speaking Challenge"}</h3>
+        <p>${data.instruccion||""}</p>
+      </div>
+      <div class="pregunta">
+        <strong>Key Words:</strong><br>
+        ${(data.palabras||[]).map(p=>`<span class="palabra">${p}</span>`).join("")}
+      </div>
+      <div class="pregunta" style="text-align:center;">
+        <button onclick="iniciarGrabacion()">🎤 Grabar</button>
+        <button onclick="detenerGrabacion()">⏹ Detener</button>
+        <button onclick="enviarSpeaking()">📤 Enviar</button>
+      </div>
+      <div id="audioPreview"></div>
+    `;
+    btnEnviar.style.display="none";
+  }
+
+  if(tipo==="writing"){
+    let texto=data.texto||"";
+    const palabras=data.palabras||[];
+    let index=0;
+
+    texto=texto.replace(/____/g,()=>{
+      const i=index++;
+      return `<input class="input-blank" oninput="guardarWriting(${i},this.value)">`;
+    });
+
+    contenido=`
+      <div class="pregunta texto-writing">${texto}</div>
+      <div class="banco-palabras">
+        ${palabras.map(p=>`<span class="palabra">${p}</span>`).join("")}
+      </div>
+    `;
+    btnEnviar.style.display="block";
+    btnEnviar.onclick=enviarWriting;
+  }
+
+  document.getElementById("resultado").innerHTML=contenido;
+}
+
+function seleccionarRespuesta(i,op,btn){
+  respuestasUsuario[i]=op;
+  btn.parentElement.querySelectorAll("button")
+    .forEach(b=>b.classList.remove("seleccionado"));
   btn.classList.add("seleccionado");
 }
 
-function guardarWriting(i, val) {
-  respuestasUsuario[i] = val;
+function guardarWriting(i,val){
+  respuestasUsuario[i]=val;
 }
 
-async function enviarReading() {
-  const res = await fetch("http://localhost:3000/api/reading/calificar", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ejercicio: ejercicioActual, respuestaUsuario: respuestasUsuario })
+async function enviarReading(){
+  const res=await fetch("http://localhost:3000/api/reading/calificar",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ejercicio:ejercicioActual,respuestaUsuario:respuestasUsuario})
   });
   mostrarResultado(await res.json());
 }
 
-async function enviarListening() {
-  const res = await fetch("http://localhost:3000/api/listening/calificar", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ejercicio: ejercicioActual, respuestaUsuario: respuestasUsuario })
+async function enviarListening(){
+  const res=await fetch("http://localhost:3000/api/listening/calificar",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ejercicio:ejercicioActual,respuestaUsuario:respuestasUsuario})
   });
   mostrarResultado(await res.json());
 }
 
-async function enviarWriting() {
-  const res = await fetch("http://localhost:3000/api/writing/calificar", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ejercicio: ejercicioActual, respuestaUsuario: respuestasUsuario })
+async function enviarWriting(){
+  const res=await fetch("http://localhost:3000/api/writing/calificar",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ejercicio:ejercicioActual,respuestaUsuario:respuestasUsuario})
   });
   mostrarResultado(await res.json());
 }
 
-function mostrarResultado(data) {
-  document.getElementById("resultado").innerHTML += `
+function mostrarResultado(data){
+  document.getElementById("resultado").innerHTML+=`
     <div class="resultado-box">
       <strong>Score: ${data.score}</strong>
       <p>${data.feedback}</p>
     </div>
   `;
-  btnEnviar.style.display = "none";
+  btnEnviar.style.display="none";
 
-  // 🔥 GUARDAR RESULTADO EN BD
-  fetch("http://localhost:3000/api/resultados", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      sesion_id: sesionId,
-      habilidad: tipoActual,
-      puntaje: data.score,
-      respuestas: respuestasUsuario,
-      feedback: data.feedback
+  fetch("http://localhost:3000/api/resultados",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      sesion_id:sesionId,
+      habilidad:tipoActual,
+      puntaje:data.score,
+      respuestas:respuestasUsuario,
+      feedback:data.feedback
     })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(!data.success){
-      console.error("Error guardando resultado:", data.error);
-    }
-  })
-  .catch(err => {
-    console.error("Error en fetch resultados:", err);
   });
 }
 
+/* DASHBOARD */
+async function verDashboard(){
+  const usuarioId=localStorage.getItem("usuario_id");
+  const res=await fetch(`http://localhost:3000/api/dashboard/${usuarioId}`);
+  const data=await res.json();
+
+  const labels=data.data.map(d=>d.habilidad);
+  const valores=data.data.map(d=>d.promedio);
+
+  const promedio=Math.round(valores.reduce((a,b)=>a+b,0)/valores.length);
+  document.getElementById("cardPromedio").innerText=promedio;
+
+  const maxIndex=valores.indexOf(Math.max(...valores));
+  const minIndex=valores.indexOf(Math.min(...valores));
+
+  document.getElementById("cardMejor").innerText=labels[maxIndex];
+  document.getElementById("cardPeor").innerText=labels[minIndex];
+
+  const ctx=document.getElementById("grafica").getContext("2d");
+
+  if(window.miGrafica) window.miGrafica.destroy();
+
+  window.miGrafica=new Chart(ctx,{
+    type:"doughnut",
+    data:{
+      labels:labels,
+      datasets:[{
+        data:valores,
+        backgroundColor:["#029e99","#f4a261","#e76f51","#264653"]
+      }]
+    }
+  });
+
+  const tbody=document.querySelector("#tablaSesiones tbody");
+  tbody.innerHTML="";
+
+  if(data.historial){
+    data.historial.forEach(s=>{
+      tbody.innerHTML+=`
+        <tr>
+          <td>${new Date(s.fecha).toLocaleDateString()}</td>
+          <td>${s.tema}</td>
+          <td>${s.nivel}</td>
+          <td>${s.habilidad}</td>
+          <td>${s.puntaje}</td>
+        </tr>
+      `;
+    });
+  }
+}
+
+/* SPEAKING */
+let mediaRecorder;
+let audioChunks=[];
+let audioBlob=null;
+
+async function iniciarGrabacion(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);
+    audioChunks=[];
+
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRecorder.onstop=()=>{
+      audioBlob=new Blob(audioChunks,{type:"audio/webm"});
+      const audioURL=URL.createObjectURL(audioBlob);
+      document.getElementById("audioPreview").innerHTML=
+        `<audio controls src="${audioURL}"></audio>`;
+    };
+    mediaRecorder.start();
+  }catch(error){
+    alert("Error al usar el micrófono");
+  }
+}
+
+function detenerGrabacion(){
+  if(mediaRecorder) mediaRecorder.stop();
+}
+
+async function enviarSpeaking(){
+  if(!audioBlob){
+    alert("Graba primero un audio");
+    return;
+  }
+
+  const formData=new FormData();
+  formData.append("audio",audioBlob,"audio.webm");
+  formData.append("ejercicio",JSON.stringify(ejercicioActual));
+
+  const res=await fetch("http://localhost:3000/api/speaking/calificar",{
+    method:"POST",
+    body:formData
+  });
+
+  const data=await res.json();
+  mostrarResultado(data);
+}
 </script>
 
 </body>

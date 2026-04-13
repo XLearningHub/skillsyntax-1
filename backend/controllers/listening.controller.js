@@ -127,7 +127,7 @@ try {
 
     fs.writeFileSync(filePath, buffer);
 
-    ejercicio.audio_url = `/audio/${fileName}`;
+    ejercicio.audio_url = `http://localhost:3000/audio/${fileName}`;
 
     res.json(ejercicio);
 

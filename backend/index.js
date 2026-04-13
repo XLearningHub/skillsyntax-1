@@ -31,6 +31,7 @@ const sesionesRoutes = require("./routes/sesiones.routes");
 const usuariosRoutes = require("./routes/usuarios.routes");
 const loginRoutes = require("./routes/login.routes");
 const resultadosRoutes = require("./routes/resultados.routes");
+const dashboardRoutes = require("./routes/dashboard.routes");
 
 
 app.use("/api/niveles", nivelesRoutes);
@@ -41,7 +42,9 @@ app.use("/api/writing", writingRoutes);
 app.use("/api/sesiones", sesionesRoutes);
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/login", loginRoutes);
-app.use("/api/resultados", resultadosRoutes);
+//app.use("/api/resultados", resultadosRoutes);
+app.use("/api", resultadosRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // ===============================
 // 👤 REGISTRO DE USUARIO

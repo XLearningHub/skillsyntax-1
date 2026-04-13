@@ -23,8 +23,9 @@ body{
 .container{
   width:90%;
   max-width:520px;
-  background:#f4f4f4;
-  padding:50px 40px;
+  background:rgba(244,244,244,0.95);
+  backdrop-filter:blur(6px);
+  padding:35px 30px;
   border-radius:25px;
   box-shadow:0 20px 50px rgba(0,0,0,0.35);
   text-align:center;
@@ -32,54 +33,58 @@ body{
 
 /* LOGO */
 .logo{
-  width:100px;
-  margin:0 auto 25px auto;
+  width:90px;
+  margin:0 auto 20px auto;
   display:block;
 }
 
 /* TITULO */
 h2{
   margin:0;
-  font-size:28px;
+  font-size:26px;
   color:#0a1f3b;
 }
 
 .subtitle{
-  margin:10px 0 35px 0;
+  margin:8px 0 25px 0;
   color:#666;
-  font-size:16px;
+  font-size:14px;
+}
+
+/* GRID (CLAVE PARA QUE NO SE VEA LARGO) */
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:15px;
 }
 
 /* INPUTS */
-.input-group{
-  margin-bottom:18px;
-}
-
 .input-group input{
   width:100%;
-  padding:15px;
-  border-radius:14px;
+  padding:12px;
+  border-radius:12px;
   border:1px solid #ddd;
-  font-size:15px;
+  font-size:14px;
   background:#fff;
-  transition:0.2s;
+  transition:0.25s;
 }
 
 .input-group input:focus{
   outline:none;
   border-color:#029e99;
-  box-shadow:0 0 0 4px rgba(2,158,153,0.15);
+  box-shadow:0 0 0 3px rgba(2,158,153,0.15);
 }
 
 /* BOTON */
 button{
   width:100%;
-  padding:15px;
+  padding:13px;
   border:none;
-  border-radius:14px;
+  border-radius:12px;
   background:#029e99;
   color:white;
-  font-size:16px;
+  font-size:15px;
   cursor:pointer;
   transition:0.25s;
   margin-top:10px;
@@ -88,6 +93,7 @@ button{
 button:hover{
   background:#027d79;
   transform:translateY(-2px);
+  box-shadow:0 10px 20px rgba(0,0,0,0.2);
 }
 
 button:disabled{
@@ -97,8 +103,8 @@ button:disabled{
 
 /* LINK */
 .login{
-  margin-top:20px;
-  font-size:15px;
+  margin-top:18px;
+  font-size:14px;
 }
 
 .login a{
@@ -112,9 +118,16 @@ button:disabled{
 }
 
 #msg{
-  margin-top:15px;
+  margin-top:12px;
   font-size:14px;
   min-height:20px;
+}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .form-grid{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
@@ -128,20 +141,25 @@ button:disabled{
   <h2>Crear cuenta</h2>
   <div class="subtitle">Comienza tu aprendizaje</div>
 
-  <div class="input-group">
-    <input id="nombre" placeholder="Nombre de usuario">
-  </div>
+  <!-- GRID NUEVO -->
+  <div class="form-grid">
 
-  <div class="input-group">
-    <input id="email" type="email" placeholder="Correo">
-  </div>
+    <div class="input-group">
+      <input id="nombre" placeholder="Usuario">
+    </div>
 
-  <div class="input-group">
-    <input id="password" type="password" placeholder="Contraseña">
-  </div>
+    <div class="input-group">
+      <input id="email" type="email" placeholder="Correo">
+    </div>
 
-  <div class="input-group">
-    <input id="confirmPassword" type="password" placeholder="Confirmar contraseña">
+    <div class="input-group">
+      <input id="password" type="password" placeholder="Contraseña">
+    </div>
+
+    <div class="input-group">
+      <input id="confirmPassword" type="password" placeholder="Confirmar">
+    </div>
+
   </div>
 
   <button id="btnRegistro" onclick="registrar()">Crear cuenta</button>
