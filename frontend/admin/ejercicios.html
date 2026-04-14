@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ejercicios | SkillSyntax</title>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:#0a1f3b;
+  color:white;
+}
+
+.sidebar{
+  width:220px;
+  height:100vh;
+  position:fixed;
+  background:#081427;
+  padding:20px;
+}
+
+.sidebar h2{
+  color:#029e99;
+}
+
+.sidebar a{
+  display:block;
+  color:white;
+  padding:10px;
+  text-decoration:none;
+  margin:5px 0;
+}
+
+.sidebar a:hover{
+  background:#029e99;
+}
+
+.content{
+  margin-left:240px;
+  padding:20px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  color:black;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+th{
+  background:#029e99;
+  color:white;
+  padding:10px;
+}
+
+td{
+  padding:10px;
+  text-align:center;
+  border-bottom:1px solid #ddd;
+}
+
+button{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  background:red;
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{
+  background:darkred;
+}
+
+audio{
+  width:150px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>SkillSyntax Admin</h2>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="usuarios.html">👥 Usuarios</a>
+  <a href="#">📚 Ejercicios</a>
+  <a href="reportes.html">📈 Reportes</a>
+  <a href="audios.html">🔊 Audios</a>
+</div>
+
+<div class="content">
+  <h1>Ejercicios Generados</h1>
+  <p>Aquí puedes ver y eliminar ejercicios creados por la IA</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Usuario</th>
+        <th>Habilidad</th>
+        <th>Puntaje</th>
+        <th>Audio</th> <!-- 🔥 NUEVO -->
+        <th>Feedback</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="tablaEjercicios"></tbody>
+  </table>
+</div>
+
+<script>
+// 🔐 PROTECCIÓN
+document.addEventListener("DOMContentLoaded", () => {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  if (!usuario || usuario.rol !== "admin") {
+    alert("Acceso denegado");
+    window.location.href = "../login.html";
+    return;
+  }
+
+  cargarEjercicios();
+});
+
+// 📚 CARGAR EJERCICIOS
+async function cargarEjercicios() {
+  try {
+    const res = await fetch("http://localhost:3000/api/resultados");
+    const data = await res.json();
+
+    const tabla = document.getElementById("tablaEjercicios");
+    tabla.innerHTML = "";
+
+    data.forEach(e => {
+      tabla.innerHTML += `
+        <tr>
+          <td>${e.id}</td>
+          <td>${e.usuario || "N/A"}</td>
+          <td>${e.habilidad}</td>
+          <td>${e.puntaje}</td>
+
+          <!-- 🔊 AUDIO -->
+          <td>
+            ${e.audio_url 
+              ? `<audio controls src="${e.audio_url}"></audio>` 
+              : " "}
+          </td>
+
+          <td>${e.feedback}</td>
+          <td>
+            <button onclick="eliminar(${e.id})">Eliminar</button>
+          </td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    console.error("Error cargando ejercicios:", error);
+  }
+}
+
+// ❌ ELIMINAR
+async function eliminar(id) {
+  if (!confirm("¿Eliminar ejercicio?")) return;
+
+  await fetch(`http://localhost:3000/api/resultados/${id}`, {
+    method: "DELETE"
+  });
+
+  cargarEjercicios();
+}
+</script>
+
+</body>
+</html>

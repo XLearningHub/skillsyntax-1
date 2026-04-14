@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reportes | SkillSyntax</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:#0a1f3b;
+  color:white;
+}
+
+.sidebar{
+  width:220px;
+  height:100vh;
+  position:fixed;
+  background:#081427;
+  padding:20px;
+}
+
+.sidebar h2{
+  color:#029e99;
+}
+
+.sidebar a{
+  display:block;
+  color:white;
+  padding:10px;
+  text-decoration:none;
+  margin:5px 0;
+}
+
+.sidebar a:hover{
+  background:#029e99;
+}
+
+.content{
+  margin-left:240px;
+  padding:20px;
+}
+
+/* CONTENEDOR VERTICAL */
+.graficas{
+  display:flex;
+  flex-direction:column;
+  gap:30px;
+  margin-top:20px;
+}
+
+.grafica-box{
+  background:#12243d;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.4);
+}
+
+.grafica-box h3{
+  margin-bottom:10px;
+  color:#00c6ff;
+}
+
+canvas{
+  width:100% !important;
+  height:300px !important;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>SkillSyntax Admin</h2>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="usuarios.html">👥 Usuarios</a>
+  <a href="ejercicios.html">📚 Ejercicios</a>
+  <a href="#">📈 Reportes</a>
+</div>
+
+<div class="content">
+  <h1>Reportes</h1>
+  <p>Visualización de datos del sistema</p>
+
+  <div class="graficas">
+
+    <!-- GRÁFICA 1 -->
+    <div class="grafica-box">
+      <h3>Ejercicios por Usuario</h3>
+      <canvas id="graficaUsuarios"></canvas>
+    </div>
+
+    <!-- GRÁFICA 2 -->
+    <div class="grafica-box">
+      <h3>Habilidades</h3>
+      <canvas id="graficaHabilidades"></canvas>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// 🔐 PROTECCIÓN
+document.addEventListener("DOMContentLoaded", () => {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  if (!usuario || usuario.rol !== "admin") {
+    alert("Acceso denegado");
+    window.location.href = "../login.html";
+    return;
+  }
+
+  cargarGraficaUsuarios();
+  cargarGraficaHabilidades();
+});
+
+
+// 📊 GRÁFICA USUARIOS
+async function cargarGraficaUsuarios() {
+  try {
+    const res = await fetch("http://localhost:3000/api/resultados/reporte-usuarios");
+    const data = await res.json();
+
+    const nombres = data.map(d => d.usuario);
+    const totales = data.map(d => d.total);
+
+    new Chart(document.getElementById("graficaUsuarios"), {
+      type: "bar",
+      data: {
+        labels: nombres,
+        datasets: [{
+          label: "Ejercicios por usuario",
+          data: totales,
+          backgroundColor: [
+            "#00c6ff",
+            "#0072ff",
+            "#00e6a8",
+            "#ff7eb3",
+            "#ffd166",
+            "#9b5de5"
+          ],
+          borderRadius: 10
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: "white" }
+          }
+        },
+        scales: {
+          x: { ticks: { color: "white" }, grid: { display:false }},
+          y: { ticks: { color: "white" }, grid: { color:"rgba(255,255,255,0.1)" }}
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error gráfica usuarios:", error);
+  }
+}
+
+
+// 📊 GRÁFICA HABILIDADES
+async function cargarGraficaHabilidades() {
+  try {
+    const res = await fetch("http://localhost:3000/api/resultados/reporte-habilidades");
+    const data = await res.json();
+
+    const habilidades = data.map(d => d.habilidad);
+    const totales = data.map(d => d.total);
+
+    new Chart(document.getElementById("graficaHabilidades"), {
+      type: "doughnut",
+      data: {
+        labels: habilidades,
+        datasets: [{
+          data: totales,
+          backgroundColor: [
+            "#00c6ff",
+            "#00e6a8",
+            "#ffd166",
+            "#ff7eb3",
+            "#9b5de5"
+          ]
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: "white" }
+          }
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error gráfica habilidades:", error);
+  }
+}
+</script>
+
+</body>
+</html>

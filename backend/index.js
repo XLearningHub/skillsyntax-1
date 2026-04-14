@@ -32,6 +32,7 @@ const usuariosRoutes = require("./routes/usuarios.routes");
 const loginRoutes = require("./routes/login.routes");
 const resultadosRoutes = require("./routes/resultados.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
+const adminRoutes = require("./routes/admin.routes");
 
 
 app.use("/api/niveles", nivelesRoutes);
@@ -45,6 +46,7 @@ app.use("/api/login", loginRoutes);
 //app.use("/api/resultados", resultadosRoutes);
 app.use("/api/resultados", resultadosRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/admin", adminRoutes);
 
 // ===============================
 // 👤 REGISTRO DE USUARIO

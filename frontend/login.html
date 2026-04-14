@@ -217,54 +217,55 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 
-window.login=async()=>{
+window.login = async () => {
 
-  const email=document.getElementById("email").value.trim();
-  const password=document.getElementById("password").value.trim();
-  const msg=document.getElementById("msg");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const msg = document.getElementById("msg");
 
-  if(!email||!password){
-    msg.innerText="Ingresa correo y contraseña";
-    msg.style.color="red";
+  if (!email || !password) {
+    msg.innerText = "Ingresa correo y contraseña";
+    msg.style.color = "red";
     return;
   }
 
-  try{
+  try {
 
-    const userCredential = await signInWithEmailAndPassword(auth,email,password);
+    const res = await fetch("http://localhost:3000/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
 
-    msg.innerText="Bienvenido";
-    msg.style.color="green";
+    const data = await res.json();
+    console.log("RESPUESTA BACKEND:", data);
 
-const res = await fetch("http://localhost:3000/api/usuarios/email", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email })
-});
+    if (!res.ok) {
+      msg.innerText = data.error || "Error al iniciar sesión";
+      msg.style.color = "red";
+      return;
+    }
 
-const data = await res.json();
+    // 🔥 GUARDAR TODO EL USUARIO (IMPORTANTE)
+    localStorage.setItem("usuario", JSON.stringify(data));
+    localStorage.setItem("usuario_id", data.id);
 
-localStorage.setItem("usuario_id", data.id);
+    msg.innerText = "Bienvenido";
+    msg.style.color = "green";
 
-    setTimeout(()=>{
-      window.location.href="test.html";
-    },800);
+    setTimeout(() => {
+      if (data.rol === "admin") {
+        window.location.href = "admin/dashboard.html";
+      } else {
+        window.location.href = "test.html";
+      }
+    }, 800);
 
-  }catch(error){
-
-    msg.style.color="red";
-
-    if(error.code==="auth/user-not-found")
-      msg.innerText="Usuario no existe";
-
-    else if(error.code==="auth/wrong-password")
-      msg.innerText="Contraseña incorrecta";
-
-    else
-      msg.innerText="Error al iniciar sesión";
-
+  } catch (error) {
+    console.error(error);
+    msg.innerText = "Error de conexión con servidor";
+    msg.style.color = "red";
   }
-
 };
 
 </script>
