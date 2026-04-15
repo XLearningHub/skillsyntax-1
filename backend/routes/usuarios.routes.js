@@ -24,6 +24,19 @@ router.post("/email", async (req, res) => {
   }
 });
 
+/* 🔹 OBTENER TODOS LOS USUARIOS (ADMIN) */
+router.get("/", async (req, res) => {
+  try {
+    const [result] = await db.query(
+      "SELECT id, nombre, email, nivel_general, rol, fecha FROM users ORDER BY id ASC"
+    );
+    res.json(result);
+  } catch (err) {
+    console.error("Error al obtener usuarios:", err);
+    res.status(500).json({ error: "Error servidor" });
+  }
+});
+
 /* 🔹 OBTENER USUARIO POR ID (PARA DASHBOARD) */
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
@@ -42,6 +55,41 @@ router.get("/:id", async (req, res) => {
 
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: "Error servidor" });
+  }
+});
+
+/* 🔹 ACTUALIZAR ROL DE USUARIO (ADMIN) */
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { rol } = req.body;
+
+  try {
+    await db.query(
+      "UPDATE users SET rol = ? WHERE id = ?",
+      [rol, id]
+    );
+
+    res.json({ mensaje: "Rol actualizado correctamente" });
+  } catch (err) {
+    console.error("Error al actualizar usuario:", err);
+    res.status(500).json({ error: "Error servidor" });
+  }
+});
+
+/* 🔹 ELIMINAR USUARIO (ADMIN) */
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await db.query(
+      "DELETE FROM users WHERE id = ?",
+      [id]
+    );
+
+    res.json({ mensaje: "Usuario eliminado correctamente" });
+  } catch (err) {
+    console.error("Error al eliminar usuario:", err);
     res.status(500).json({ error: "Error servidor" });
   }
 });

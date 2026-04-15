@@ -8,26 +8,28 @@ router.post("/", async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
+  "SELECT * FROM users WHERE email = ?",
+  [email]
+);
 
-    if (rows.length === 0) {
-      return res.status(400).json({ error: "Usuario no existe" });
-    }
+if (rows.length === 0) {
+  return res.status(400).json({ error: "Usuario no existe" });
+}
 
-    const user = rows[0];
+const user = rows[0];
 
-    const validPassword = await bcrypt.compare(password, user.password);
+const validPassword = await bcrypt.compare(password, user.password);
 
-    if (!validPassword) {
-      return res.status(400).json({ error: "Contraseña incorrecta" });
-    }
+if (!validPassword) {
+  return res.status(400).json({ error: "Contraseña incorrecta" });
+}
 
-    res.json({
-      id: user.id,
-      nombre: user.nombre
-    });
+res.json({
+  id: user.id,
+  nombre: user.nombre,
+  email: user.email,
+  rol: user.rol
+});
 
   } catch (error) {
     console.error("❌ Error login:", error);

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin | Usuarios - SkillSyntax</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0a1f3b;
+  color: white;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  position: fixed;
+  background: #081427;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  color: #029e99;
+  margin-bottom: 30px;
+}
+
+.sidebar a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 8px;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background: #029e99;
+}
+
+/* CONTENIDO */
+.content {
+  margin-left: 240px;
+  padding: 20px;
+}
+
+/* TARJETAS */
+.card {
+  background: #12243d;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+/* TABLA */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  color: black;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th {
+  background: #029e99;
+  color: white;
+  padding: 12px;
+}
+
+td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+/* BOTONES */
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-delete {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #c0392b;
+}
+
+.btn-refresh {
+  background: #029e99;
+  color: white;
+  margin-bottom: 15px;
+}
+
+.btn-refresh:hover {
+  background: #027d79;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>SkillSyntax Admin</h2>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="usuarios.html" class="active">👥 Usuarios</a>
+  <a href="ejercicios.html">📚 Ejercicios</a>
+  <a href="reportes.html">📈 Reportes</a>
+  <a href="audios.html">🔊 Audios</a>
+</div>
+
+<!-- CONTENIDO -->
+<div class="content">
+  <h1>Gestión de Usuarios</h1>
+
+  <div class="card">
+    <button class="btn btn-refresh" onclick="cargarUsuarios()">
+      🔄 Actualizar
+    </button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Nivel</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaUsuarios">
+        <tr>
+          <td colspan="6">Cargando usuarios...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// 🔐 PROTECCIÓN DE ACCESO
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (!usuario || usuario.rol !== "admin") {
+  alert("Acceso denegado");
+  window.location.href = "../login.html";
+}
+
+// 📥 CARGAR USUARIOS
+async function cargarUsuarios() {
+  try {
+    const res = await fetch("http://localhost:3000/api/usuarios");
+    const usuarios = await res.json();
+
+    const tabla = document.getElementById("tablaUsuarios");
+    tabla.innerHTML = "";
+
+    if (!usuarios || usuarios.length === 0) {
+      tabla.innerHTML = `
+        <tr>
+          <td colspan="6">No hay usuarios registrados</td>
+        </tr>`;
+      return;
+    }
+
+    usuarios.forEach(user => {
+      tabla.innerHTML += `
+        <tr>
+          <td>${user.id}</td>
+          <td>${user.nombre}</td>
+          <td>${user.email}</td>
+          <td>${user.nivel_general || "-"}</td>
+          <td>${user.rol}</td>
+          <td>
+            <button class="btn btn-delete"
+              onclick="eliminarUsuario(${user.id})">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    console.error("Error al cargar usuarios:", error);
+    document.getElementById("tablaUsuarios").innerHTML = `
+      <tr>
+        <td colspan="6">Error al cargar usuarios</td>
+      </tr>`;
+  }
+}
+
+// 🗑️ ELIMINAR USUARIO
+async function eliminarUsuario(id) {
+  if (!confirm("¿Deseas eliminar este usuario?")) return;
+
+  try {
+    const res = await fetch(
+      `http://localhost:3000/api/usuarios/${id}`,
+      { method: "DELETE" }
+    );
+
+    const data = await res.json();
+    alert(data.mensaje || "Usuario eliminado correctamente");
+
+    cargarUsuarios();
+  } catch (error) {
+    console.error("Error al eliminar usuario:", error);
+    alert("Error al eliminar usuario");
+  }
+}
+
+// 🚀 INICIALIZAR
+document.addEventListener("DOMContentLoaded", cargarUsuarios);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin | SkillSyntax</title>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:#0a1f3b;
+  color:white;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  height:100vh;
+  position:fixed;
+  background:#081427;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+
+.sidebar h2{
+  color:#029e99;
+  margin-bottom:30px;
+}
+
+.sidebar a{
+  display:block;
+  color:white;
+  text-decoration:none;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+}
+
+.sidebar a:hover{
+  background:#029e99;
+}
+
+/* 🔥 BOTÓN LOGOUT */
+.logout{
+  margin-top:auto;
+  background:#e74c3c;
+  text-align:center;
+}
+
+/* CONTENIDO */
+.content{
+  margin-left:240px;
+  padding:20px;
+}
+
+/* CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+
+.card{
+  background:#12243d;
+  padding:20px;
+  border-radius:15px;
+  text-align:center;
+  box-shadow:0 10px 20px rgba(0,0,0,0.3);
+}
+
+.card h3{
+  color:#029e99;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>SkillSyntax Admin</h2>
+
+  <a href="#">📊 Dashboard</a>
+  <a href="usuarios.html">👥 Usuarios</a>
+  <a href="ejercicios.html">📚 Ejercicios</a>
+  <a href="reportes.html">📈 Reportes</a>
+  <a href="audios.html">🔊 Audios</a>
+
+  <!-- 🔥 NUEVO BOTÓN -->
+  <a href="#" class="logout" onclick="logout()">🚪 Cerrar sesión</a>
+</div>
+
+<!-- CONTENIDO -->
+<div class="content">
+
+  <h1>Dashboard</h1>
+  <p>Bienvenido al panel de administración</p>
+
+  <div class="cards">
+
+    <div class="card">
+      <h3>Usuarios</h3>
+      <p id="totalUsuarios">0</p>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicios</h3>
+      <p id="totalEjercicios">0</p>
+    </div>
+
+    <div class="card">
+      <h3>Sesiones</h3>
+      <p id="totalSesiones">0</p>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// 🔐 PROTECCIÓN ADMIN
+document.addEventListener("DOMContentLoaded", () => {
+
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  if (!usuario) {
+    alert("Debes iniciar sesión");
+    window.location.href = "../login.html";
+    return;
+  }
+
+  if (usuario.rol !== "admin") {
+    alert("Acceso denegado");
+    window.location.href = "../test.html";
+    return;
+  }
+
+  console.log("Bienvenido admin:", usuario.nombre);
+
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  if (!usuario) {
+    alert("Debes iniciar sesión");
+    window.location.href = "../login.html";
+    return;
+  }
+
+  if (usuario.rol !== "admin") {
+    alert("Acceso denegado");
+    window.location.href = "../test.html";
+    return;
+  }
+
+  console.log("Bienvenido admin:", usuario.nombre);
+
+  cargarEstadisticas();
+});
+
+// 📊 CARGAR ESTADÍSTICAS
+async function cargarEstadisticas() {
+  try {
+
+    const [usuarios, ejercicios, sesiones] = await Promise.all([
+      fetch("http://localhost:3000/api/admin/total-usuarios").then(res => res.json()),
+      fetch("http://localhost:3000/api/admin/total-ejercicios").then(res => res.json()),
+      fetch("http://localhost:3000/api/admin/total-sesiones").then(res => res.json())
+    ]);
+
+    document.getElementById("totalUsuarios").innerText = usuarios.total || 0;
+    document.getElementById("totalEjercicios").innerText = ejercicios.total || 0;
+    document.getElementById("totalSesiones").innerText = sesiones.total || 0;
+
+  } catch (error) {
+    console.error("Error al cargar estadísticas:", error);
+
+    document.getElementById("totalUsuarios").innerText = "0";
+    document.getElementById("totalEjercicios").innerText = "0";
+    document.getElementById("totalSesiones").innerText = "0";
+  }
+}
+
+// 🔥 LOGOUT
+function logout() {
+  localStorage.clear();
+  window.location.href = "../login.html";
+}
+</script>
+
+</body>
+</html>

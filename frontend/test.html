@@ -533,18 +533,21 @@ function logout(){
 
 /* Cargar usuario */
 async function cargarUsuario(){
-  const usuarioId = localStorage.getItem("usuario_id");
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-  if (!usuarioId) return;
+  if (!usuario) {
+    window.location.href = "login.html";
+    return;
+  }
 
   try{
-    const res = await fetch(`http://localhost:3000/api/usuarios/${usuarioId}`);
-    const usuario = await res.json();
+    const res = await fetch(`http://localhost:3000/api/usuarios/${usuario.id}`);
+    const data = await res.json();
 
-    document.getElementById("nombreUsuario").innerText = usuario.nombre;
+    document.getElementById("nombreUsuario").innerText = data.nombre;
 
     document.getElementById("avatarUsuario").src =
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(usuario.nombre)}&background=0a1f3b&color=fff`;
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=0a1f3b&color=fff`;
 
   } catch(error){
     console.error("Error al cargar usuario:", error);
@@ -552,7 +555,8 @@ async function cargarUsuario(){
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const usuarioId = localStorage.getItem("usuario_id");
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+const usuarioId = usuario?.id;
 
   if (!usuarioId) {
     // 🚨 Si no hay sesión → regresar a login
@@ -761,7 +765,8 @@ async function mostrarResultado(data){
         habilidad: tipoActual,
         puntaje: data.score,
         respuestas: respuestasUsuario,
-        feedback: data.feedback
+        feedback: data.feedback,
+        audio_url: ejercicioActual?.audio_url || null 
       })
     });
 
@@ -777,7 +782,9 @@ async function mostrarResultado(data){
 
 /* DASHBOARD */
 async function verDashboard(){
-  const usuarioId = localStorage.getItem("usuario_id");
+  //const usuarioId = localStorage.getItem("usuario_id");
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  const usuarioId = usuario.id;
 
   const res = await fetch(`http://localhost:3000/api/dashboard/${usuarioId}`);
   const data = await res.json();
