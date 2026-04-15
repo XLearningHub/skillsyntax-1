@@ -11,49 +11,61 @@ const openai = new OpenAI({
 // =======================
 exports.generarReading = async (req, res) => {
   try {
-    const tema = req.body.tema || "daily life";
+    let tema = req.body.tema || "daily life";
     const nivel = req.body.nivel || "A1";
 
+    // 🔥 LIMPIEZA DEL TEMA (CLAVE)
+    tema = tema.toLowerCase()
+      .replace(/generame una leccion de/gi, "")
+      .replace(/genera una leccion de/gi, "")
+      .replace(/quiero aprender/gi, "")
+      .replace(/hazme una leccion de/gi, "")
+      .trim();
+
+    // 🔥 PROMPT CORREGIDO (ESTA ES LA MAGIA)
     const prompt = `
-Genera un ejercicio de READING en inglés
-nivel ${nivel} sobre el tema "${tema}".
+Create a natural English reading paragraph.
 
-Responde SOLO con JSON válido.
-NO uses \`\`\`json ni \`\`\`
-NO agregues texto extra.
+Level: ${nivel}
+Topic: ${tema}
 
-Formato EXACTO:
+STRICT RULES:
+- Do NOT start with "${tema} is an important topic"
+- Do NOT repeat the topic word many times
+- Do NOT sound like a definition
+- Write like a real situation (person, job, daily life, story)
+- Use simple English based on level ${nivel}
+- 4 to 6 sentences ONLY
+
+Then create 2 comprehension questions.
+
+Return ONLY valid JSON:
 
 {
   "tipo": "reading",
-  "texto": "Texto completo con espacios normales y puntuación correcta",
+  "texto": "Natural paragraph with a real-life situation",
   "preguntas": [
     {
-      "pregunta": "Pregunta 1",
-      "opciones": ["Opción correcta", "Opción incorrecta", "Opción incorrecta"],
-      "correcta": "Opción correcta"
+      "pregunta": "Question 1",
+      "opciones": ["Correct answer", "Wrong answer", "Wrong answer"],
+      "correcta": "Correct answer"
     },
     {
-      "pregunta": "Pregunta 2",
-      "opciones": ["Opción correcta", "Opción incorrecta", "Opción incorrecta"],
-      "correcta": "Opción correcta"
+      "pregunta": "Question 2",
+      "opciones": ["Correct answer", "Wrong answer", "Wrong answer"],
+      "correcta": "Correct answer"
     }
   ]
 }
-
-Reglas:
-- Usa espacios normales entre palabras
-- Usa puntuación correcta (puntos, comas)
-- Texto claro según nivel ${nivel}
-- Mínimo 2 preguntas
-- Preguntas basadas en el texto
-- El texto debe ser natural y legible
 `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
-        { role: "system", content: "Eres un generador de ejercicios de inglés. Respondes SOLO JSON válido." },
+        {
+          role: "system",
+          content: "You generate English reading exercises. NEVER explain topics. ALWAYS create real-life paragraphs. Return ONLY JSON."
+        },
         { role: "user", content: prompt }
       ],
       temperature: 0.7
@@ -70,13 +82,13 @@ Reglas:
     let ejercicio;
     try {
       ejercicio = JSON.parse(contenido);
-    } catch (parseError) {
-      console.error("❌ Error parseando JSON:", parseError);
-      console.log("Contenido recibido:", contenido);
-      return res.status(500).json({ error: "La IA no devolvió JSON válido" });
+    } catch (err) {
+      console.log("❌ ERROR JSON:", contenido);
+      return res.status(500).json({ error: "JSON inválido de la IA" });
     }
 
     ejercicio.nivel = nivel;
+
     res.json(ejercicio);
 
   } catch (error) {

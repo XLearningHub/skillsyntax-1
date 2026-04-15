@@ -25,14 +25,13 @@ body {
 }
 
 .nav-logo {
-  background: #0a1f3b;
-  color: white;
-  width: 40px;
-  height: 40px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
+}
+
+.nav-logo img {
+  height: 50px; 
+  width: auto;
 }
 
 .nav-center {
@@ -243,7 +242,7 @@ button:hover {
 }
 
 /* ===================================== */
-/* 🎨 BOTONES DE HABILIDADES MEJORADOS */
+/*  BOTONES DE HABILIDADEs */
 /* ===================================== */
 .habilidades-container {
   display: grid;
@@ -385,7 +384,9 @@ button:hover {
 
 <!-- NAVBAR -->
 <div class="navbar">
-  <div class="nav-logo">S</div>
+  <div class="nav-logo">
+    <img src="logo.png" alt="logo">
+  </div>
 
   <div class="nav-center">
     <span class="nav-item" onclick="cambiarMenu(this,'practice')">Practice</span>
