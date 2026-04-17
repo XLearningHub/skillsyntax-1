@@ -204,7 +204,7 @@
                 await updateProfile(userCredential.user, { displayName: nombre });
 
                 try {
-                    await fetch("http://localhost:3000/guardar_usuario", {
+                    await fetch("https://skillsyntax-2war.onrender.com/guardar_usuario", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
