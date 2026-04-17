@@ -37,7 +37,6 @@ app.use("/api/writing", writingRoutes);
 app.use("/api/sesiones", sesionesRoutes);
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/login", loginRoutes);
-//app.use("/api/resultados", resultadosRoutes);
 app.use("/api/resultados", resultadosRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);

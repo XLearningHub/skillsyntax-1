@@ -185,8 +185,12 @@ async function cargarUsuario(){
 
     document.getElementById("nombreUsuario").innerText = data.nombre;
 
-    document.getElementById("avatarUsuario").src =
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=0a1f3b&color=fff`;
+    // FIX: avatar opcional (evita error null)
+    const avatar = document.getElementById("avatarUsuario");
+    if (avatar) {
+      avatar.src =
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=0a1f3b&color=fff`;
+    }
 
   } catch(error){
     console.error("Error al cargar usuario:", error);
@@ -195,7 +199,7 @@ async function cargarUsuario(){
 
 document.addEventListener("DOMContentLoaded", () => {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
-const usuarioId = usuario?.id;
+  const usuarioId = usuario?.id;
 
   if (!usuarioId) {
     window.location.href = "login.html";
@@ -204,7 +208,6 @@ const usuarioId = usuario?.id;
 
   cargarUsuario();
 });
-document.addEventListener("DOMContentLoaded",cargarUsuario);
 
 /* VARIABLES */
 let ejercicioActual=null;
@@ -505,9 +508,14 @@ if (resultadoExistente) {
 
 /* DASHBOARD */
 async function verDashboard(){
-  //const usuarioId = localStorage.getItem("usuario_id");
+
   const usuario = JSON.parse(localStorage.getItem("usuario"));
-  const usuarioId = usuario.id;
+  const usuarioId = usuario?.id;
+
+  if (!usuarioId) {
+    console.error("No hay usuario en localStorage");
+    return;
+  }
 
   const res = await fetch(`https://skillsyntax-2war.onrender.com/api/dashboard/${usuarioId}`);
   const data = await res.json();
@@ -521,27 +529,20 @@ async function verDashboard(){
     return;
   }
 
-  //  EXTRAER DATOS
   const labels = data.data.map(d => d.habilidad);
   const valores = data.data.map(d => Number(d.promedio));
 
-  //  PROMEDIO GENERAL
   const suma = valores.reduce((a, b) => a + b, 0);
   const promedio = Math.round(suma / valores.length);
 
   document.getElementById("cardPromedio").innerText = promedio;
 
-  //  MEJOR
   const max = Math.max(...valores);
-  const maxIndex = valores.indexOf(max);
-  document.getElementById("cardMejor").innerText = labels[maxIndex];
-
-  //  PEOR
   const min = Math.min(...valores);
-  const minIndex = valores.indexOf(min);
-  document.getElementById("cardPeor").innerText = labels[minIndex];
 
-  //  GRÁFICA
+  document.getElementById("cardMejor").innerText = labels[valores.indexOf(max)];
+  document.getElementById("cardPeor").innerText = labels[valores.indexOf(min)];
+
   const ctx = document.getElementById("grafica").getContext("2d");
 
   if (window.miGrafica) window.miGrafica.destroy();
@@ -549,10 +550,9 @@ async function verDashboard(){
   window.miGrafica = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: labels,
+      labels,
       datasets: [{
-        data: valores,
-        backgroundColor: ["#029e99","#f4a261","#e76f51","#264653"]
+        data: valores
       }]
     }
   });
@@ -560,19 +560,17 @@ async function verDashboard(){
   const tbody = document.querySelector("#tablaSesiones tbody");
   tbody.innerHTML = "";
 
-  if (data.historial) {
-    data.historial.forEach(s => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${new Date(s.fecha).toLocaleDateString()}</td>
-          <td>${s.tema}</td>
-          <td>${s.nivel}</td>
-          <td>${s.habilidad}</td>
-          <td>${s.puntaje}</td>
-        </tr>
-      `;
-    });
-  }
+  data.historial.forEach(s => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${new Date(s.fecha).toLocaleDateString()}</td>
+        <td>${s.tema}</td>
+        <td>${s.nivel}</td>
+        <td>${s.habilidad}</td>
+        <td>${s.puntaje}</td>
+      </tr>
+    `;
+  });
 }
 
 /* SPEAKING */

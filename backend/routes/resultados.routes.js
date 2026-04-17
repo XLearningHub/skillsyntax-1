@@ -36,7 +36,6 @@ router.get("/", async (req, res) => {
         r.habilidad,
         r.puntaje,
         r.feedback,
-        r.audio_url
       FROM resultados r
       LEFT JOIN sesiones s ON r.sesion_id = s.id
       LEFT JOIN users u ON s.usuario_id = u.id
