@@ -4,22 +4,21 @@ const db = require("../db");
 
 
 router.post("/", async (req, res) => {
-  const { sesion_id, habilidad, puntaje, feedback, respuestas, audio_url } = req.body;
+  const { sesion_id, habilidad, puntaje, feedback, respuestas } = req.body;
 
   try {
     await db.query(
-      `INSERT INTO resultados 
-       (sesion_id, habilidad, puntaje, feedback, respuestas, audio_url) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        sesion_id,
-        habilidad,
-        puntaje,
-        feedback,
-        JSON.stringify(respuestas),
-        audio_url || null
-      ]
-    );
+  `INSERT INTO resultados 
+   (sesion_id, habilidad, puntaje, feedback, respuestas) 
+   VALUES (?, ?, ?, ?, ?)`,
+  [
+    sesion_id,
+    habilidad,
+    puntaje,
+    feedback,
+    JSON.stringify(respuestas)
+  ]
+);
 
     res.json({ ok: true });
   } catch (error) {
