@@ -180,7 +180,7 @@ async function cargarUsuario(){
   }
 
   try{
-    const res = await fetch(`http://localhost:3000/api/usuarios/${usuario.id}`);
+    const res = await fetch(`https://skillsyntax-2war.onrender.com/api/usuarios/${usuario.id}`);
     const data = await res.json();
 
     document.getElementById("nombreUsuario").innerText = data.nombre;
@@ -259,7 +259,7 @@ async function generar(tipo) {
 
   try {
     // CREAR SESIÓN
-    const sesionRes = await fetch("http://localhost:3000/api/sesiones", {
+    const sesionRes = await fetch("https://skillsyntax-2war.onrender.com/api/sesiones", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ usuario_id: usuarioId, tema: temaLimpio, nivel: nivelVal })
@@ -269,7 +269,7 @@ async function generar(tipo) {
     sesionId = sesionData.id;
 
     // GENERAR EJERCICIO
-    const res = await fetch(`http://localhost:3000/api/${tipo}`, {
+    const res = await fetch(`https://skillsyntax-2war.onrender.com/api/${tipo}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tema: temaLimpio, nivel: nivelVal })
@@ -400,7 +400,7 @@ function guardarWriting(i,val){
 }
 
 async function enviarReading(){
-  const res=await fetch("http://localhost:3000/api/reading/calificar",{
+  const res=await fetch("https://skillsyntax-2war.onrender.com/api/reading/calificar",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({ejercicio:ejercicioActual,respuestaUsuario:respuestasUsuario})
@@ -409,7 +409,7 @@ async function enviarReading(){
 }
 
 async function enviarListening(){
-  const res=await fetch("http://localhost:3000/api/listening/calificar",{
+  const res=await fetch("https://skillsyntax-2war.onrender.com/api/listening/calificar",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({ejercicio:ejercicioActual,respuestaUsuario:respuestasUsuario})
@@ -418,7 +418,7 @@ async function enviarListening(){
 }
 
 async function enviarWriting(){
-  const res=await fetch("http://localhost:3000/api/writing/calificar",{
+  const res=await fetch("https://skillsyntax-2war.onrender.com/api/writing/calificar",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({ejercicio:ejercicioActual,respuestaUsuario:respuestasUsuario})
@@ -482,7 +482,7 @@ if (resultadoExistente) {
   }
   
   try {
-    await fetch("http://localhost:3000/api/resultados", {
+    await fetch("https://skillsyntax-2war.onrender.com/api/resultados", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -510,7 +510,7 @@ async function verDashboard(){
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   const usuarioId = usuario.id;
 
-  const res = await fetch(`http://localhost:3000/api/dashboard/${usuarioId}`);
+  const res = await fetch(`https://skillsyntax-2war.onrender.com/api/dashboard/${usuarioId}`);
   const data = await res.json();
 
   console.log("DATA DASHBOARD:", data);
@@ -626,7 +626,7 @@ async function enviarSpeaking() {
   formData.append("ejercicio", JSON.stringify(ejercicioActual));
 
   try {
-    const res = await fetch("http://localhost:3000/api/speaking/calificar", {
+    const res = await fetch("https://skillsyntax-2war.onrender.com/api/speaking/calificar", {
       method: "POST",
       body: formData
     });
