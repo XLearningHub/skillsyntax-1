@@ -1,197 +1,155 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Admin | SkillSyntax</title>
+    <meta charset="UTF-8">
+    <title>Dashboard | SkillSyntax Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #060e1a;
+            --bg-card: #0d1b2e;
+            --bg-sidebar: #081427;
+            --primary: #00c2cb;
+            --danger: #ff5f52;
+            --text-main: #ffffff;
+            --text-dim: #a0aec0;
+        }
 
-<style>
-body{
-  margin:0;
-  font-family:'Segoe UI',sans-serif;
-  background:#0a1f3b;
-  color:white;
-}
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+        }
 
-/* SIDEBAR */
-.sidebar{
-  width:220px;
-  height:100vh;
-  position:fixed;
-  background:#081427;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-}
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            background: var(--bg-sidebar);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-sizing: border-box;
+        }
 
-.sidebar h2{
-  color:#029e99;
-  margin-bottom:30px;
-}
+        .sidebar-top h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary);
+            letter-spacing: -1px;
+        }
 
-.sidebar a{
-  display:block;
-  color:white;
-  text-decoration:none;
-  padding:10px;
-  margin:5px 0;
-  border-radius:8px;
-}
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
 
-.sidebar a:hover{
-  background:#029e99;
-}
+        .sidebar nav a i { width: 20px; margin-right: 12px; text-align: center; }
 
-/* 🔥 BOTÓN LOGOUT */
-.logout{
-  margin-top:auto;
-  background:#e74c3c;
-  text-align:center;
-}
+        .sidebar nav a:hover { background: rgba(0, 194, 203, 0.1); color: var(--primary); }
 
-/* CONTENIDO */
-.content{
-  margin-left:240px;
-  padding:20px;
-}
+        .sidebar nav a.active {
+            background: var(--primary) !important;
+            color: #000 !important;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 194, 203, 0.3);
+        }
 
-/* CARDS */
-.cards{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px;
-}
+        .logout {
+            background: rgba(231, 76, 60, 0.1) !important;
+            color: var(--danger) !important;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
 
-.card{
-  background:#12243d;
-  padding:20px;
-  border-radius:15px;
-  text-align:center;
-  box-shadow:0 10px 20px rgba(0,0,0,0.3);
-}
+        .logout:hover { background: var(--danger) !important; color: white !important; }
 
-.card h3{
-  color:#029e99;
-}
-</style>
+        .content {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+        }
+
+        h1 { font-size: 2.2rem; margin-bottom: 5px; font-weight: 700; }
+        .subtitle { color: var(--text-dim); margin-bottom: 40px; }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .card {
+            background: var(--bg-card);
+            padding: 35px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); border-color: rgba(0, 194, 203, 0.2); }
+        .card h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+        .card p { font-size: 3rem; font-weight: 800; margin: 0; color: var(--primary); }
+    </style>
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>SkillSyntax Admin</h2>
-
-  <a href="#">📊 Dashboard</a>
-  <a href="usuarios.html">👥 Usuarios</a>
-  <a href="ejercicios.html">📚 Ejercicios</a>
-  <a href="reportes.html">📈 Reportes</a>
-  <a href="audios.html">🔊 Audios</a>
-
-  <!-- 🔥 NUEVO BOTÓN -->
-  <a href="#" class="logout" onclick="logout()">🚪 Cerrar sesión</a>
-</div>
-
-<!-- CONTENIDO -->
-<div class="content">
-
-  <h1>Dashboard</h1>
-  <p>Bienvenido al panel de administración</p>
-
-  <div class="cards">
-
-    <div class="card">
-      <h3>Usuarios</h3>
-      <p id="totalUsuarios">0</p>
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <h2>SkillSyntax Admin</h2>
+            <nav>
+                <a href="dashboard.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="usuarios.html"><i class="fas fa-users"></i> Usuarios</a>
+                <a href="ejercicios.html"><i class="fas fa-book"></i> Ejercicios</a>
+                <a href="reportes.html"><i class="fas fa-file-alt"></i> Reportes</a>
+            </nav>
+        </div>
+        <a href="#" class="logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
     </div>
 
-    <div class="card">
-      <h3>Ejercicios</h3>
-      <p id="totalEjercicios">0</p>
+    <div class="content">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Bienvenido al panel de administración de SkillSyntax.</p>
+
+        <div class="cards">
+            <div class="card">
+                <h3><i class="fas fa-users"></i> Total Usuarios</h3>
+                <p id="totalUsuarios">0</p>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-dumbbell"></i> Ejercicios Creados</h3>
+                <p id="totalEjercicios">0</p>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-history"></i> Sesiones Hoy</h3>
+                <p id="totalSesiones">0</p>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-      <h3>Sesiones</h3>
-      <p id="totalSesiones">0</p>
-    </div>
-
-  </div>
-
-</div>
-
-<script>
-// 🔐 PROTECCIÓN ADMIN
-document.addEventListener("DOMContentLoaded", () => {
-
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-  if (!usuario) {
-    alert("Debes iniciar sesión");
-    window.location.href = "../login.html";
-    return;
-  }
-
-  if (usuario.rol !== "admin") {
-    alert("Acceso denegado");
-    window.location.href = "../test.html";
-    return;
-  }
-
-  console.log("Bienvenido admin:", usuario.nombre);
-
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-  if (!usuario) {
-    alert("Debes iniciar sesión");
-    window.location.href = "../login.html";
-    return;
-  }
-
-  if (usuario.rol !== "admin") {
-    alert("Acceso denegado");
-    window.location.href = "../test.html";
-    return;
-  }
-
-  console.log("Bienvenido admin:", usuario.nombre);
-
-  cargarEstadisticas();
-});
-
-// 📊 CARGAR ESTADÍSTICAS
-async function cargarEstadisticas() {
-  try {
-
-    const [usuarios, ejercicios, sesiones] = await Promise.all([
-      fetch("http://localhost:3000/api/admin/total-usuarios").then(res => res.json()),
-      fetch("http://localhost:3000/api/admin/total-ejercicios").then(res => res.json()),
-      fetch("http://localhost:3000/api/admin/total-sesiones").then(res => res.json())
-    ]);
-
-    document.getElementById("totalUsuarios").innerText = usuarios.total || 0;
-    document.getElementById("totalEjercicios").innerText = ejercicios.total || 0;
-    document.getElementById("totalSesiones").innerText = sesiones.total || 0;
-
-  } catch (error) {
-    console.error("Error al cargar estadísticas:", error);
-
-    document.getElementById("totalUsuarios").innerText = "0";
-    document.getElementById("totalEjercicios").innerText = "0";
-    document.getElementById("totalSesiones").innerText = "0";
-  }
-}
-
-// 🔥 LOGOUT
-function logout() {
-  localStorage.clear();
-  window.location.href = "../login.html";
-}
-</script>
-
+    <script src="js/main.js"></script>
+    <script src="js/dashboard.js"></script> 
 </body>
 </html>

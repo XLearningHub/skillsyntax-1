@@ -6,171 +6,108 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// ===============================
-// GENERAR SPEAKING
-// ===============================
+// GENERAR SPEAKING 
 exports.generarSpeaking = async (req, res) => {
   try {
     const { tema, nivel } = req.body;
 
     if (!tema || !nivel) {
-      return res.status(400).json({
-        error: "Faltan datos"
-      });
+      return res.status(400).json({ error: "Faltan datos" });
     }
 
     const prompt = `
-Genera un ejercicio de speaking en inglés en formato JSON.
-
-Debe incluir:
-- titulo
-- instruccion
-- fluency
-- palabras (array de 5 palabras)
-- ejemplo
-
-Tema: ${tema}
+Genera un ejercicio de "Roleplay" profesional en inglés para practicar speaking.
 Nivel: ${nivel}
+Tema: ${tema}
 
-Responde SOLO en JSON válido, sin texto extra.
+El formato debe ser JSON con:
+- titulo: Un nombre creativo para la situación.
+- escenario: Describe el contexto real (ej. "Estás en una reunión de negocios...").
+- objetivo: Qué debe lograr el usuario al hablar (ej. "Convencer al cliente de...").
+- palabras_clave: Un array de 5 palabras técnicas o útiles que el usuario DEBE usar.
+- reto_extra: Un desafío gramatical (ej. "Usa al menos un condicional").
 
-Ejemplo:
-{
-  "titulo": "Pronunciation & Fluency Challenge",
-  "instruccion": "Practice pronouncing the key words clearly and then speak naturally.",
-  "fluency": "Describe your daily routine from morning to evening.",
-  "palabras": ["morning", "work", "coffee", "walk", "evening"],
-  "ejemplo": "Every morning I drink coffee. I go to work and take a walk."
-}
+Responde SOLO el JSON.
 `;
 
-    const response = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: prompt
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }]
     });
 
-    let contenido = response.output[0].content[0].text;
-
-    contenido = contenido
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
-    let speaking;
-
-    try {
-      speaking = JSON.parse(contenido);
-    } catch (e) {
-      console.error("JSON inválido:", contenido);
-      return res.status(500).json({
-        error: "La IA devolvió formato incorrecto"
-      });
-    }
-
-    // 👇 AÑADIMOS NIVEL
+    let contenido = response.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
+    let speaking = JSON.parse(contenido);
+    
+    // Mantenemos compatibilidad con tu frontend actual
     speaking.nivel = nivel;
-
-    // 👇 ESTO ES CLAVE PARA TU FRONTEND
-    speaking.prompt = speaking.fluency;
+    speaking.instruccion = speaking.objetivo; // El objetivo será la instrucción
+    speaking.fluency = speaking.escenario;    // El escenario será el texto principal
 
     res.json(speaking);
 
   } catch (error) {
     console.error("Error generando speaking:", error);
-
-    res.status(500).json({
-      error: "Error generando speaking"
-    });
+    res.status(500).json({ error: "Error al generar el ejercicio" });
   }
 };
 
-// ===============================
 // CALIFICAR SPEAKING
-// ===============================
 exports.calificarSpeaking = async (req, res) => {
   try {
     const audioPath = req.file.path;
+    const { ejercicio } = req.body;
+    const datosEjercicio = JSON.parse(ejercicio);
 
-    // 🎤 TRANSCRIPCIÓN
+  
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(audioPath),
       model: "whisper-1"
     });
 
-    const texto = transcription.text;
+    const textoUsuario = transcription.text;
 
-    // 🧠 EVALUACIÓN CON FORMATO JSON
     const evaluacion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `
-Eres un evaluador de inglés.
+          content: `Eres un profesor de inglés experto. Evalúa el audio considerando:
+          1. Escenario: "${datosEjercicio.escenario}"
+          2. Objetivo: "${datosEjercicio.objetivo}"
+          3. Palabras Clave: ${datosEjercicio.palabras_clave.join(", ")}
 
-Evalúa el texto del usuario y responde SOLO en JSON válido con:
-
-- score (0 a 100)
-- nivel (A1, A2, B1, B2, C1, C2)
-- feedback (breve y útil)
-
-Reglas:
-- Si la respuesta es muy corta → score bajo (0-30)
-- Si es básica → 30-60
-- Intermedia → 60-80
-- Avanzada → 80-100
-
-Ejemplo:
-{
-  "score": 75,
-  "nivel": "B1",
-  "feedback": "Good structure but improve vocabulary."
-}
-`
+          Responde SOLO en JSON:
+          {
+            "score": (0-100),
+            "pronunciation_feedback": "comentario breve sobre claridad",
+            "grammar_feedback": "comentario sobre gramática",
+            "keywords_used": (cuántas palabras clave de las 5 usó),
+            "final_feedback": "resumen motivador en español"
+          }`
         },
-        {
-          role: "user",
-          content: texto
-        }
+        { role: "user", content: textoUsuario }
       ]
     });
 
-    let respuesta = evaluacion.choices[0].message.content;
-
-    // 🔧 LIMPIAR RESPUESTA
-    respuesta = respuesta
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
-    let resultado;
-
-    try {
-      resultado = JSON.parse(respuesta);
-    } catch (e) {
-      console.error("❌ JSON inválido:", respuesta);
-
-      // fallback inteligente
-      resultado = {
-        score: texto.length < 10 ? 10 : 50,
-        nivel: "A1",
-        feedback: "No se pudo evaluar correctamente, intenta hablar más."
-      };
-    }
+    let respuesta = evaluacion.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
+    const resultado = JSON.parse(respuesta);
 
     fs.unlinkSync(audioPath);
 
     res.json({
       score: resultado.score,
-      feedback: `Nivel: ${resultado.nivel}\n${resultado.feedback}`,
-      transcript: texto
+      transcript: textoUsuario,
+      feedback: `
+        🎯 Score: ${resultado.score}/100
+        ✅ Palabras clave usadas: ${resultado.keywords_used}/5
+        💡 Gramática: ${resultado.grammar_feedback}
+        🎤 Pronunciación: ${resultado.pronunciation_feedback}
+        🌟 Sugerencia: ${resultado.final_feedback}
+      `.trim()
     });
 
   } catch (error) {
-    console.error("🔥 ERROR SPEAKING:", error);
-
-    res.status(500).json({
-      error: "Error en speaking"
-    });
+    if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(500).json({ error: "Error al calificar" });
   }
 };

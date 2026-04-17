@@ -5,13 +5,23 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+function limpiar(texto) {
+  return (texto || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
 
-// =======================
+const sinonimos = {
+  many: ["much", "a lot of"],
+  best: ["close", "good"],
+  easy: ["simple"],
+  modern: ["new", "current"]
+};
+
 // GENERAR WRITING
-// =======================
 exports.generarWriting = async (req, res) => {
   try {
-
     const tema = req.body.tema || req.body.topic || "daily life";
     const nivel = req.body.nivel || "A1";
 
@@ -29,12 +39,15 @@ Formato EXACTO:
   "tipo":"fill_blanks",
   "texto":"Texto con ____ espacios para completar",
   "palabras":["word1","word2","word3","word4","word5","word6","word7","word8"],
-  "respuestas":["correct1","correct2","correct3","correct4","correct5","correct6","correct7","correct8"]
+  "respuestas":["word1","word2","word3","word4","word5","word6","word7","word8"]
 }
 
-Reglas:
-- Usa inglés natural
+Reglas IMPORTANTES:
 - EXACTAMENTE 8 espacios (____)
+- Usa inglés NATURAL y correcto
+- NO uses frases incorrectas (ej: "many information")
+- Cada espacio se llena con UNA palabra del banco
+- "palabras" y "respuestas" deben ser EXACTAMENTE IGUALES
 - vocabulario acorde al nivel ${nivel}
 - tema relacionado con ${tema}
 `;
@@ -51,21 +64,17 @@ Reglas:
           content: prompt
         }
       ],
-      temperature: 0.7
+      temperature: 0.6
     });
 
     let contenido = response.choices?.[0]?.message?.content;
 
     if (!contenido) {
-      console.log("Respuesta completa:", response);
-      return res.status(500).json({
-        error: "No se generó contenido"
-      });
+      return res.status(500).json({ error: "No se generó contenido" });
     }
 
     console.log("RESPUESTA IA:", contenido);
 
-    // limpiar posibles ```json
     contenido = contenido
       .replace(/```json/g, "")
       .replace(/```/g, "")
@@ -75,14 +84,26 @@ Reglas:
 
     try {
       ejercicio = JSON.parse(contenido);
-    } catch (parseError) {
-      console.error("Error parseando JSON:", parseError);
-      console.log("Contenido recibido:", contenido);
-
+    } catch (err) {
+      console.error("Error parseando JSON:", err);
       return res.status(500).json({
         error: "La IA no devolvió JSON válido"
       });
     }
+
+    if (
+      !ejercicio.texto ||
+      !Array.isArray(ejercicio.palabras) ||
+      !Array.isArray(ejercicio.respuestas) ||
+      ejercicio.palabras.length !== 8 ||
+      ejercicio.respuestas.length !== 8
+    ) {
+      return res.status(500).json({
+        error: "Formato inválido generado por la IA"
+      });
+    }
+
+    ejercicio.respuestas = [...ejercicio.palabras];
 
     ejercicio.nivel = nivel;
 
@@ -98,13 +119,9 @@ Reglas:
 };
 
 
-
-// =======================
 // CALIFICAR WRITING
-// =======================
 exports.calificarWriting = async (req, res) => {
   try {
-
     const { ejercicio, respuestaUsuario } = req.body;
 
     if (!ejercicio || !respuestaUsuario) {
@@ -117,45 +134,41 @@ exports.calificarWriting = async (req, res) => {
     let detalle = [];
 
     const respuestasCorrectas = ejercicio.respuestas || [];
-    const respuestasUsuario = respuestaUsuario || [];
+    const respuestasUser = respuestaUsuario || [];
 
-    // usamos el mínimo para evitar errores
-    const total = Math.min(respuestasCorrectas.length, respuestasUsuario.length);
+    const total = Math.min(
+      respuestasCorrectas.length,
+      respuestasUser.length
+    );
 
     for (let i = 0; i < total; i++) {
+      const correcta = limpiar(respuestasCorrectas[i]);
+      const usuario = limpiar(respuestasUser[i]);
 
-      const correcta = (respuestasCorrectas[i] || "")
-      .trim()
-      .toLowerCase();
+      let esCorrecta = correcta === usuario;
 
-    const usuario = (respuestasUsuario[i] || "")
-    .trim()
-    .toLowerCase();
-
-    const esCorrecta = correcta === usuario;
+      if (!esCorrecta && sinonimos[correcta]) {
+        esCorrecta = sinonimos[correcta].includes(usuario);
+      }
 
       detalle.push({
-      correcta,
-      usuario,
-      esCorrecta
-    });
+        correcta,
+        usuario,
+        esCorrecta
+      });
 
-    if (esCorrecta) correctas++;
-  }
+      if (esCorrecta) correctas++;
+    }
 
-  // evitar división por 0
     const score = total > 0
       ? Math.round((correctas / total) * 100)
       : 0;
 
-    // =======================
-    // FEEDBACK CON IA
-    // =======================
+    // FEEDBACK IA
     const promptFeedback = `
 You are an English teacher.
 
 Writing level: ${ejercicio.nivel}
-
 Score: ${score}/100
 
 Correct answers: ${correctas}
@@ -190,12 +203,10 @@ Be encouraging and helpful.
     });
 
   } catch (error) {
-
     console.error("Error calificar writing:", error);
 
     res.status(500).json({
       error: "Error al calificar writing"
     });
-
   }
 };

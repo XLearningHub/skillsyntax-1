@@ -7,377 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Iconos para los botones de habilidades -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #0a1f3b;
-  margin: 0;
-}
-
-/* NAVBAR */
-.navbar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  background: white;
-  padding: 15px 30px;
-}
-
-.nav-logo {
-  display: flex;
-  align-items: center;
-}
-
-.nav-logo img {
-  height: 50px; 
-  width: auto;
-}
-
-.nav-center {
-  display: flex;
-  justify-content: center;
-  gap: 60px;
-}
-
-.nav-item {
-  cursor: pointer;
-  font-weight: 500;
-  color: #0a1f3b;
-  position: relative;
-}
-
-.nav-item:hover {
-  color: #029e99;
-}
-
-.nav-item.active::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 2px;
-  background: #029e99;
-  bottom: -5px;
-  left: 0;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-info img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.logout-btn {
-  background: #029e99;
-  color: white;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.logout-btn:hover {
-  background: #027d79;
-}
-
-/* VISTAS */
-.vista {
-  display: none;
-  padding: 20px;
-}
-
-.activa {
-  display: block;
-}
-
-/* CARD */
-.card {
-  background: #fbfaf7;
-  padding: 25px;
-  border-radius: 16px;
-  max-width: 1100px;
-  margin: auto;
-}
-
-/* FORM */
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border: none;
-}
-
-button {
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #029e99;
-  color: white;
-  cursor: pointer;
-  margin: 5px;
-}
-
-button:hover {
-  background: #027d79;
-}
-
-.pregunta {
-  margin-top: 20px;
-  background: white;
-  padding: 18px;
-  border-radius: 12px;
-}
-
-.opcion-btn {
-  display: block;
-  width: 100%;
-  text-align: left;
-  margin-top: 8px;
-  background: #f1f1f1;
-  color: #333;
-}
-
-.opcion-btn:hover {
-  background: #ddd;
-}
-
-.opcion-btn.seleccionado {
-  background: #029e99;
-  color: white;
-}
-
-.resultado-box {
-  margin-top: 20px;
-  padding: 15px;
-  background: #eefafa;
-  border-radius: 10px;
-}
-
-.input-blank {
-  width: 130px;
-  padding: 6px 8px;
-  margin: 0 5px;
-  border: 2px solid #029e99;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: bold;
-}
-
-.texto-writing {
-  font-size: 18px;
-  line-height: 1.8;
-}
-
-.banco-palabras {
-  margin-top: 15px;
-  padding: 12px;
-  background: #f1f8f8;
-  border-radius: 10px;
-}
-
-.palabra {
-  display: inline-block;
-  background: #029e99;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 8px;
-  margin: 5px;
-}
-
-/* DASHBOARD */
-.dashboard-resumen {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin: 20px 0;
-}
-
-.resumen-card {
-  background: linear-gradient(135deg, #029e99, #027d79);
-  color: white;
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.dashboard-contenedor {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-#grafica {
-  max-width: 100%;
-}
-
-/* TABLA */
-.tabla-container {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-#tablaSesiones {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-}
-
-#tablaSesiones th {
-  background: #029e99;
-  color: white;
-  padding: 10px;
-}
-
-#tablaSesiones td {
-  padding: 10px;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-}
-
-/* ===================================== */
-/*  BOTONES DE HABILIDADEs */
-/* ===================================== */
-.habilidades-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 20px;
-  margin: 20px 0;
-}
-
-.btn-habilidad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 120px;
-  border-radius: 15px;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  color: white;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-}
-
-.btn-habilidad i {
-  font-size: 32px;
-  margin-bottom: 10px;
-}
-
-.btn-habilidad span {
-  display: block;
-}
-
-.btn-habilidad:hover {
-  transform: translateY(-5px) scale(1.05);
-}
-
-/* Colores por habilidad */
-.reading {
-  background: linear-gradient(135deg, #4facfe, #00c6ff);
-}
-
-.listening {
-  background: linear-gradient(135deg, #43e97b, #38f9d7);
-}
-
-.speaking {
-  background: linear-gradient(135deg, #fa709a, #fee140);
-}
-
-.writing {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-}
-
-/* Diseño responsivo */
-@media (max-width: 768px) {
-  .btn-habilidad {
-    height: 100px;
-    font-size: 16px;
-  }
-
-  .btn-habilidad i {
-    font-size: 26px;
-  }
-}
-
-/* ===================================== */
-/* ⚙️ CONFIGURACIÓN DE PRÁCTICA */
-/* ===================================== */
-.configuracion-card {
-  background: linear-gradient(135deg, #f8fbff, #eef7ff);
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 20px;
-  border-left: 6px solid #029e99;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.configuracion-card h3 {
-  margin-top: 0;
-  color: #0a1f3b;
-}
-
-.config-descripcion {
-  color: #555;
-  font-size: 14px;
-  margin-bottom: 15px;
-}
-
-.config-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.input-group label {
-  font-weight: 600;
-  margin-bottom: 5px;
-  color: #0a1f3b;
-}
-
-.input-group i {
-  margin-right: 5px;
-  color: #029e99;
-}
-
-.input-group input,
-.input-group select {
-  padding: 10px;
-  border-radius: 8px;
-  border: 2px solid #e0e0e0;
-  transition: all 0.3s ease;
-  font-size: 14px;
-}
-
-.input-group input:focus,
-.input-group select:focus {
-  border-color: #029e99;
-  outline: none;
-  box-shadow: 0 0 8px rgba(2, 158, 153, 0.2);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .config-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -393,12 +23,21 @@ button:hover {
     <span class="nav-item" onclick="cambiarMenu(this,'report')">Report</span>
   </div>
 
-  <div class="user-info">
-    <img id="avatarUsuario"
-         src="https://ui-avatars.com/api/?name=User&background=0a1f3b&color=fff">
-    <span id="nombreUsuario">Usuario</span>
-    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+ <div class="user-info">
+  <div class="user-menu-container">
+    <div class="user-profile-trigger">
+      <div class="avatar-circle">FA</div>
+      <span id="nombreUsuario" style="font-weight: 600; color: #0a1f3b;">fanyag</span>
+      <i class="fas fa-chevron-down" style="font-size: 11px; color: #666;"></i>
+    </div>
+    
+    <div class="dropdown-menu">
+      <a href="#" onclick="cambiarMenu(this,'report')"><i class="fas fa-chart-line"></i> Reportes</a>
+      <hr>
+      <a href="#" onclick="logout()" class="logout-link"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+    </div>
   </div>
+</div>
 </div>
 
 <!-- PRACTICE -->
@@ -414,14 +53,11 @@ button:hover {
   </p>
 
   <div class="config-grid">
-    
-    <!-- Tema -->
     <div class="input-group">
       <label for="tema"><i class="fas fa-lightbulb"></i> Tema</label>
       <input id="tema" type="text" placeholder="Ej. Technology, Food, Business English">
     </div>
 
-    <!-- Nivel -->
     <div class="input-group">
       <label for="nivel"><i class="fas fa-layer-group"></i> Nivel</label>
       <select id="nivel">
@@ -434,7 +70,10 @@ button:hover {
         <option value="C2">C2 - Proficient</option>
       </select>
     </div>
+  </div>
 
+  <div id="config-error" style="color: #e76f51; font-size: 14px; margin-top: 15px; font-weight: 500; display: none; background: rgba(231, 111, 81, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #e76f51;">
+    <i class="fas fa-exclamation-circle"></i> Please enter a topic and select a level to continue.
   </div>
 </div>
 
@@ -559,7 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
 const usuarioId = usuario?.id;
 
   if (!usuarioId) {
-    // 🚨 Si no hay sesión → regresar a login
     window.location.href = "login.html";
     return;
   }
@@ -574,136 +212,181 @@ let respuestasUsuario=[];
 let sesionId=null;
 let tipoActual="";
 
+
+
 /* GENERAR EJERCICIOS */
-async function generar(tipo){
-  tipoActual=tipo;
+async function generar(tipo) {
+  tipoActual = tipo;
 
-  const tema=document.getElementById("tema").value||"daily life";
-  const nivel=document.getElementById("nivel").value||"A1";
-  const usuarioId=parseInt(localStorage.getItem("usuario_id"),10);
+  const inputTema = document.getElementById("tema");
+  const selectNivel = document.getElementById("nivel");
+  const errorMsg = document.getElementById("config-error");
+  const btnEnviar = document.getElementById("btnEnviar");
+  
+  let temaVal = inputTema.value.trim();
+  const nivelVal = selectNivel.value;
 
-  document.getElementById("resultado").innerHTML="Generando...";
-  respuestasUsuario=[];
-
-  try{
-
-    // 🔹 CREAR SESIÓN
-    const sesionRes=await fetch("http://localhost:3000/api/sesiones",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({usuario_id:usuarioId,tema,nivel})
-    });
-
-    if(!sesionRes.ok) throw new Error("Error creando sesión");
-
-    const sesionData=await sesionRes.json();
-    sesionId=sesionData.id;
-
-    // 🔹 GENERAR EJERCICIO
-    const res=await fetch(`http://localhost:3000/api/${tipo}`,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({tema,nivel})
-    });
-
-    if(!res.ok) throw new Error("Error generando ejercicio");
-
-    const data=await res.json();
-    if(!data) throw new Error("Respuesta vacía");
-
-    ejercicioActual=data;
-    let contenido="";
-
-    if(tipo==="reading"){
-      contenido=`
-        <div class="pregunta">${data.texto}</div>
-        ${(data.preguntas||[]).map((p,i)=>`
-          <div class="pregunta">
-            <p><strong>${i+1}. ${p.pregunta}</strong></p>
-            ${p.opciones.map(op=>`
-              <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">
-                ${op}
-              </button>
-            `).join("")}
-          </div>
-        `).join("")}
-      `;
-      btnEnviar.style.display="block";
-      btnEnviar.onclick=enviarReading;
-    }
-
-    if(tipo==="listening"){
-      contenido=`
-        <div class="pregunta">
-          <audio controls src="${data.audio_url}"></audio>
-        </div>
-        ${(data.preguntas||[]).map((p,i)=>`
-          <div class="pregunta">
-            <p><strong>${i+1}. ${p.pregunta}</strong></p>
-            ${p.opciones.map(op=>`
-              <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">
-                ${op}
-              </button>
-            `).join("")}
-          </div>
-        `).join("")}
-      `;
-      btnEnviar.style.display="block";
-      btnEnviar.onclick=enviarListening;
-    }
-
-    if(tipo==="speaking"){
-      contenido=`
-        <div class="pregunta">
-          <h3>${data.titulo||"Speaking Challenge"}</h3>
-          <p>${data.instruccion||""}</p>
-        </div>
-        <div class="pregunta">
-          <strong>Key Words:</strong><br>
-          ${(data.palabras||[]).map(p=>`<span class="palabra">${p}</span>`).join("")}
-        </div>
-        <div class="pregunta" style="text-align:center;">
-          <button onclick="iniciarGrabacion()">🎤 Grabar</button>
-          <button onclick="detenerGrabacion()">⏹ Detener</button>
-          <button onclick="enviarSpeaking()">📤 Enviar</button>
-        </div>
-        <div id="audioPreview"></div>
-      `;
-      btnEnviar.style.display="none";
-    }
-
-    if(tipo==="writing"){
-      let texto=data.texto||"";
-      const palabras=data.palabras||[];
-      let index=0;
-
-      texto=texto.replace(/____/g,()=>{
-        const i=index++;
-        return `<input class="input-blank" oninput="guardarWriting(${i},this.value)">`;
-      });
-
-      contenido=`
-        <div class="pregunta texto-writing">${texto}</div>
-        <div class="banco-palabras">
-          ${palabras.map(p=>`<span class="palabra">${p}</span>`).join("")}
-        </div>
-      `;
-      btnEnviar.style.display="block";
-      btnEnviar.onclick=enviarWriting;
-    }
-
-    document.getElementById("resultado").innerHTML=contenido;
-
-  }catch(error){
-    console.error("ERROR FRONT:", error);
-
-    document.getElementById("resultado").innerHTML=`
-      <div style="color:red;">
-        ❌ Error: el backend no responde o se cayó
-      </div>
-    `;
+  if (!temaVal || nivelVal === "") {
+    errorMsg.style.display = "block";
+    
+    inputTema.style.borderColor = !temaVal ? "#e76f51" : "#e0e0e0";
+    selectNivel.style.borderColor = nivelVal === "" ? "#e76f51" : "#e0e0e0";
+    return; 
   }
-} 
+
+  errorMsg.style.display = "none";
+  inputTema.style.borderColor = "#e0e0e0";
+  selectNivel.style.borderColor = "#e0e0e0";
+
+  let temaLimpio = temaVal.toLowerCase()
+    .replace(/generame una leccion de/gi, "")
+    .replace(/genera una leccion de/gi, "")
+    .replace(/quiero aprender/gi, "")
+    .replace(/hazme una leccion de/gi, "")
+    .trim();
+
+  // Obtener usuario
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  const usuarioId = usuario?.id || parseInt(localStorage.getItem("usuario_id"), 10);
+
+  document.getElementById("resultado").innerHTML = `
+    <div style="text-align:center; padding:40px;">
+      <i class="fas fa-spinner fa-spin" style="font-size:30px; color:#029e99; margin-bottom:15px;"></i>
+      <p style="color:#0a1f3b; font-weight:500;">Generating your personalized ${tipo} exercise...</p>
+    </div>`;
+  
+  respuestasUsuario = [];
+
+  try {
+    // CREAR SESIÓN
+    const sesionRes = await fetch("http://localhost:3000/api/sesiones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario_id: usuarioId, tema: temaLimpio, nivel: nivelVal })
+    });
+
+    const sesionData = await sesionRes.json();
+    sesionId = sesionData.id;
+
+    // GENERAR EJERCICIO
+    const res = await fetch(`http://localhost:3000/api/${tipo}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tema: temaLimpio, nivel: nivelVal })
+    });
+
+    const data = await res.json();
+    ejercicioActual = data;
+    
+    let contenido = "";
+
+    if (tipo === "reading") {
+      contenido = `
+        <div class="pregunta">${data.texto}</div>
+        ${(data.preguntas || []).map((p, i) => `
+          <div class="pregunta bloque-pregunta">
+            <p><strong>${i + 1}. ${p.pregunta}</strong></p>
+            ${p.opciones.map(op => `
+              <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">${op}</button>
+            `).join("")}
+          </div>
+        `).join("")}`;
+      btnEnviar.style.display = "block";
+      btnEnviar.onclick = enviarReading;
+    }
+
+    if (tipo === "listening") {
+      contenido = `
+        <div class="pregunta"><audio controls src="${data.audio_url}"></audio></div>
+        ${(data.preguntas || []).map((p, i) => `
+          <div class="pregunta bloque-pregunta">
+            <p><strong>${i + 1}. ${p.pregunta}</strong></p>
+            ${p.opciones.map(op => `
+              <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">${op}</button>
+            `).join("")}
+          </div>
+        `).join("")}`;
+      btnEnviar.style.display = "block";
+      btnEnviar.onclick = enviarListening;
+    }
+
+    if (tipo === "speaking") {
+      contenido = `
+        <div class="speaking-container" style="animation: fadeIn 0.5s ease;">
+            <div class="pregunta" style="border-left: 5px solid #fa709a; background: #fffafb; padding: 20px; border-radius: 8px;">
+                <h3 style="color: #d85a7f; margin: 0;"><i class="fas fa-comments"></i> ${data.titulo || "Speaking Mission"}</h3>
+                <p style="margin-top: 10px; font-size: 1.1rem; color: #333;"><strong>Scenario:</strong> ${data.escenario || data.fluency}</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                <div class="pregunta" style="margin:0; background: #fdf2f4; border: 1px solid #ff9a9e;">
+                    <strong style="color: #d85a7f;"><i class="fas fa-bullseye"></i> Your Goal:</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">${data.objetivo || data.instruccion}</p>
+                </div>
+                <div class="pregunta" style="margin:0; background: #f0f4ff; border: 1px solid #3f51b5;">
+                    <strong style="color: #3f51b5;"><i class="fas fa-star"></i> Bonus Challenge:</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">${data.reto_extra || "Use natural fillers like 'well' or 'actually'."}</p>
+                </div>
+            </div>
+
+            <div class="pregunta">
+                <strong style="color: #666; display: block; margin-bottom: 10px;">Keywords to include:</strong>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    ${(data.palabras_clave || data.palabras || []).map(p => `
+                        <span style="background: white; border: 2px solid #fa709a; color: #d85a7f; font-weight: bold; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem;">
+                            ${p}
+                        </span>
+                    `).join("")}
+                </div>
+            </div>
+
+            <div class="pregunta" style="text-align:center; background: #fafafa; border-radius: 20px; padding: 30px; border: 2px dashed #ddd;">
+                <div id="recordingStatus" style="display:none; color: #ff4b2b; font-weight: bold; margin-bottom: 15px;">
+                    <i class="fas fa-microphone-alt fa-beat"></i> Recording...
+                </div>
+                
+                <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+                    <button id="btnStart" onclick="iniciarGrabacion()" style="background: #ff4b2b; color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(255,75,43,0.3);">
+                        <i class="fas fa-microphone" style="font-size: 20px;"></i>
+                    </button>
+                    <button id="btnStop" onclick="detenerGrabacion()" style="display:none; background: #333; color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer;">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                    <button id="btnSendSpeaking" onclick="enviarSpeaking()" style="display:none; background: #029e99; color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer;">
+                        <i class="fas fa-paper-plane"></i> Evaluate Mission
+                    </button>
+                </div>
+                <div id="audioPreview" style="margin-top: 20px;"></div>
+            </div>
+        </div>`;
+      btnEnviar.style.display = "none";
+    }
+
+    if (tipo === "writing") {
+      let texto = data.texto || "";
+      const palabras = data.palabras || [];
+      let index = 0;
+      texto = texto.replace(/____/g, () => {
+        const i = index++;
+        return `<input class="input-blank" oninput="guardarWriting(${i}, this.value)">`;
+      });
+      contenido = `
+        <div class="pregunta texto-writing">${texto}</div>
+        <div class="banco-palabras">${palabras.map(p => `<span class="palabra">${p}</span>`).join("")}</div>`;
+      btnEnviar.style.display = "block";
+      btnEnviar.onclick = enviarWriting;
+    }
+
+    document.getElementById("resultado").innerHTML = contenido;
+
+  } catch (error) {
+    console.error("ERROR:", error);
+    document.getElementById("resultado").innerHTML = `
+      <div style="color:red; text-align:center; padding:20px;">
+        ❌ Error: The server is not responding. Please try again later.
+      </div>`;
+  }
+}
 
 function seleccionarRespuesta(i,op,btn){
   respuestasUsuario[i]=op;
@@ -743,23 +426,65 @@ async function enviarWriting(){
   mostrarResultado(await res.json());
 }
 
-async function mostrarResultado(data){
-  document.getElementById("resultado").innerHTML += `
-    <div class="resultado-box">
-      <strong>Score: ${data.score}</strong>
-      <p>${data.feedback}</p>
+async function mostrarResultado(data) {
+
+  const resultadoExistente = document.querySelector(".resultado-box");
+if (resultadoExistente) {
+  resultadoExistente.remove();
+}
+  const bloques = document.querySelectorAll(".bloque-pregunta");
+
+  if (bloques.length > 0 && data.correctas) {
+    bloques.forEach((bloque, i) => {
+      const botones = bloque.querySelectorAll(".opcion-btn");
+      const correcta = data.correctas[i];
+      const seleccionada = respuestasUsuario[i];
+
+      botones.forEach(btn => {
+        btn.disabled = true;
+        const textoBtn = btn.innerText.trim();
+
+        if (textoBtn === correcta) {
+          btn.classList.add("correcta");
+        } else if (textoBtn === seleccionada && seleccionada !== correcta) {
+          btn.classList.add("incorrecta");
+        }
+      });
+    });
+  }
+
+  const htmlFeedback = `
+    <div class="resultado-box" style="border-left: 6px solid #029e99; background: #f9fdfd; padding: 20px; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+      <h3 style="margin-top: 0; color: #0a1f3b;"><i class="fas fa-chart-line"></i> Evaluation Summary</h3>
+      
+      <div style="font-size: 1.8rem; font-weight: bold; color: #029e99; margin-bottom: 15px;">
+        Score: ${data.score}/100
+      </div>
+
+      ${data.transcript ? `
+        <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e0f2f1;">
+          <strong style="color: #029e99;"><i class="fas fa-quote-left"></i> What I heard:</strong><br>
+          <em style="color: #444; display: block; margin-top: 5px;">"${data.transcript}"</em>
+        </div>
+      ` : ''}
+
+      <div style="white-space: pre-line; color: #333; line-height: 1.6; font-size: 15px;">
+        ${data.feedback}
+      </div>
     </div>
   `;
+  
+  document.getElementById("resultado").insertAdjacentHTML('beforeend', htmlFeedback);
 
-  btnEnviar.style.display = "none";
-
+  document.getElementById("btnEnviar").style.display = "none";
+  if(document.getElementById("btnSendSpeaking")) {
+      document.getElementById("btnSendSpeaking").style.display = "none";
+  }
+  
   try {
-    // Guardar resultado en la base de datos
     await fetch("http://localhost:3000/api/resultados", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sesion_id: sesionId,
         habilidad: tipoActual,
@@ -770,7 +495,6 @@ async function mostrarResultado(data){
       })
     });
 
-    // 🔄 Actualizar automáticamente el dashboard
     if (document.getElementById("report").classList.contains("activa")) {
       verDashboard();
     }
@@ -791,7 +515,6 @@ async function verDashboard(){
 
   console.log("DATA DASHBOARD:", data);
 
-  // 🔥 VALIDACIÓN
   if (!data.data || data.data.length === 0) {
     document.getElementById("cardPromedio").innerText = 0;
     document.getElementById("cardMejor").innerText = "-";
@@ -799,27 +522,27 @@ async function verDashboard(){
     return;
   }
 
-  // 🔹 EXTRAER DATOS
+  //  EXTRAER DATOS
   const labels = data.data.map(d => d.habilidad);
   const valores = data.data.map(d => Number(d.promedio));
 
-  // 🔹 PROMEDIO GENERAL
+  //  PROMEDIO GENERAL
   const suma = valores.reduce((a, b) => a + b, 0);
   const promedio = Math.round(suma / valores.length);
 
   document.getElementById("cardPromedio").innerText = promedio;
 
-  // 🔹 MEJOR
+  //  MEJOR
   const max = Math.max(...valores);
   const maxIndex = valores.indexOf(max);
   document.getElementById("cardMejor").innerText = labels[maxIndex];
 
-  // 🔹 PEOR
+  //  PEOR
   const min = Math.min(...valores);
   const minIndex = valores.indexOf(min);
   document.getElementById("cardPeor").innerText = labels[minIndex];
 
-  // 🔹 GRÁFICA
+  //  GRÁFICA
   const ctx = document.getElementById("grafica").getContext("2d");
 
   if (window.miGrafica) window.miGrafica.destroy();
@@ -835,7 +558,6 @@ async function verDashboard(){
     }
   });
 
-  // 🔹 TABLA HISTORIAL
   const tbody = document.querySelector("#tablaSesiones tbody");
   tbody.innerHTML = "";
 
@@ -859,46 +581,62 @@ let mediaRecorder;
 let audioChunks=[];
 let audioBlob=null;
 
-async function iniciarGrabacion(){
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRecorder=new MediaRecorder(stream);
-    audioChunks=[];
+async function iniciarGrabacion() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
 
-    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
-    mediaRecorder.onstop=()=>{
-      audioBlob=new Blob(audioChunks,{type:"audio/webm"});
-      const audioURL=URL.createObjectURL(audioBlob);
-      document.getElementById("audioPreview").innerHTML=
-        `<audio controls src="${audioURL}"></audio>`;
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      const audioURL = URL.createObjectURL(audioBlob);
+      document.getElementById("audioPreview").innerHTML = `<audio controls src="${audioURL}"></audio>`;
+      document.getElementById("btnSendSpeaking").style.display = "inline-block";
     };
+
     mediaRecorder.start();
-  }catch(error){
-    alert("Error al usar el micrófono");
+    document.getElementById("recordingStatus").style.display = "block";
+    document.getElementById("btnStart").style.display = "none";
+    document.getElementById("btnStop").style.display = "inline-block";
+  } catch (error) {
+    alert("Microphone access denied.");
   }
 }
 
-function detenerGrabacion(){
-  if(mediaRecorder) mediaRecorder.stop();
+function detenerGrabacion() {
+  if (mediaRecorder) {
+    mediaRecorder.stop();
+    document.getElementById("recordingStatus").style.display = "none";
+    document.getElementById("btnStop").style.display = "none";
+    document.getElementById("btnStart").style.display = "inline-block";
+    document.getElementById("btnStart").innerHTML = '<i class="fas fa-redo"></i>'; // Icono de re-intentar
+  }
 }
 
-async function enviarSpeaking(){
-  if(!audioBlob){
-    alert("Graba primero un audio");
-    return;
+async function enviarSpeaking() {
+  if (!audioBlob) return;
+
+  const btn = document.getElementById("btnSendSpeaking");
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+  btn.disabled = true;
+
+  const formData = new FormData();
+  formData.append("audio", audioBlob, "audio.webm");
+  formData.append("ejercicio", JSON.stringify(ejercicioActual));
+
+  try {
+    const res = await fetch("http://localhost:3000/api/speaking/calificar", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    mostrarResultado(data);
+  } catch (error) {
+    alert("Error connecting to server.");
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Evaluate Mission';
   }
-
-  const formData=new FormData();
-  formData.append("audio",audioBlob,"audio.webm");
-  formData.append("ejercicio",JSON.stringify(ejercicioActual));
-
-  const res=await fetch("http://localhost:3000/api/speaking/calificar",{
-    method:"POST",
-    body:formData
-  });
-
-  const data=await res.json();
-  mostrarResultado(data);
 }
 </script>
 

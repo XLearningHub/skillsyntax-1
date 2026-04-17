@@ -1,0 +1,81 @@
+/* css/style-admin.css */
+
+/* SIDEBAR FIJA - El diseño de tus capturas */
+.sidebar {
+    width: 260px !important;
+    height: 100vh !important;
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    background: #081427 !important;
+    padding: 30px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-sizing: border-box !important;
+    z-index: 999;
+}
+
+.sidebar-top h2 {
+    color: #00c2cb !important;
+    font-size: 1.4rem !important;
+    margin: 0 0 40px 0 !important;
+    padding-left: 10px !important;
+    border-left: 4px solid #00c2cb !important;
+    font-family: 'Inter', sans-serif !important;
+    letter-spacing: -1px;
+}
+
+.sidebar nav a {
+    display: flex !important;
+    align-items: center !important;
+    color: #a0aec0 !important;
+    text-decoration: none !important;
+    padding: 12px 15px !important;
+    margin-bottom: 8px !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+}
+
+.sidebar nav a i {
+    width: 25px;
+    font-size: 1.1rem;
+}
+
+.sidebar nav a:hover {
+    background: rgba(0, 194, 203, 0.1) !important;
+    color: #00c2cb !important;
+}
+
+/* ESTADO ACTIVO - El botón turquesa */
+.sidebar nav a.active {
+    background: #00c2cb !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(0, 194, 203, 0.3) !important;
+}
+
+/* BOTÓN CERRAR SESIÓN - El rojo de abajo */
+.logout {
+    background: rgba(255, 95, 82, 0.1) !important;
+    color: #ff5f52 !important;
+    border: 1px solid rgba(255, 95, 82, 0.2) !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    margin-bottom: 10px !important;
+    transition: 0.3s;
+}
+
+.logout:hover {
+    background: #ff5f52 !important;
+    color: #fff !important;
+}

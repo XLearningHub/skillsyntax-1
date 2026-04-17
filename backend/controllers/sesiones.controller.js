@@ -3,10 +3,7 @@ const db = require("../db");
 // Guarda la sesión del usuario
 exports.guardarSesion = async (req, res) => {
   try {
-    // Si tienes autenticación, toma el id del usuario del token
-    // const usuario_id = req.user.id;
-
-    // Por ahora, lo tomamos del body
+  
     const { usuario_id, tema, nivel } = req.body;
 
     if (!usuario_id || !tema || !nivel) {

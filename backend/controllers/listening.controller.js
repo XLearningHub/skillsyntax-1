@@ -27,7 +27,6 @@ exports.generarListening = async (req, res) => {
       return res.status(400).json({ error: "Faltan datos" });
     }
 
-    // DESCRIPCION DEL NIVEL 
     let descripcionNivel = "";
 
     if (nivel === "A1") {
@@ -160,7 +159,6 @@ exports.calificarListening = async (req, res) => {
     let correctas = 0;
     let detalle = [];
 
-    // FUNCION PARA NORMALIZAR TEXTO
     function normalizar(texto) {
       return (texto || "")
         .toString()
@@ -175,7 +173,6 @@ exports.calificarListening = async (req, res) => {
 
         let respuestaCorrectaTexto = pregunta.correcta;
 
-        // Si la correcta es A, B, C convertir a texto real
         if (
           typeof pregunta.correcta === "string" &&
           ["a", "b", "c"].includes(normalizar(pregunta.correcta))

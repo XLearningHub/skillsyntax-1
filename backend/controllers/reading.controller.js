@@ -1,205 +1,103 @@
 const OpenAI = require("openai");
 require("dotenv").config();
-const db = require("../db"); // ✅ IMPORTANTE
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// =======================
-// GENERAR READING
-// =======================
 exports.generarReading = async (req, res) => {
   try {
     let tema = req.body.tema || "daily life";
     const nivel = req.body.nivel || "A1";
 
-    // 🔥 LIMPIEZA DEL TEMA (CLAVE)
-    tema = tema.toLowerCase()
-      .replace(/generame una leccion de/gi, "")
-      .replace(/genera una leccion de/gi, "")
-      .replace(/quiero aprender/gi, "")
-      .replace(/hazme una leccion de/gi, "")
+    tema = tema
+      .toLowerCase()
+      .replace(/(generame|genera|quiero aprender|hazme|hacer|una) (leccion|lección|clase|ejercicio) (de|sobre)/gi, "")
       .trim();
 
-    // 🔥 PROMPT CORREGIDO (ESTA ES LA MAGIA)
     const prompt = `
-Create a natural English reading paragraph.
+You are an expert English teacher specialized in the CEFR standard.
+Create a reading exercise for a student at level: ${nivel}.
 
-Level: ${nivel}
-Topic: ${tema}
+TOPIC: ${tema}
 
-STRICT RULES:
-- Do NOT start with "${tema} is an important topic"
-- Do NOT repeat the topic word many times
-- Do NOT sound like a definition
-- Write like a real situation (person, job, daily life, story)
-- Use simple English based on level ${nivel}
-- 4 to 6 sentences ONLY
+STRICT LEVEL RULES:
+- A1-A2: 3-4 simple sentences.
+- B1-B2: 5-7 sentences.
+- C1-C2: 8-10 complex sentences.
 
-Then create 2 comprehension questions.
-
-Return ONLY valid JSON:
-
+Return ONLY this JSON:
 {
   "tipo": "reading",
-  "texto": "Natural paragraph with a real-life situation",
+  "nivel": "${nivel}",
+  "tema": "${tema}",
+  "texto": "...",
   "preguntas": [
     {
-      "pregunta": "Question 1",
-      "opciones": ["Correct answer", "Wrong answer", "Wrong answer"],
-      "correcta": "Correct answer"
-    },
-    {
-      "pregunta": "Question 2",
-      "opciones": ["Correct answer", "Wrong answer", "Wrong answer"],
-      "correcta": "Correct answer"
+      "pregunta": "...",
+      "opciones": ["...", "...", "...", "..."],
+      "respuesta_correcta": "..."
     }
   ]
 }
 `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+      model: "gpt-4o-mini", 
       messages: [
-        {
-          role: "system",
-          content: "You generate English reading exercises. NEVER explain topics. ALWAYS create real-life paragraphs. Return ONLY JSON."
-        },
+        { role: "system", content: "You are a teacher who only communicates in English and provides structured JSON." },
         { role: "user", content: prompt }
       ],
-      temperature: 0.7
+      temperature: 0.5,
+      response_format: { type: "json_object" }
     });
 
-    let contenido = response.choices?.[0]?.message?.content?.trim();
-
-    if (!contenido) {
-      return res.status(500).json({ error: "No se generó contenido" });
-    }
-
-    contenido = contenido.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    let ejercicio;
-    try {
-      ejercicio = JSON.parse(contenido);
-    } catch (err) {
-      console.log("❌ ERROR JSON:", contenido);
-      return res.status(500).json({ error: "JSON inválido de la IA" });
-    }
-
-    ejercicio.nivel = nivel;
-
-    res.json(ejercicio);
+    const ejercicio = JSON.parse(response.choices[0].message.content);
+    return res.json(ejercicio);
 
   } catch (error) {
-    console.error("❌ Error Generar Reading:", error);
-    res.status(500).json({ error: "Error generando reading" });
+    console.error("ERROR EN OPENAI READING:", error);
+    res.status(500).json({ error: "Error generating reading" });
   }
 };
 
-// =======================
-// CALIFICAR READING
-// =======================
-exports.calificarReading = async (req, res) => {
+
+exports.generarFeedbackIA = async (ejercicio, respuestasUsuario, score) => {
   try {
-    const { ejercicio, respuestaUsuario } = req.body;
+    // Creamos un resumen de los errores para que la IA sepa qué pasó
+    const resumenResultados = ejercicio.preguntas.map((p, i) => {
+      const esCorrecta = respuestasUsuario[i] === (p.respuesta_correcta || p.correcta);
+      return `Q: ${p.pregunta} | User answered: ${respuestasUsuario[i] || "No answer"} | Correct: ${p.respuesta_correcta || p.correcta} | Result: ${esCorrecta ? "Correct" : "Wrong"}`;
+    }).join("\n");
 
-    if (!ejercicio || !respuestaUsuario) {
-      return res.status(400).json({ error: "Faltan datos para calificar" });
-    }
+    const prompt = `
+You are a supportive English teacher. Provide short, personalized feedback (max 2 sentences) in English.
+Student Score: ${score}/100
+Exercise Topic: ${ejercicio.tema}
 
-    let correctas = 0;
-    let detalle = [];
+Results details:
+${resumenResultados}
 
-    if (ejercicio.preguntas) {
-      ejercicio.preguntas.forEach((pregunta, index) => {
-        const correcta = (pregunta.correcta || "").trim();
-        const usuario = (respuestaUsuario[index] || "").trim();
-
-        const esCorrecta = correcta === usuario;
-
-        detalle.push({
-          pregunta: pregunta.pregunta,
-          correcta,
-          usuario,
-          esCorrecta
-        });
-
-        if (esCorrecta) correctas++;
-      });
-    }
-
-    const total = detalle.length;
-    const score = total > 0 ? Math.round((correctas / total) * 100) : 0;
-
-    // =======================
-    // FEEDBACK IA
-    // =======================
-    const promptFeedback = `
-You are an English teacher.
-
-Reading level: ${ejercicio.nivel}
-
-Score: ${score}/100
-Correct answers: ${correctas}
-Total questions: ${total}
-
-Student answers:
-${JSON.stringify(respuestaUsuario)}
-
-Write short professional feedback (max 2 sentences).
-Be encouraging and helpful.
+Instructions:
+- If the score is 100, be enthusiastic.
+- If they failed some questions, briefly explain why or give a tip based on the topic.
+- Always be encouraging and stay in English.
 `;
 
-    const feedbackResponse = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a helpful English teacher." },
-        { role: "user", content: promptFeedback }
-      ]
-    });
-
-    const feedback =
-      feedbackResponse.choices?.[0]?.message?.content?.trim() || "Good job!";
-
-    // =======================
-    // 💾 GUARDAR EN DB (FIX FINAL)
-    // =======================
-    const sesion_id = 1; // 🔥 temporal
-    const respuestasJSON = JSON.stringify(respuestaUsuario);
-
-    db.query(
-      `INSERT INTO resultados 
-      (sesion_id, habilidad, puntaje, respuestas, feedback)
-      VALUES (?, ?, ?, ?, ?)`,
-      [
-        sesion_id,
-        "reading",
-        score,
-        respuestasJSON,
-        feedback
+        { role: "system", content: "You are a helpful English teacher giving feedback." },
+        { role: "user", content: prompt }
       ],
-      (err) => {
-        if (err) {
-          console.error("❌ Error guardando resultado:", err);
-        } else {
-          console.log("✅ Resultado guardado en DB");
-        }
-      }
-    );
-
-    // =======================
-    // RESPUESTA
-    // =======================
-    res.json({
-      score,
-      correcto: score >= 70,
-      feedback,
-      detalle
+      temperature: 0.7,
+      max_tokens: 150
     });
+
+    return response.choices[0].message.content.trim();
 
   } catch (error) {
-    console.error("❌ Error Calificar Reading:", error);
-    res.status(500).json({ error: "Error al calificar reading" });
+    console.error("Error en Feedback IA:", error);
+    return "Great effort! Keep practicing to improve your skills.";
   }
 };

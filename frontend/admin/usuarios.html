@@ -1,228 +1,213 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Admin | Usuarios - SkillSyntax</title>
+    <meta charset="UTF-8">
+    <title>Usuarios | SkillSyntax Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #060e1a;
+            --bg-card: #0d1b2e;
+            --bg-sidebar: #081427;
+            --primary: #00c2cb;
+            --danger: #ff5f52;
+            --text-main: #ffffff;
+            --text-dim: #a0aec0;
+        }
 
-<style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: #0a1f3b;
-  color: white;
-}
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+        }
 
-/* SIDEBAR */
-.sidebar {
-  width: 220px;
-  height: 100vh;
-  position: fixed;
-  background: #081427;
-  padding: 20px;
-}
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            background: var(--bg-sidebar);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-sizing: border-box;
+        }
 
-.sidebar h2 {
-  color: #029e99;
-  margin-bottom: 30px;
-}
+        .sidebar-top h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary);
+            letter-spacing: -1px;
+        }
 
-.sidebar a {
-  display: block;
-  color: white;
-  text-decoration: none;
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 8px;
-}
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            transition: 0.3s;
+            font-weight: 500;
+        }
 
-.sidebar a:hover,
-.sidebar a.active {
-  background: #029e99;
-}
+        .sidebar nav a i { width: 20px; margin-right: 12px; text-align: center; }
 
-/* CONTENIDO */
-.content {
-  margin-left: 240px;
-  padding: 20px;
-}
+        .sidebar nav a:hover { background: rgba(0, 194, 203, 0.1); color: var(--primary); }
 
-/* TARJETAS */
-.card {
-  background: #12243d;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-}
+        .sidebar nav a.active {
+            background: var(--primary) !important;
+            color: #000 !important;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 194, 203, 0.3);
+        }
 
-/* TABLA */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  color: black;
-  border-radius: 10px;
-  overflow: hidden;
-}
+        .logout {
+            background: rgba(231, 76, 60, 0.1) !important;
+            color: var(--danger) !important;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
 
-th {
-  background: #029e99;
-  color: white;
-  padding: 12px;
-}
+        .content {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+        }
 
-td {
-  padding: 10px;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-}
+        h1 { font-size: 2.2rem; margin-bottom: 5px; font-weight: 700; }
+        .subtitle { color: var(--text-dim); margin-bottom: 35px; }
 
-/* BOTONES */
-.btn {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
+        .card {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-.btn-delete {
-  background: #e74c3c;
-  color: white;
-}
+        .btn-refresh {
+            background: rgba(0, 194, 203, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(0, 194, 203, 0.2);
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
 
-.btn-delete:hover {
-  background: #c0392b;
-}
+        .btn-refresh:hover { background: var(--primary); color: #000; }
 
-.btn-refresh {
-  background: #029e99;
-  color: white;
-  margin-bottom: 15px;
-}
+        table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
 
-.btn-refresh:hover {
-  background: #027d79;
-}
-</style>
+        th {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 10px 15px;
+        }
+
+        td {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 18px 15px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        td:first-child { border-radius: 15px 0 0 15px; border-left: 1px solid rgba(255, 255, 255, 0.05); }
+        td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .id-cell { color: var(--primary); font-weight: 700; }
+        .name-cell { font-weight: 700; color: #fff; }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .role-admin { background: rgba(0, 194, 203, 0.1); color: var(--primary); border: 1px solid var(--primary); }
+        .role-user { background: rgba(160, 174, 192, 0.1); color: var(--text-dim); border: 1px solid var(--text-dim); }
+
+        .btn-delete {
+            background: rgba(255, 95, 82, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 95, 82, 0.2);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-delete:hover { background: var(--danger); color: white; }
+    </style>
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>SkillSyntax Admin</h2>
-  <a href="dashboard.html">📊 Dashboard</a>
-  <a href="usuarios.html" class="active">👥 Usuarios</a>
-  <a href="ejercicios.html">📚 Ejercicios</a>
-  <a href="reportes.html">📈 Reportes</a>
-  <a href="audios.html">🔊 Audios</a>
-</div>
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <h2>SkillSyntax Admin</h2>
+            <nav>
+                <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="usuarios.html" class="active"><i class="fas fa-users"></i> Usuarios</a>
+                <a href="ejercicios.html"><i class="fas fa-book"></i> Ejercicios</a>
+                <a href="reportes.html"><i class="fas fa-file-alt"></i> Reportes</a>
+            </nav>
+        </div>
+        <a href="#" class="logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
+    </div>
 
-<!-- CONTENIDO -->
-<div class="content">
-  <h1>Gestión de Usuarios</h1>
+    <div class="content">
+        <h1>Gestión de Usuarios</h1>
+        <p class="subtitle">Administra los permisos y cuentas de SkillSyntax.</p>
 
-  <div class="card">
-    <button class="btn btn-refresh" onclick="cargarUsuarios()">
-      🔄 Actualizar
-    </button>
-
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Nivel</th>
-          <th>Rol</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tablaUsuarios">
-        <tr>
-          <td colspan="6">Cargando usuarios...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<script>
-// 🔐 PROTECCIÓN DE ACCESO
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-if (!usuario || usuario.rol !== "admin") {
-  alert("Acceso denegado");
-  window.location.href = "../login.html";
-}
-
-// 📥 CARGAR USUARIOS
-async function cargarUsuarios() {
-  try {
-    const res = await fetch("http://localhost:3000/api/usuarios");
-    const usuarios = await res.json();
-
-    const tabla = document.getElementById("tablaUsuarios");
-    tabla.innerHTML = "";
-
-    if (!usuarios || usuarios.length === 0) {
-      tabla.innerHTML = `
-        <tr>
-          <td colspan="6">No hay usuarios registrados</td>
-        </tr>`;
-      return;
-    }
-
-    usuarios.forEach(user => {
-      tabla.innerHTML += `
-        <tr>
-          <td>${user.id}</td>
-          <td>${user.nombre}</td>
-          <td>${user.email}</td>
-          <td>${user.nivel_general || "-"}</td>
-          <td>${user.rol}</td>
-          <td>
-            <button class="btn btn-delete"
-              onclick="eliminarUsuario(${user.id})">
-              Eliminar
+        <div class="card">
+            <button class="btn-refresh" onclick="cargarUsuarios()">
+                <i class="fas fa-sync-alt"></i> Actualizar Lista
             </button>
-          </td>
-        </tr>
-      `;
-    });
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Nivel</th>
+                        <th>Rol</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaUsuarios">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 
-  } catch (error) {
-    console.error("Error al cargar usuarios:", error);
-    document.getElementById("tablaUsuarios").innerHTML = `
-      <tr>
-        <td colspan="6">Error al cargar usuarios</td>
-      </tr>`;
-  }
-}
-
-// 🗑️ ELIMINAR USUARIO
-async function eliminarUsuario(id) {
-  if (!confirm("¿Deseas eliminar este usuario?")) return;
-
-  try {
-    const res = await fetch(
-      `http://localhost:3000/api/usuarios/${id}`,
-      { method: "DELETE" }
-    );
-
-    const data = await res.json();
-    alert(data.mensaje || "Usuario eliminado correctamente");
-
-    cargarUsuarios();
-  } catch (error) {
-    console.error("Error al eliminar usuario:", error);
-    alert("Error al eliminar usuario");
-  }
-}
-
-// 🚀 INICIALIZAR
-document.addEventListener("DOMContentLoaded", cargarUsuarios);
-</script>
-
+    <script src="js/main.js"></script>
+    <script src="js/usuarios.js"></script>
 </body>
 </html>

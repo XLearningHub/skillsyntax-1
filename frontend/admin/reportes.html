@@ -1,208 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Reportes | SkillSyntax</title>
+    <meta charset="UTF-8">
+    <title>Reportes | SkillSyntax Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #060e1a;
+            --bg-card: #0d1b2e;
+            --bg-sidebar: #081427;
+            --primary: #00c2cb;
+            --danger: #ff5f52;
+            --text-main: #ffffff;
+            --text-dim: #a0aec0;
+        }
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+        }
 
-<style>
-body{
-  margin:0;
-  font-family:'Segoe UI',sans-serif;
-  background:#0a1f3b;
-  color:white;
-}
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            background: var(--bg-sidebar);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-sizing: border-box;
+            z-index: 1000;
+        }
 
-.sidebar{
-  width:220px;
-  height:100vh;
-  position:fixed;
-  background:#081427;
-  padding:20px;
-}
+        .sidebar-top h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary);
+            letter-spacing: -1px;
+            font-weight: 700;
+        }
 
-.sidebar h2{
-  color:#029e99;
-}
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            transition: 0.3s;
+            font-weight: 500;
+        }
 
-.sidebar a{
-  display:block;
-  color:white;
-  padding:10px;
-  text-decoration:none;
-  margin:5px 0;
-}
+        .sidebar nav a i { width: 20px; margin-right: 12px; text-align: center; }
 
-.sidebar a:hover{
-  background:#029e99;
-}
+        .sidebar nav a:hover { background: rgba(0, 194, 203, 0.1); color: var(--primary); }
 
-.content{
-  margin-left:240px;
-  padding:20px;
-}
+        .sidebar nav a.active {
+            background: var(--primary) !important;
+            color: #000 !important;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 194, 203, 0.3);
+        }
 
-/* CONTENEDOR VERTICAL */
-.graficas{
-  display:flex;
-  flex-direction:column;
-  gap:30px;
-  margin-top:20px;
-}
+        .logout {
+            background: rgba(231, 76, 60, 0.1) !important;
+            color: var(--danger) !important;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
 
-.grafica-box{
-  background:#12243d;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.4);
-}
+        .logout:hover { background: var(--danger) !important; color: white !important; }
 
-.grafica-box h3{
-  margin-bottom:10px;
-  color:#00c6ff;
-}
+        .content {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+            box-sizing: border-box;
+        }
 
-canvas{
-  width:100% !important;
-  height:300px !important;
-}
-</style>
+        h1 { font-size: 2.2rem; margin-bottom: 5px; font-weight: 700; }
+        .subtitle { color: var(--text-dim); margin-bottom: 40px; }
+
+        .graficas-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .grafica-box {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            transition: 0.3s ease;
+        }
+
+        .grafica-box:hover {
+            border-color: rgba(0, 194, 203, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .grafica-box h3 {
+            margin: 0 0 25px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .canvas-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="sidebar">
-  <h2>SkillSyntax Admin</h2>
-  <a href="dashboard.html">📊 Dashboard</a>
-  <a href="usuarios.html">👥 Usuarios</a>
-  <a href="ejercicios.html">📚 Ejercicios</a>
-  <a href="#">📈 Reportes</a>
-</div>
-
-<div class="content">
-  <h1>Reportes</h1>
-  <p>Visualización de datos del sistema</p>
-
-  <div class="graficas">
-
-    <!-- GRÁFICA 1 -->
-    <div class="grafica-box">
-      <h3>Ejercicios por Usuario</h3>
-      <canvas id="graficaUsuarios"></canvas>
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <h2>SkillSyntax Admin</h2>
+            <nav>
+                <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="usuarios.html"><i class="fas fa-users"></i> Usuarios</a>
+                <a href="ejercicios.html"><i class="fas fa-book"></i> Ejercicios</a>
+                <a href="reportes.html" class="active"><i class="fas fa-file-alt"></i> Reportes</a>
+            </nav>
+        </div>
+        <a href="#" class="logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
     </div>
 
-    <!-- GRÁFICA 2 -->
-    <div class="grafica-box">
-      <h3>Habilidades</h3>
-      <canvas id="graficaHabilidades"></canvas>
+    <div class="content">
+        <h1>Reportes Analíticos</h1>
+        <p class="subtitle">Visualiza el rendimiento y las métricas clave de la plataforma.</p>
+
+        <div class="graficas-grid">
+            <div class="grafica-box">
+                <h3><i class="fas fa-chart-bar"></i> Ejercicios por Usuario</h3>
+                <div class="canvas-container">
+                    <canvas id="graficaUsuarios"></canvas>
+                </div>
+            </div>
+
+            <div class="grafica-box">
+                <h3><i class="fas fa-brain"></i> Distribución de Habilidades</h3>
+                <div class="canvas-container">
+                    <canvas id="graficaHabilidades"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
-  </div>
-</div>
-
-<script>
-// 🔐 PROTECCIÓN
-document.addEventListener("DOMContentLoaded", () => {
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-  if (!usuario || usuario.rol !== "admin") {
-    alert("Acceso denegado");
-    window.location.href = "../login.html";
-    return;
-  }
-
-  cargarGraficaUsuarios();
-  cargarGraficaHabilidades();
-});
-
-
-// 📊 GRÁFICA USUARIOS
-async function cargarGraficaUsuarios() {
-  try {
-    const res = await fetch("http://localhost:3000/api/resultados/reporte-usuarios");
-    const data = await res.json();
-
-    const nombres = data.map(d => d.usuario);
-    const totales = data.map(d => d.total);
-
-    new Chart(document.getElementById("graficaUsuarios"), {
-      type: "bar",
-      data: {
-        labels: nombres,
-        datasets: [{
-          label: "Ejercicios por usuario",
-          data: totales,
-          backgroundColor: [
-            "#00c6ff",
-            "#0072ff",
-            "#00e6a8",
-            "#ff7eb3",
-            "#ffd166",
-            "#9b5de5"
-          ],
-          borderRadius: 10
-        }]
-      },
-      options: {
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            labels: { color: "white" }
-          }
-        },
-        scales: {
-          x: { ticks: { color: "white" }, grid: { display:false }},
-          y: { ticks: { color: "white" }, grid: { color:"rgba(255,255,255,0.1)" }}
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error("Error gráfica usuarios:", error);
-  }
-}
-
-
-// 📊 GRÁFICA HABILIDADES
-async function cargarGraficaHabilidades() {
-  try {
-    const res = await fetch("http://localhost:3000/api/resultados/reporte-habilidades");
-    const data = await res.json();
-
-    const habilidades = data.map(d => d.habilidad);
-    const totales = data.map(d => d.total);
-
-    new Chart(document.getElementById("graficaHabilidades"), {
-      type: "doughnut",
-      data: {
-        labels: habilidades,
-        datasets: [{
-          data: totales,
-          backgroundColor: [
-            "#00c6ff",
-            "#00e6a8",
-            "#ffd166",
-            "#ff7eb3",
-            "#9b5de5"
-          ]
-        }]
-      },
-      options: {
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            labels: { color: "white" }
-          }
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error("Error gráfica habilidades:", error);
-  }
-}
-</script>
-
+    <script src="js/main.js"></script>
+    <script src="js/reportes.js"></script>
 </body>
 </html>

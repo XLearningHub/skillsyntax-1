@@ -7,21 +7,15 @@ require("dotenv").config();
 
 const app = express();
 
-// ===============================
-// 🔧 MIDDLEWARES
-// ===============================
+//  MIDDLEWARES
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// ===============================
-// 🎧 SERVIR AUDIOS
-// ===============================
+// SERVIR AUDIOS
 app.use("/audio", express.static(path.join(__dirname, "public/audio")));
 
-// ===============================
-// 📦 RUTAS DE LA APP
-// ===============================
+// RUTAS DE LA APP
 const nivelesRoutes = require("./routes/niveles.routes");
 const readingRoutes = require("./routes/reading.routes");
 const listeningRoutes = require("./routes/listening.routes");
@@ -48,23 +42,20 @@ app.use("/api/resultados", resultadosRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
 
-// ===============================
-// 👤 REGISTRO DE USUARIO
-// ===============================
+// REGISTRO DE USUARIO
 app.post("/guardar_usuario", async (req, res) => {
 
   console.log("Datos recibidos:", req.body);
 
   const { nombre, email, password, nivel_general } = req.body;
 
-  // Validación básica
   if (!nombre || !email || !password) {
     return res.status(400).json({ error: "Faltan datos" });
   }
 
   try {
 
-    // 🔐 Encriptar contraseña
+    // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
     db.query(
@@ -94,9 +85,7 @@ app.post("/guardar_usuario", async (req, res) => {
 
 });
 
-// ===============================
-// 🌐 RUTAS HTML
-// ===============================
+// RUTAS HTML
 app.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, "../frontend/login.html"))
 );
@@ -105,9 +94,7 @@ app.get("/test", (req, res) =>
   res.sendFile(path.join(__dirname, "../frontend/test.html"))
 );
 
-// ===============================
-// 🚀 SERVIDOR
-// ===============================
+// SERVIDOR
 app.listen(3000, () =>
   console.log("Servidor corriendo en http://localhost:3000")
 );

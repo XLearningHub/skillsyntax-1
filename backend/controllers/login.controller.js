@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ mensaje: "Contraseña incorrecta" });
     }
 
-    // respuesta al frontend
+
     res.json({
       id: user.id,
       nombre: user.nombre,

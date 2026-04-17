@@ -1,6 +1,5 @@
 const db = require("../db");
 
-/* RESUMEN */
 exports.obtenerDashboard = async (req, res) => {
   const { usuario_id } = req.params;
 
@@ -39,7 +38,7 @@ exports.obtenerDashboard = async (req, res) => {
   }
 };
 
-/* HISTORIAL (opcional) */
+
 exports.obtenerHistorial = async (req, res) => {
   const { usuario_id } = req.params;
 

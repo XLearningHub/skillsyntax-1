@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-/* 🔹 OBTENER ID POR EMAIL (LOGIN) */
+// OBTENER USUARIO POR EMAIL (PARA LOGIN)
 router.post("/email", async (req, res) => {
   const { email } = req.body;
 
@@ -24,7 +24,7 @@ router.post("/email", async (req, res) => {
   }
 });
 
-/* 🔹 OBTENER TODOS LOS USUARIOS (ADMIN) */
+// OBTENER TODOS LOS USUARIOS (ADMIN)
 router.get("/", async (req, res) => {
   try {
     const [result] = await db.query(
@@ -37,7 +37,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* 🔹 OBTENER USUARIO POR ID (PARA DASHBOARD) */
+// OBTENER USUARIO POR ID (PARA DASHBOARD)
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -59,7 +59,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/* 🔹 ACTUALIZAR ROL DE USUARIO (ADMIN) */
+// ACTUALIZAR ROL DE USUARIO (ADMIN)
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { rol } = req.body;
@@ -77,7 +77,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-/* 🔹 ELIMINAR USUARIO (ADMIN) */
+//ACTUALIZAR NIVEL GENERAL DE USUARIO (DASHBOARD)
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 

@@ -6,7 +6,6 @@ router.get("/:usuario_id", async (req, res) => {
   const { usuario_id } = req.params;
 
   try {
-    // 🔹 Promedio por habilidad
     const [promedios] = await db.query(`
       SELECT 
         r.habilidad, 
@@ -17,7 +16,7 @@ router.get("/:usuario_id", async (req, res) => {
       GROUP BY r.habilidad
     `, [usuario_id]);
 
-    // 🔹 Historial de sesiones
+    // Historial de sesiones
     const [historial] = await db.query(`
       SELECT 
         s.fecha,

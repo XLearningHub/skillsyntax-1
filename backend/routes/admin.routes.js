@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-/* 🔹 TOTAL DE USUARIOS */
+//TOTAL DE USUARIOS 
 router.get("/total-usuarios", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT COUNT(*) AS total FROM users");
@@ -13,7 +13,7 @@ router.get("/total-usuarios", async (req, res) => {
   }
 });
 
-/* 🔹 TOTAL DE EJERCICIOS */
+// TOTAL DE EJERCICIOS
 router.get("/total-ejercicios", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT COUNT(*) AS total FROM resultados");
@@ -24,7 +24,7 @@ router.get("/total-ejercicios", async (req, res) => {
   }
 });
 
-/* 🔹 TOTAL DE SESIONES */
+// TOTAL DE SESIONES
 router.get("/total-sesiones", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT COUNT(*) AS total FROM sesiones");

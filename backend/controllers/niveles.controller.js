@@ -1,6 +1,6 @@
 const db = require("../db");
 
-// Traer todos los niveles (para llenar el <select>)
+
 exports.getNiveles = (req, res) => {
   const sql = "SELECT id, codigo, descripcion FROM niveles ORDER BY id ASC";
   db.query(sql, (err, results) => {

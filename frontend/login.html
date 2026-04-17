@@ -20,7 +20,6 @@ body{
   background:linear-gradient(135deg,#0a1f3b,#0f2f59,#029e99);
 }
 
-/* CONTENEDOR */
 .container{
   display:flex;
   width:850px;
@@ -32,7 +31,6 @@ body{
   box-shadow:0 20px 50px rgba(0,0,0,0.35);
 }
 
-/* LADO IZQUIERDO */
 .left{
   flex:1;
   background:linear-gradient(135deg,#029e99,#59d2ec);
@@ -61,7 +59,6 @@ body{
   opacity:0.9;
 }
 
-/* LADO DERECHO */
 .right{
   flex:1;
   display:flex;
@@ -86,7 +83,6 @@ body{
   font-size:14px;
 }
 
-/* INPUTS */
 .input-group{
   margin-bottom:15px;
 }
@@ -106,7 +102,6 @@ body{
   box-shadow:0 0 0 3px rgba(2,158,153,0.15);
 }
 
-/* BOTON */
 button{
   width:100%;
   padding:12px;
@@ -125,7 +120,6 @@ button:hover{
   box-shadow:0 10px 20px rgba(0,0,0,0.2);
 }
 
-/* LINK */
 .register{
   margin-top:15px;
   text-align:center;
@@ -155,7 +149,6 @@ button:hover{
 
 <div class="container">
 
-  <!-- IZQUIERDA -->
 <div class="left">
   <img src="logo2.png" class="logo-img">
   <h1>SkillSyntax</h1>
@@ -165,7 +158,6 @@ button:hover{
   </p>
 </div>
 
-  <!-- DERECHA -->
   <div class="right">
 
     <div class="login-box">
@@ -246,7 +238,6 @@ window.login = async () => {
       return;
     }
 
-    // 🔥 GUARDAR TODO EL USUARIO (IMPORTANTE)
     localStorage.setItem("usuario", JSON.stringify(data));
     localStorage.setItem("usuario_id", data.id);
 

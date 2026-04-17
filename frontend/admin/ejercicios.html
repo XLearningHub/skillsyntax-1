@@ -1,179 +1,196 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Ejercicios | SkillSyntax</title>
+    <meta charset="UTF-8">
+    <title>Ejercicios | SkillSyntax Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #060e1a;
+            --bg-card: #0d1b2e;
+            --bg-sidebar: #081427;
+            --primary: #00c2cb;
+            --danger: #ff5f52;
+            --text-main: #ffffff;
+            --text-dim: #a0aec0;
+        }
 
-<style>
-body{
-  margin:0;
-  font-family:'Segoe UI',sans-serif;
-  background:#0a1f3b;
-  color:white;
-}
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+        }
 
-.sidebar{
-  width:220px;
-  height:100vh;
-  position:fixed;
-  background:#081427;
-  padding:20px;
-}
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            background: var(--bg-sidebar);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-sizing: border-box;
+        }
 
-.sidebar h2{
-  color:#029e99;
-}
+        .sidebar-top h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary);
+            letter-spacing: -1px;
+        }
 
-.sidebar a{
-  display:block;
-  color:white;
-  padding:10px;
-  text-decoration:none;
-  margin:5px 0;
-}
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            transition: 0.3s;
+            font-weight: 500;
+        }
 
-.sidebar a:hover{
-  background:#029e99;
-}
+        .sidebar nav a i { width: 20px; margin-right: 12px; text-align: center; }
 
-.content{
-  margin-left:240px;
-  padding:20px;
-}
+        .sidebar nav a:hover { background: rgba(0, 194, 203, 0.1); color: var(--primary); }
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  background:white;
-  color:black;
-  border-radius:10px;
-  overflow:hidden;
-}
+        .sidebar nav a.active {
+            background: var(--primary) !important;
+            color: #000 !important;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 194, 203, 0.3);
+        }
 
-th{
-  background:#029e99;
-  color:white;
-  padding:10px;
-}
+        .logout {
+            background: rgba(231, 76, 60, 0.1) !important;
+            color: var(--danger) !important;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
 
-td{
-  padding:10px;
-  text-align:center;
-  border-bottom:1px solid #ddd;
-}
+        .content {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+        }
 
-button{
-  padding:6px 10px;
-  border:none;
-  border-radius:6px;
-  background:red;
-  color:white;
-  cursor:pointer;
-}
+        h1 { font-size: 2.2rem; margin-bottom: 5px; font-weight: 700; }
+        .subtitle { color: var(--text-dim); margin-bottom: 35px; }
 
-button:hover{
-  background:darkred;
-}
+        .card {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-audio{
-  width:150px;
-}
-</style>
+        table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+
+        th {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 10px 15px;
+            text-align: center;
+        }
+
+        td {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 18px 15px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+        }
+
+        td:first-child { border-radius: 15px 0 0 15px; border-left: 1px solid rgba(255, 255, 255, 0.05); }
+        td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .id-cell { color: var(--primary); font-weight: 700; }
+        .name-cell { font-weight: 700; color: #fff; }
+        
+        audio {
+            height: 30px;
+            width: 150px;
+            filter: invert(100%) hue-rotate(180deg) brightness(1.5);
+            opacity: 0.6;
+        }
+
+        .btn-delete {
+            background: rgba(255, 95, 82, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 95, 82, 0.2);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-delete:hover { background: var(--danger); color: white; }
+    </style>
 </head>
-
 <body>
 
-<div class="sidebar">
-  <h2>SkillSyntax Admin</h2>
-  <a href="dashboard.html">📊 Dashboard</a>
-  <a href="usuarios.html">👥 Usuarios</a>
-  <a href="#">📚 Ejercicios</a>
-  <a href="reportes.html">📈 Reportes</a>
-  <a href="audios.html">🔊 Audios</a>
-</div>
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <h2>SkillSyntax Admin</h2>
+            <nav>
+                <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="usuarios.html"><i class="fas fa-users"></i> Usuarios</a>
+                <a href="ejercicios.html" class="active"><i class="fas fa-book"></i> Ejercicios</a>
+                <a href="reportes.html"><i class="fas fa-file-alt"></i> Reportes</a>
+            </nav>
+        </div>
+        <a href="#" class="logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
+    </div>
 
-<div class="content">
-  <h1>Ejercicios Generados</h1>
-  <p>Aquí puedes ver y eliminar ejercicios creados por la IA</p>
+    <div class="content">
+        <h1>Ejercicios Generados</h1>
+        <p class="subtitle">Administra los resultados y el feedback de la IA.</p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Usuario</th>
-        <th>Habilidad</th>
-        <th>Puntaje</th>
-        <th>Audio</th> <!-- 🔥 NUEVO -->
-        <th>Feedback</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody id="tablaEjercicios"></tbody>
-  </table>
-</div>
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Habilidad</th>
+                        <th>Puntaje</th>
+                        <th>Audio</th>
+                        <th>Feedback</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaEjercicios">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 
-<script>
-// 🔐 PROTECCIÓN
-document.addEventListener("DOMContentLoaded", () => {
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-  if (!usuario || usuario.rol !== "admin") {
-    alert("Acceso denegado");
-    window.location.href = "../login.html";
-    return;
-  }
-
-  cargarEjercicios();
-});
-
-// 📚 CARGAR EJERCICIOS
-async function cargarEjercicios() {
-  try {
-    const res = await fetch("http://localhost:3000/api/resultados");
-    const data = await res.json();
-
-    const tabla = document.getElementById("tablaEjercicios");
-    tabla.innerHTML = "";
-
-    data.forEach(e => {
-      tabla.innerHTML += `
-        <tr>
-          <td>${e.id}</td>
-          <td>${e.usuario || "N/A"}</td>
-          <td>${e.habilidad}</td>
-          <td>${e.puntaje}</td>
-
-          <!-- 🔊 AUDIO -->
-          <td>
-            ${e.audio_url 
-              ? `<audio controls src="${e.audio_url}"></audio>` 
-              : " "}
-          </td>
-
-          <td>${e.feedback}</td>
-          <td>
-            <button onclick="eliminar(${e.id})">Eliminar</button>
-          </td>
-        </tr>
-      `;
-    });
-
-  } catch (error) {
-    console.error("Error cargando ejercicios:", error);
-  }
-}
-
-// ❌ ELIMINAR
-async function eliminar(id) {
-  if (!confirm("¿Eliminar ejercicio?")) return;
-
-  await fetch(`http://localhost:3000/api/resultados/${id}`, {
-    method: "DELETE"
-  });
-
-  cargarEjercicios();
-}
-</script>
-
+    <script src="js/main.js"></script>
+    <script src="js/ejercicios.js"></script>
 </body>
 </html>

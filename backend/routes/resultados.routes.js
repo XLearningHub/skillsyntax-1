@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-/* 🔹 GUARDAR RESULTADO */
+
 router.post("/", async (req, res) => {
   const { sesion_id, habilidad, puntaje, feedback, respuestas, audio_url } = req.body;
 
@@ -28,7 +28,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-/* 🔹 OBTENER TODOS LOS RESULTADOS (MEJORADO 🔥) */
 router.get("/", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -52,7 +51,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* 🔹 ELIMINAR RESULTADO */
 router.delete("/:id", async (req, res) => {
   try {
     await db.query("DELETE FROM resultados WHERE id = ?", [req.params.id]);
@@ -63,7 +61,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-/* 🔹 REPORTE: EJERCICIOS POR USUARIO */
 router.get("/reporte-usuarios", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -83,7 +80,6 @@ router.get("/reporte-usuarios", async (req, res) => {
   }
 });
 
-/* 🔹 REPORTE POR HABILIDAD */
 router.get("/reporte-habilidades", async (req, res) => {
   try {
     const [rows] = await db.query(`
