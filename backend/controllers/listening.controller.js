@@ -113,18 +113,29 @@ try {
     ejercicio.nivel = nivel;
 
     // GENERAR AUDIO
-    const audioResponse = await openai.audio.speech.create({
-      model: "gpt-4o-mini-tts",
-      voice: "alloy",
-      input: ejercicio.audio_texto
-    });
+    // GENERAR AUDIO
+const audioResponse = await openai.audio.speech.create({
+  model: "gpt-4o-mini-tts",
+  voice: "alloy",
+  input: ejercicio.audio_texto
+});
 
-    const fileName = `audio_${Date.now()}.mp3`;
-    const filePath = path.join(__dirname, "../public/audio", fileName);
+// 🔥 ASEGURAR CARPETA
+const dir = path.join(__dirname, "../public/audio");
 
-    const buffer = Buffer.from(await audioResponse.arrayBuffer());
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir, { recursive: true });
+}
 
-    fs.writeFileSync(filePath, buffer);
+const fileName = `audio_${Date.now()}.mp3`;
+const filePath = path.join(dir, fileName);
+
+const buffer = Buffer.from(await audioResponse.arrayBuffer());
+
+fs.writeFileSync(filePath, buffer);
+
+// 👇 opcional pero recomendado para debug
+console.log("Audio guardado en:", filePath);
 
     ejercicio.audio_url = `https://skillsyntax-2war.onrender.com/audio/${fileName}`;
 

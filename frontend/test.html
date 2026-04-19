@@ -26,10 +26,14 @@
  <div class="user-info">
   <div class="user-menu-container">
     <div class="user-profile-trigger">
-      <div class="avatar-circle">FA</div>
-      <span id="nombreUsuario" style="font-weight: 600; color: #0a1f3b;">fanyag</span>
-      <i class="fas fa-chevron-down" style="font-size: 11px; color: #666;"></i>
-    </div>
+  
+  <!-- 👇 NUEVO -->
+  <img id="avatarUsuario" 
+       style="width:35px; height:35px; border-radius:50%; object-fit:cover; margin-right:8px;" />
+
+  <span id="nombreUsuario" style="font-weight: 600; color: #0a1f3b;">fanyag</span>
+  <i class="fas fa-chevron-down" style="font-size: 11px; color: #666;"></i>
+</div>
     
     <div class="dropdown-menu">
       <a href="#" onclick="cambiarMenu(this,'report')"><i class="fas fa-chart-line"></i> Reportes</a>
