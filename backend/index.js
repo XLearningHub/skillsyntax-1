@@ -84,15 +84,19 @@ app.post("/guardar_usuario", async (req, res) => {
 
 });
 
+app.get("/", (req, res) => {
+  res.redirect("/login.html");
+});
+
 // RUTAS HTML
-app.get("/", (req, res) =>
+/*app.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, "../frontend/login.html"))
 );
 
 app.get("/test", (req, res) =>
   res.sendFile(path.join(__dirname, "../frontend/test.html"))
 );
-
+*/
 // SERVIDOR
 const PORT = process.env.PORT || 3000;
 
