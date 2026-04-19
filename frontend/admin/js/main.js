@@ -40,7 +40,7 @@ function inyectarMenu() {
 function logout() {
     console.log("Cerrando sesión...");
     localStorage.clear(); 
-    window.location.href = "../login.html";
+    window.location.href = "/index.html";
 }
 
 // Ejecutar al cargar
