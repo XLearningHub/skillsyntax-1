@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
         u.nombre AS usuario,
         r.habilidad,
         r.puntaje,
-        r.feedback,
+        r.feedback
       FROM resultados r
       LEFT JOIN sesiones s ON r.sesion_id = s.id
       LEFT JOIN users u ON s.usuario_id = u.id
