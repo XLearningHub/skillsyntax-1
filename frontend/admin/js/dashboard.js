@@ -1,4 +1,5 @@
 // js/dashboard.js
+console.log("DASHBOARD NUEVO FUNCIONANDO 🚀");
 document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("totalUsuarios")) {
         cargarEstadisticas();
