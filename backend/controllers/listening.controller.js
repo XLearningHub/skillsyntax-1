@@ -126,7 +126,7 @@ try {
 
     fs.writeFileSync(filePath, buffer);
 
-    ejercicio.audio_url = `http://localhost:3000/audio/${fileName}`;
+    ejercicio.audio_url = `https://skillsyntax-2war.onrender.com/audio/${fileName}`;
 
     res.json(ejercicio);
 
