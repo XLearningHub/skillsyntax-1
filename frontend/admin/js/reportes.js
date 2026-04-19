@@ -48,7 +48,7 @@ const opcionesComunes = {
 // GRÁFICA DE BARRAS
 async function cargarGraficaUsuarios() {
     try {
-        const res = await fetch("http://localhost:3000/api/resultados/reporte-usuarios");
+        const res = await fetch("https://skillsyntax-2war.onrender.com/api/resultados/reporte-usuarios");
         const data = await res.json();
         const nombres = data.map(d => d.usuario);
         const totales = data.map(d => d.total);
@@ -88,7 +88,7 @@ async function cargarGraficaUsuarios() {
 // GRÁFICA DE DONA (
 async function cargarGraficaHabilidades() {
     try {
-        const res = await fetch("http://localhost:3000/api/resultados/reporte-habilidades");
+        const res = await fetch("https://skillsyntax-2war.onrender.com/api/resultados/reporte-habilidades");
         const data = await res.json();
         const habilidades = data.map(d => d.habilidad);
         const totales = data.map(d => d.total);

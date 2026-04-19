@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // CARGAR EJERCICIOS
 async function cargarEjercicios() {
     try {
-        const res = await fetch("http://localhost:3000/api/resultados");
+        const res = await fetch("https://skillsyntax-2war.onrender.com/api/resultados");
         const data = await res.json();
 
         const tabla = document.getElementById("tablaEjercicios");
@@ -46,7 +46,7 @@ async function eliminarEjercicio(id) {
     if (!confirm("¿Estás seguro de eliminar este ejercicio?")) return;
 
     try {
-        const res = await fetch(`http://localhost:3000/api/resultados/${id}`, {
+        const res = await fetch(`https://skillsyntax-2war.onrender.com/api/resultados/${id}`, {
             method: "DELETE"
         });
         

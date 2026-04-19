@@ -11,7 +11,7 @@ async function cargarUsuarios() {
     const tabla = document.getElementById("tablaUsuarios");
     
     try {
-        const res = await fetch("http://localhost:3000/api/usuarios");
+        const res = await fetch("https://skillsyntax-2war.onrender.com/api/usuarios");
         const usuarios = await res.json();
 
         tabla.innerHTML = "";
@@ -58,7 +58,7 @@ async function eliminarUsuario(id) {
     if (!confirm("¿Estás seguro? Esta acción eliminará al usuario permanentemente.")) return;
 
     try {
-        const res = await fetch(`http://localhost:3000/api/usuarios/${id}`, { 
+        const res = await fetch(`https://skillsyntax-2war.onrender.com/api/usuarios/${id}`, { 
             method: "DELETE" 
         });
 

@@ -8,9 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
 async function cargarEstadisticas() {
     try {
         const [usuarios, ejercicios, sesiones] = await Promise.all([
-            fetch("http://localhost:3000/api/admin/total-usuarios").then(res => res.json()),
-            fetch("http://localhost:3000/api/admin/total-ejercicios").then(res => res.json()),
-            fetch("http://localhost:3000/api/admin/total-sesiones").then(res => res.json())
+            fetch("https://skillsyntax-2war.onrender.com/api/admin/total-usuarios").then(res => res.json()),
+            fetch("https://skillsyntax-2war.onrender.com/api/admin/total-ejercicios").then(res => res.json()),
+            fetch("https://skillsyntax-2war.onrender.com/api/admin/total-sesiones").then(res => res.json())
         ]);
 
         document.getElementById("totalUsuarios").innerText = usuarios.total || 0;
