@@ -73,7 +73,11 @@ app.post("/guardar_usuario", async (req, res) => {
           return res.status(500).json({ error: "Error al guardar usuario" });
         }
 
-        res.json({ mensaje: "Usuario guardado correctamente" });
+        res.json({
+  success: true,
+  id: result.insertId,
+  mensaje: "Usuario guardado correctamente"
+});
       }
     );
 
@@ -85,7 +89,7 @@ app.post("/guardar_usuario", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.redirect("/login.html");
+  res.sendFile(path.join(__dirname, "../frontend/login.html"));
 });
 
 // RUTAS HTML
