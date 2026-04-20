@@ -15,7 +15,7 @@ function inyectarMenu() {
                     <a href="reportes.html" id="link-reportes"><i class="fas fa-file-alt"></i> Reportes</a>
                 </nav>
             </div>
-            <a href="javascript:void(0)" class="logout" onclick="logout()">
+            <a href="#" class="logout" id="btnLogout">
                 <i class="fas fa-sign-out-alt"></i> Cerrar sesión
             </a>
         </div>
@@ -45,3 +45,10 @@ function logout() {
 
 // Ejecutar al cargar
 document.addEventListener("DOMContentLoaded", inyectarMenu);
+// Conectar botón logout correctamente
+    document.addEventListener("click", (e) => {
+        if (e.target.closest("#btnLogout")) {
+            e.preventDefault();
+            logout();
+        }
+    });
