@@ -40,7 +40,7 @@ function inyectarMenu() {
 function logout() {
     console.log("Cerrando sesión...");
     localStorage.clear(); 
-    window.location.href = "/";
+    window.location.href = "/skillsyntaxai/index.html";
 }
 
 // Ejecutar al cargar
