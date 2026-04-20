@@ -149,7 +149,7 @@
         <button id="btnRegistro" onclick="registrar()">Crear cuenta</button>
 
         <div class="login">
-            ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+            ¿Ya tienes cuenta? <a href="/login.html">Inicia sesión</a>
         </div>
 
         <div id="msg"></div>
@@ -222,7 +222,7 @@
                 msg.innerText = "¡Cuenta creada correctamente! 🎉";
 
                 setTimeout(() => {
-                    window.location.assign("/login.html");
+                    window.location.assign("login.html");
                 }, 1500);
 
             } catch (error) {
