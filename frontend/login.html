@@ -209,6 +209,13 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 
+
+
+// 🔴 FIX IMPORTANTE: limpiar sesión vieja al entrar al login
+localStorage.removeItem("usuario");
+localStorage.removeItem("usuario_id");
+
+
 window.login = async () => {
 
   const email = document.getElementById("email").value.trim();
@@ -230,7 +237,6 @@ window.login = async () => {
     });
 
     const data = await res.json();
-    console.log("RESPUESTA BACKEND:", data);
 
     if (!res.ok) {
       msg.innerText = data.error || "Error al iniciar sesión";
@@ -246,7 +252,7 @@ window.login = async () => {
 
     setTimeout(() => {
       if (data.rol === "admin") {
-        window.location.href = "admin/dashboard.html";
+        window.location.href = "/admin/dashboard.html";
       } else {
         window.location.href = "/test.html";
       }
