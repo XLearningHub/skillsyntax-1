@@ -288,101 +288,96 @@ async function generar(tipo) {
     let contenido = "";
 
     if (tipo === "reading") {
-      contenido = `
-        <div class="pregunta">${data.texto}</div>
-        ${(data.preguntas || []).map((p, i) => `
-          <div class="pregunta bloque-pregunta">
-            <p><strong>${i + 1}. ${p.pregunta}</strong></p>
+  contenido = `
+  <div class="reading-container" style="animation: fadeIn 0.5s ease;">
+    <div class="pregunta" style="border-left: 5px solid #007bff; background: #f0f7ff; padding: 25px; border-radius: 12px;">
+      <h3 style="color: #0056b3; margin-top:0;">
+        <i class="fas fa-book-reader"></i> Reading Passage
+      </h3>
+      <div style="margin-top:15px; line-height:1.8;">${data.texto}</div>
+    </div>
+
+    <div style="margin-top: 25px;">
+      ${(data.preguntas || []).map((p, i) => `
+        <div class="pregunta bloque-pregunta" style="background: white; border: 1px solid #e0e0e0; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <p><strong>${i + 1}. ${p.pregunta}</strong></p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
             ${p.opciones.map(op => `
-              <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">${op}</button>
+              <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">
+                ${op}
+              </button>
             `).join("")}
           </div>
-        `).join("")}`;
-      btnEnviar.style.display = "block";
-      btnEnviar.onclick = enviarReading;
-    }
+        </div>
+      `).join("")}
+    </div>
+  </div>`;
+  btnEnviar.style.display = "block";
+  btnEnviar.onclick = enviarReading;
+}
 
-    if (tipo === "listening") {
-      contenido = `
-        <div class="pregunta"><audio controls src="${data.audio_url}"></audio></div>
-        ${(data.preguntas || []).map((p, i) => `
-          <div class="pregunta bloque-pregunta">
-            <p><strong>${i + 1}. ${p.pregunta}</strong></p>
-            ${p.opciones.map(op => `
-              <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">${op}</button>
-            `).join("")}
-          </div>
-        `).join("")}`;
-      btnEnviar.style.display = "block";
-      btnEnviar.onclick = enviarListening;
-    }
+if (tipo === "listening") {
+  contenido = `
+  <div class="listening-container" style="animation: fadeIn 0.5s ease;">
+    <div class="pregunta" style="text-align:center; background: #f4fbf9; border: 2px dashed #029e99; padding: 30px; border-radius: 15px; margin-bottom:25px;">
+      <i class="fas fa-headphones" style="font-size: 40px; color: #029e99; margin-bottom: 15px;"></i>
+      <h3>Audio Lab</h3>
+      <audio controls src="${data.audio_url}" style="width: 100%; max-width: 450px;"></audio>
+    </div>
 
-    if (tipo === "speaking") {
-      contenido = `
-        <div class="speaking-container" style="animation: fadeIn 0.5s ease;">
-            <div class="pregunta" style="border-left: 5px solid #fa709a; background: #fffafb; padding: 20px; border-radius: 8px;">
-                <h3 style="color: #d85a7f; margin: 0;"><i class="fas fa-comments"></i> ${data.titulo || "Speaking Mission"}</h3>
-                <p style="margin-top: 10px; font-size: 1.1rem; color: #333;"><strong>Scenario:</strong> ${data.escenario || data.fluency}</p>
-            </div>
+    ${(data.preguntas || []).map((p, i) => `
+      <div class="pregunta bloque-pregunta" style="background: white; border: 1px solid #e0e0e0; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <p><strong>${i + 1}. ${p.pregunta}</strong></p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+          ${p.opciones.map(op => `
+            <button class="opcion-btn" onclick="seleccionarRespuesta(${i},'${op}',this)">
+              ${op}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `).join("")}
+  </div>`;
+  btnEnviar.style.display = "block";
+  btnEnviar.onclick = enviarListening;
+}
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
-                <div class="pregunta" style="margin:0; background: #fdf2f4; border: 1px solid #ff9a9e;">
-                    <strong style="color: #d85a7f;"><i class="fas fa-bullseye"></i> Your Goal:</strong>
-                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">${data.objetivo || data.instruccion}</p>
-                </div>
-                <div class="pregunta" style="margin:0; background: #f0f4ff; border: 1px solid #3f51b5;">
-                    <strong style="color: #3f51b5;"><i class="fas fa-star"></i> Bonus Challenge:</strong>
-                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">${data.reto_extra || "Use natural fillers like 'well' or 'actually'."}</p>
-                </div>
-            </div>
+if (tipo === "writing") {
+  let texto = data.texto || "";
+  const palabras = data.palabras || [];
+  let index = 0;
 
-            <div class="pregunta">
-                <strong style="color: #666; display: block; margin-bottom: 10px;">Keywords to include:</strong>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    ${(data.palabras_clave || data.palabras || []).map(p => `
-                        <span style="background: white; border: 2px solid #fa709a; color: #d85a7f; font-weight: bold; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem;">
-                            ${p}
-                        </span>
-                    `).join("")}
-                </div>
-            </div>
+  texto = texto.replace(/____/g, () => {
+    const i = index++;
+    return `<input class="input-blank" oninput="guardarWriting(${i}, this.value)" 
+    style="border: none; border-bottom: 2px solid #673ab7; width: 110px; text-align: center; background: rgba(103, 58, 183, 0.05);">`;
+  });
 
-            <div class="pregunta" style="text-align:center; background: #fafafa; border-radius: 20px; padding: 30px; border: 2px dashed #ddd;">
-                <div id="recordingStatus" style="display:none; color: #ff4b2b; font-weight: bold; margin-bottom: 15px;">
-                    <i class="fas fa-microphone-alt fa-beat"></i> Recording...
-                </div>
-                
-                <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
-                    <button id="btnStart" onclick="iniciarGrabacion()" style="background: #ff4b2b; color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(255,75,43,0.3);">
-                        <i class="fas fa-microphone" style="font-size: 20px;"></i>
-                    </button>
-                    <button id="btnStop" onclick="detenerGrabacion()" style="display:none; background: #333; color: white; border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer;">
-                        <i class="fas fa-stop"></i>
-                    </button>
-                    <button id="btnSendSpeaking" onclick="enviarSpeaking()" style="display:none; background: #029e99; color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer;">
-                        <i class="fas fa-paper-plane"></i> Evaluate Mission
-                    </button>
-                </div>
-                <div id="audioPreview" style="margin-top: 20px;"></div>
-            </div>
-        </div>`;
-      btnEnviar.style.display = "none";
-    }
+  contenido = `
+  <div class="writing-container" style="animation: fadeIn 0.5s ease;">
+    <div class="pregunta" style="background: #fdfbff; border-left: 5px solid #673ab7; padding: 30px; border-radius: 12px;">
+      <h3 style="color: #673ab7;">
+        <i class="fas fa-pen-nib"></i> Writing Challenge
+      </h3>
+      <div class="texto-writing" style="line-height: 2.8; font-size: 1.15rem;">
+        ${texto}
+      </div>
+    </div>
 
-    if (tipo === "writing") {
-      let texto = data.texto || "";
-      const palabras = data.palabras || [];
-      let index = 0;
-      texto = texto.replace(/____/g, () => {
-        const i = index++;
-        return `<input class="input-blank" oninput="guardarWriting(${i}, this.value)">`;
-      });
-      contenido = `
-        <div class="pregunta texto-writing">${texto}</div>
-        <div class="banco-palabras">${palabras.map(p => `<span class="palabra">${p}</span>`).join("")}</div>`;
-      btnEnviar.style.display = "block";
-      btnEnviar.onclick = enviarWriting;
-    }
+    <div class="pregunta" style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; margin-top: 20px; padding: 20px;">
+      <strong>Word Bank:</strong>
+      <div class="banco-palabras" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top:10px;">
+        ${palabras.map(p => `
+          <span class="palabra" style="background: #f3f0f7; padding: 6px 14px; border-radius: 8px; color: #673ab7;">
+            ${p}
+          </span>
+        `).join("")}
+      </div>
+    </div>
+  </div>`;
+  btnEnviar.style.display = "block";
+  btnEnviar.onclick = enviarWriting;
+}
 
     document.getElementById("resultado").innerHTML = contenido;
 
