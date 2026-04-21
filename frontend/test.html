@@ -345,6 +345,17 @@ if (tipo === "listening") {
 if (tipo === "speaking") {
       contenido = `
         <div class="speaking-container" style="animation: fadeIn 0.5s ease;">
+          ${data.texto_lectura ? `
+  <div class="pregunta" style="border-left: 5px solid #007bff; background: #f0f7ff; padding: 20px; border-radius: 8px; margin-bottom:15px;">
+    <h3 style="color:#0056b3; margin:0;">
+      <i class="fas fa-book-reader"></i> Read Aloud
+    </h3>
+    <p style="margin-top:10px; font-size:1.1rem; line-height:1.6;">
+      ${data.texto_lectura}
+    </p>
+    <small style="color:#555;">🎤 Read this text clearly before recording your response.</small>
+  </div>
+` : ""}
             <div class="pregunta" style="border-left: 5px solid #fa709a; background: #fffafb; padding: 20px; border-radius: 8px;">
                 <h3 style="color: #d85a7f; margin: 0;"><i class="fas fa-comments"></i> ${data.titulo || "Speaking Mission"}</h3>
                 <p style="margin-top: 10px; font-size: 1.1rem; color: #333;"><strong>Scenario:</strong> ${data.escenario || data.fluency}</p>

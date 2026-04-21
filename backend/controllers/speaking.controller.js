@@ -21,11 +21,12 @@ Nivel: ${nivel}
 Tema: ${tema}
 
 El formato debe ser JSON con:
-- titulo: Un nombre creativo para la situación.
-- escenario: Describe el contexto real (ej. "Estás en una reunión de negocios...").
-- objetivo: Qué debe lograr el usuario al hablar (ej. "Convencer al cliente de...").
-- palabras_clave: Un array de 5 palabras técnicas o útiles que el usuario DEBE usar.
-- reto_extra: Un desafío gramatical (ej. "Usa al menos un condicional").
+- titulo
+- escenario
+- objetivo
+- palabras_clave (5)
+- reto_extra
+- texto_lectura: Un párrafo corto (2-3 líneas) claro y natural que el usuario deberá LEER EN VOZ ALTA para evaluar pronunciación.
 
 Responde SOLO el JSON.
 `;
