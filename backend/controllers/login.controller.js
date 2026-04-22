@@ -67,7 +67,26 @@ exports.forgotPassword = async (req, res) => {
 
     const link = `https://skillsyntax-2war.onrender.com/pages/reset-password.html?token=${token}`;
 
-    console.log("🔗 LINK DE RECUPERACIÓN:", link);
+    const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+await transporter.sendMail({
+  from: '"SkillSyntax" <no-reply@skillsyntax.com>',
+  to: email,
+  subject: "Recuperar contraseña",
+  html: `
+    <h3>Recuperar contraseña</h3>
+    <p>Haz clic en el siguiente enlace:</p>
+    <a href="${link}">${link}</a>
+  `
+});
 
     res.json({ msg: "Revisa tu correo para continuar." });
 
