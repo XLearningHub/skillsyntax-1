@@ -175,6 +175,23 @@ button:hover{
 
       <button onclick="login()">Entrar</button>
 
+      <p style="text-align:center; margin-top:10px;">
+  <a href="#" onclick="mostrarRecuperacion()" style="color:#029e99; font-size:14px;">
+    ¿Olvidaste tu contraseña?
+  </a>
+</p>
+
+<div id="recuperacionBox" style="display:none; text-align:center; margin-top:15px;">
+  <input id="emailRecuperar" type="email" placeholder="Ingresa tu correo"
+    style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px;">
+
+  <button onclick="enviarRecuperacion()" style="background:#0a1f3b;">
+    Enviar enlace
+  </button>
+
+  <p id="msgRecuperacion" style="margin-top:10px; font-size:13px;"></p>
+</div>
+
       <div class="register">
         ¿No tienes cuenta?
         <a href="./register.html">Crear cuenta</a>
@@ -261,6 +278,41 @@ window.login = async () => {
   } catch (error) {
     console.error(error);
     msg.innerText = "Error de conexión con servidor";
+    msg.style.color = "red";
+  }
+};
+
+window.mostrarRecuperacion = () => {
+  const box = document.getElementById("recuperacionBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+};
+
+window.enviarRecuperacion = async () => {
+  const email = document.getElementById("emailRecuperar").value.trim();
+  const msg = document.getElementById("msgRecuperacion");
+
+  if (!email) {
+    msg.innerText = "Ingresa tu correo";
+    msg.style.color = "red";
+    return;
+  }
+
+  try {
+    const res = await fetch("https://skillsyntax-2war.onrender.com/api/login/forgot-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await res.json();
+
+    msg.innerText = data.msg || data.error;
+    msg.style.color = "green";
+
+  } catch (error) {
+    msg.innerText = "Error al enviar solicitud";
     msg.style.color = "red";
   }
 };

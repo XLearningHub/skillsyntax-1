@@ -37,4 +37,8 @@ res.json({
   }
 });
 
+const loginController = require("../controllers/login.controller");
+
+router.post("/forgot-password", loginController.forgotPassword);
+
 module.exports = router;
