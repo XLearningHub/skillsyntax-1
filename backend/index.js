@@ -66,7 +66,6 @@ app.post("/guardar_usuario", async (req, res) => {
         if (err) {
           console.error("Error BD:", err);
 
-          // Error: correo duplicado
           if (err.code === "ER_DUP_ENTRY") {
             return res.status(400).json({ error: "El correo ya está registrado" });
           }

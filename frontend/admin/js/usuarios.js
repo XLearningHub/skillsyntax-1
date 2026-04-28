@@ -1,5 +1,11 @@
 // js/usuarios.js
 
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (!usuario || usuario.rol !== "admin") {
+    window.location.href = "/index.html";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("tablaUsuarios")) {
         cargarUsuarios();
@@ -73,4 +79,8 @@ async function eliminarUsuario(id) {
         console.error("Error al eliminar:", error);
         alert("Hubo un error en la conexión al intentar eliminar.");
     }
+}
+
+function irCrearUsuario() {
+    window.location.href = "../register.html";
 }
