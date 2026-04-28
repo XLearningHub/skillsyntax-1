@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-//  CARGAR USUARIOS
 async function cargarUsuarios() {
     const tabla = document.getElementById("tablaUsuarios");
     

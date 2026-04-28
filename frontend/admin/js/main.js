@@ -40,7 +40,7 @@ function inyectarMenu() {
 function logout() {
     console.log("Cerrando sesión...");
     localStorage.clear(); 
-    window.location.href = "/index.html";
+    window.location.href = "https://skillsyntaxai.elon.school";
 }
 
 // Ejecutar al cargar
