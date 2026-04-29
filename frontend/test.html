@@ -643,21 +643,43 @@ let audioBlob=null;
 async function iniciarGrabacion() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+
+    // 🔥 RESET COMPLETO
     audioChunks = [];
+    audioBlob = null;
+
+    const preview = document.getElementById("audioPreview");
+    if (preview) preview.innerHTML = "";
+
+    const btnSend = document.getElementById("btnSendSpeaking");
+    if (btnSend) {
+      btnSend.style.display = "none";
+      btnSend.disabled = false;
+      btnSend.innerHTML = '<i class="fas fa-paper-plane"></i> Evaluate Mission';
+    }
+
+    mediaRecorder = new MediaRecorder(stream);
 
     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
     mediaRecorder.onstop = () => {
+      console.log("STOP ejecutado"); // 👈 DEBUG
+
       audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
       const audioURL = URL.createObjectURL(audioBlob);
-      document.getElementById("audioPreview").innerHTML = `<audio controls src="${audioURL}"></audio>`;
+      document.getElementById("audioPreview").innerHTML =
+        `<audio controls src="${audioURL}"></audio>`;
+
       document.getElementById("btnSendSpeaking").style.display = "inline-block";
     };
 
     mediaRecorder.start();
+
     document.getElementById("recordingStatus").style.display = "block";
     document.getElementById("btnStart").style.display = "none";
     document.getElementById("btnStop").style.display = "inline-block";
+
   } catch (error) {
     alert("Microphone access denied.");
   }
@@ -666,17 +688,25 @@ async function iniciarGrabacion() {
 function detenerGrabacion() {
   if (mediaRecorder) {
     mediaRecorder.stop();
+
+    // 🔥 LIBERAR MICRÓFONO
+    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+
     document.getElementById("recordingStatus").style.display = "none";
     document.getElementById("btnStop").style.display = "none";
     document.getElementById("btnStart").style.display = "inline-block";
-    document.getElementById("btnStart").innerHTML = '<i class="fas fa-redo"></i>'; // Icono de re-intentar
+    document.getElementById("btnStart").innerHTML = '<i class="fas fa-redo"></i>';
   }
 }
 
 async function enviarSpeaking() {
-  if (!audioBlob) return;
+  if (!audioBlob || audioBlob.size === 0) {
+    alert("No hay audio válido.");
+    return;
+  }
 
   const btn = document.getElementById("btnSendSpeaking");
+
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
   btn.disabled = true;
 
@@ -689,8 +719,14 @@ async function enviarSpeaking() {
       method: "POST",
       body: formData
     });
+
     const data = await res.json();
     mostrarResultado(data);
+
+    // 🔥 REACTIVAR botón por si quiere intentar otra vez
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Evaluate Mission';
+
   } catch (error) {
     alert("Error connecting to server.");
     btn.disabled = false;
