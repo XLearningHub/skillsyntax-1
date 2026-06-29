@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Grupos | SkillSyntax Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #060e1a;
+            --bg-card: #0d1b2e;
+            --bg-sidebar: #081427;
+            --primary: #00c2cb;
+            --accent: #7c5cfc;
+            --danger: #ff5f52;
+            --text-main: #ffffff;
+            --text-dim: #a0aec0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            background: var(--bg-sidebar);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-sizing: border-box;
+        }
+
+        .sidebar-top h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary);
+            letter-spacing: -1px;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar nav a i { width: 20px; margin-right: 12px; text-align: center; }
+
+        .sidebar nav a:hover { background: rgba(0, 194, 203, 0.1); color: var(--primary); }
+
+        .sidebar nav a.active {
+            background: var(--primary) !important;
+            color: #000 !important;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 194, 203, 0.3);
+        }
+
+        .logout {
+            background: rgba(231, 76, 60, 0.1) !important;
+            color: var(--danger) !important;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+        }
+
+        h1 { font-size: 2.2rem; margin-bottom: 5px; font-weight: 700; }
+        .subtitle { color: var(--text-dim); margin-bottom: 35px; }
+
+        .card {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-refresh {
+            background: rgba(0, 194, 203, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(0, 194, 203, 0.2);
+            padding: 0 18px;
+            height: 42px;
+            box-sizing: border-box;
+            margin: 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-refresh:hover { background: var(--primary); color: #000; }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+
+        th {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 10px 15px;
+        }
+
+        td {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 18px 15px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        td:first-child { border-radius: 15px 0 0 15px; border-left: 1px solid rgba(255, 255, 255, 0.05); }
+        td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .id-cell { color: var(--primary); font-weight: 700; }
+        .name-cell { font-weight: 700; color: #fff; }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .role-admin { background: rgba(0, 194, 203, 0.1); color: var(--primary); border: 1px solid var(--primary); }
+        .role-user { background: rgba(160, 174, 192, 0.1); color: var(--text-dim); border: 1px solid var(--text-dim); }
+
+        .btn-delete {
+            background: rgba(255, 95, 82, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 95, 82, 0.2);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+        }
+
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        /* ── Modal de confirmación ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 36px 40px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: modalIn 0.22s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.92) translateY(-12px); }
+            to   { opacity: 1; transform: scale(1)   translateY(0); }
+        }
+
+        .modal-icon {
+            font-size: 2.4rem;
+            margin-bottom: 16px;
+        }
+
+        .modal-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 10px;
+            color: var(--text-main);
+        }
+
+        .modal-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0 0 28px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-modal-cancel {
+            flex: 1;
+            padding: 11px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn-modal-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .btn-modal-confirm {
+            flex: 1;
+            padding: 11px 0;
+            border-radius: 12px;
+            border: none;
+            background: var(--danger);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 4px 18px rgba(255, 95, 82, 0.35);
+        }
+
+        .btn-modal-confirm:hover {
+            background: #ff3b2d;
+            box-shadow: 0 6px 22px rgba(255, 95, 82, 0.5);
+            transform: translateY(-1px);
+        }
+
+        /* ── Botón guardar (variante primaria) ── */
+        .btn-modal-save {
+            flex: 1;
+            padding: 11px 0;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: #000;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 4px 18px rgba(0, 194, 203, 0.3);
+        }
+
+        .btn-modal-save:hover {
+            background: #00d8e2;
+            box-shadow: 0 6px 22px rgba(0, 194, 203, 0.5);
+            transform: translateY(-1px);
+        }
+
+        /* ── Input dentro del modal ── */
+        .modal-input {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            margin-bottom: 24px;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+        }
+
+        .modal-input::placeholder { color: var(--text-dim); }
+
+        .modal-input:focus {
+            border-color: var(--primary);
+            background: rgba(0, 194, 203, 0.05);
+            box-shadow: 0 0 0 3px rgba(0, 194, 203, 0.12);
+        }
+
+        /* ── Sistema de Toasts ── */
+        .toast-container {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            pointer-events: auto;
+            animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .toast.hide {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        .toast-icon {
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .toast-msg {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            border-radius: 0 0 14px 14px;
+            animation: toastProgress 3.5s linear forwards;
+        }
+
+        .toast { position: relative; overflow: hidden; }
+
+        .toast.success {
+            background: linear-gradient(135deg, #0d2b1f 0%, #0a2318 100%);
+            border-color: rgba(0, 194, 130, 0.3);
+        }
+        .toast.success .toast-progress { background: #00c282; width: 100%; }
+
+        .toast.error {
+            background: linear-gradient(135deg, #2b0d0d 0%, #230a0a 100%);
+            border-color: rgba(255, 95, 82, 0.3);
+        }
+        .toast.error .toast-progress { background: var(--danger); width: 100%; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(60px) scale(0.95); }
+            to   { opacity: 1; transform: translateX(0)    scale(1); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0)    scale(1); }
+            to   { opacity: 0; transform: translateX(60px) scale(0.95); }
+        }
+
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+
+        /* ── Barra de herramientas: botones + buscador ── */
+        .table-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 24px;
+            gap: 15px;
+            flex-wrap: nowrap;
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-add {
+            background: var(--primary) !important;
+            color: #000 !important;
+        }
+
+        /* ── Buscador ── */
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 280px;
+            height: 42px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            pointer-events: none;
+            transition: color 0.25s;
+        }
+
+        #buscadorGrupos {
+            width: 100%;
+            height: 42px;
+            box-sizing: border-box;
+            margin: 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 0 16px 0 40px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+        }
+
+        #buscadorGrupos::placeholder { color: var(--text-dim); }
+
+        #buscadorGrupos:focus {
+            border-color: var(--primary);
+            background: rgba(0, 194, 203, 0.05);
+            box-shadow: 0 0 0 3px rgba(0, 194, 203, 0.12);
+        }
+
+        .search-wrapper:focus-within i { color: var(--primary); }
+
+        .sin-resultados {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        /* ── Animación de error en input ── */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-6px); }
+            40%       { transform: translateX(6px); }
+            60%       { transform: translateX(-4px); }
+            80%       { transform: translateX(4px); }
+        }
+
+        .modal-input.shake {
+            animation: shake 0.35s ease;
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 3px rgba(255, 95, 82, 0.2) !important;
+        }
+
+        /* ── Botón Asignar (variante accent violeta) ── */
+        .btn-assign {
+            background: rgba(124, 92, 252, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(124, 92, 252, 0.3);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: 0.3s;
+            margin-right: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+        }
+        .btn-assign:hover {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(124, 92, 252, 0.4);
+        }
+
+        /* ── Acordeón de integrantes ── */
+
+        /* Cursor pointer + transición en la fila principal */
+        #tablaGrupos tr.fila-grupo {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #tablaGrupos tr.fila-grupo:hover td {
+            background: rgba(0, 194, 203, 0.04);
+        }
+
+        /* Ícono de flecha que rota al abrir */
+        .icono-flecha {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            margin-right: 10px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        background 0.2s, color 0.2s;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+        tr.acordeon-abierto .icono-flecha {
+            transform: rotate(180deg);
+            background: rgba(0, 194, 203, 0.15);
+            color: var(--primary);
+        }
+
+        /* La celda de nombre queda en display flex para alinear ícono + texto */
+        .name-cell-inner {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Fila expandible del acordeón */
+        .fila-acordeon td {
+            padding: 0 !important;
+            border: none !important;
+            background: transparent !important;
+        }
+
+        /* Contenedor interior con altura animada */
+        .acordeon-inner {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity  0.28s ease;
+            opacity: 0;
+        }
+        .acordeon-inner.acordeon-open {
+            max-height: 600px;
+            opacity: 1;
+        }
+
+        /* Panel de contenido */
+        .acordeon-panel {
+            margin: 0 8px 10px 8px;
+            padding: 18px 24px;
+            border-radius: 0 0 16px 16px;
+            background: rgba(0, 0, 0, 0.25);
+            box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-top: none;
+        }
+
+        /* Título del panel */
+        .acordeon-titulo {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        /* Lista de alumnos */
+        .acordeon-lista {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* Chip de cada alumno */
+        .acordeon-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 12px 5px 8px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.8rem;
+            color: var(--text-main);
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .acordeon-chip:hover {
+            background: rgba(0, 194, 203, 0.08);
+            border-color: rgba(0, 194, 203, 0.2);
+        }
+        .acordeon-chip-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #000;
+            flex-shrink: 0;
+        }
+        .acordeon-chip-email {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-left: 2px;
+        }
+
+        /* Mensaje vacío */
+        .acordeon-vacio {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .acordeon-vacio i { opacity: 0.45; }
+
+        /* ── Modal Asignar Alumnos — card amplia ── */
+        .modal-card-wide {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 32px 36px;
+            max-width: 720px;
+            width: 94%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalIn 0.22s ease;
+        }
+        .modal-card-wide h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: var(--text-main);
+        }
+        .modal-card-wide .modal-subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin: 0 0 20px;
+        }
+
+        /* ── Cabecera del modal asignar ── */
+        .modal-asignar-header {
+            flex-shrink: 0;
+            margin-bottom: 16px;
+        }
+
+        /* ── Controles de filtro del modal ── */
+        .modal-filter-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .modal-search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 180px;
+        }
+        .modal-search-wrapper i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 0.82rem;
+            pointer-events: none;
+            transition: color 0.25s;
+        }
+        .modal-search-wrapper:focus-within i { color: var(--primary); }
+
+        #buscadorModalAlumnos {
+            width: 100%;
+            box-sizing: border-box;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 11px;
+            padding: 0 14px 0 36px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+        }
+        #buscadorModalAlumnos::placeholder { color: var(--text-dim); }
+        #buscadorModalAlumnos:focus {
+            border-color: var(--primary);
+            background: rgba(0, 194, 203, 0.05);
+            box-shadow: 0 0 0 3px rgba(0, 194, 203, 0.12);
+        }
+
+        /* ── Toggle Mostrar Todos ── */
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            font-size: 0.83rem;
+            color: var(--text-dim);
+            transition: color 0.2s;
+        }
+        .toggle-label:hover { color: var(--text-main); }
+        .toggle-label input[type="checkbox"] { display: none; }
+        .toggle-track {
+            width: 38px;
+            height: 21px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            position: relative;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #fff;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .toggle-label input:checked ~ .toggle-track { background: var(--accent); }
+        .toggle-label input:checked ~ .toggle-track .toggle-thumb { transform: translateX(17px); }
+
+        /* ── Lista scrolleable de alumnos ── */
+        #listaAlumnosModal {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding-right: 6px;
+            min-height: 200px;
+            max-height: 420px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(124, 92, 252, 0.3) transparent;
+        }
+        #listaAlumnosModal::-webkit-scrollbar { width: 5px; }
+        #listaAlumnosModal::-webkit-scrollbar-track { background: transparent; }
+        #listaAlumnosModal::-webkit-scrollbar-thumb {
+            background: rgba(124, 92, 252, 0.3);
+            border-radius: 10px;
+        }
+
+        /* ── Alumno ocupado (ya está en otro grupo) ── */
+        .alumno-ocupado {
+            border-color: rgba(255, 95, 82, 0.25) !important;
+            background: rgba(255, 95, 82, 0.05) !important;
+        }
+        .alumno-ocupado:hover {
+            background: rgba(255, 95, 82, 0.1) !important;
+            border-color: rgba(255, 95, 82, 0.4) !important;
+        }
+        .alumno-ocupado .alumno-item-name { color: #ff8a7f; }
+
+        .badge-ocupado {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.64rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            background: rgba(255, 95, 82, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255, 95, 82, 0.3);
+            flex-shrink: 0;
+        }
+
+        /* ── Sin alumnos visibles ── */
+        .modal-sin-resultados {
+            text-align: center;
+            padding: 28px 20px;
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-sin-resultados i { font-size: 1.5rem; opacity: 0.4; }
+
+        /* ── Checkbox item personalizado ── */
+        .alumno-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            user-select: none;
+        }
+        .alumno-item:hover {
+            background: rgba(124, 92, 252, 0.06);
+            border-color: rgba(124, 92, 252, 0.2);
+        }
+        .alumno-item.checked {
+            background: rgba(124, 92, 252, 0.1);
+            border-color: rgba(124, 92, 252, 0.35);
+        }
+        .alumno-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .alumno-item-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+        .alumno-item-name {
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .alumno-item-email {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .alumno-item-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            background: rgba(124, 92, 252, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(124, 92, 252, 0.3);
+        }
+
+        /* ── Spinner dentro del modal asignar ── */
+        .modal-loading {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+        .modal-loading i { font-size: 1.4rem; display: block; margin-bottom: 10px; }
+
+        /* ── Botón guardar accent ── */
+        .btn-modal-save-accent {
+            flex: 1;
+            padding: 11px 0;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 4px 18px rgba(124, 92, 252, 0.3);
+        }
+        .btn-modal-save-accent:hover {
+            background: #9b7fff;
+            box-shadow: 0 6px 22px rgba(124, 92, 252, 0.5);
+            transform: translateY(-1px);
+        }
+        .btn-modal-save-accent:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Botón Editar (mismo tamaño que btn-delete) ── */
+        .btn-edit {
+            background: rgba(108, 92, 231, 0.12);
+            color: #a78bfa;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+        }
+        .btn-edit:hover { background: #6c5ce7; color: #fff; border-color: #6c5ce7; }
+
+        /* Contenedor de botones de acción con separación uniforme */
+        .action-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* ── Modal Editar Grupo ── */
+        .modal-edit-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 36px 40px;
+            max-width: 460px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalIn 0.22s ease;
+        }
+        .modal-edit-card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: var(--text-main);
+        }
+        .modal-edit-card .modal-subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .form-group input {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 11px 14px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 194, 203, 0.12);
+        }
+        .modal-edit-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 28px;
+        }
+        .btn-edit-cancel {
+            padding: 11px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .btn-edit-cancel:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
+        .btn-edit-save {
+            padding: 11px 28px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #6c5ce7, #a78bfa);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 4px 18px rgba(108, 92, 231, 0.35);
+        }
+        .btn-edit-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(108, 92, 231, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <h2>SkillSyntax Admin</h2>
+            <nav>
+                <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="usuarios.html"><i class="fas fa-users"></i> Usuarios</a>
+                <a href="grupos.html" class="active"><i class="fas fa-layer-group"></i> Grupos</a>
+                <a href="ejercicios.html"><i class="fas fa-book"></i> Ejercicios</a>
+                <a href="reportes.html"><i class="fas fa-file-alt"></i> Reportes</a>
+            </nav>
+        </div>
+        <a href="#" class="logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
+    </div>
+
+    <div class="content">
+        <h1>Gestión de Grupos</h1>
+        <p class="subtitle">Administra los grupos y asignaciones de SkillSyntax.</p>
+
+        <div class="card">
+            <div class="table-header-actions">
+                <div class="btn-group">
+                    <button class="btn-refresh" onclick="cargarGrupos()">
+                        <i class="fas fa-sync-alt"></i> Actualizar Lista
+                    </button>
+                    <button class="btn-refresh btn-add" onclick="irCrearGrupo()">
+                        <i class="fas fa-folder-plus"></i> Crear Grupo
+                    </button>
+                </div>
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="buscadorGrupos" placeholder="Buscar grupo..." autocomplete="off">
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Grupo</th>
+                        <th>Nombre del Grupo</th>
+                        <th>Cantidad de Alumnos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaGrupos">
+                </tbody>
+            </table>
+            <p class="sin-resultados" id="sinResultados">
+                <i class="fas fa-search" style="font-size:1.4rem; display:block; margin-bottom:8px; opacity:0.4;"></i>
+                Sin resultados para tu búsqueda.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── Contenedor de notificaciones Toast ── -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- ── Modal confirmación eliminar grupo ── -->
+    <div class="modal-overlay" id="modalEliminar">
+        <div class="modal-card">
+            <div class="modal-icon">⚠️</div>
+            <h3>¿Eliminar grupo?</h3>
+            <p>Esta acción es permanente y no se puede deshacer.<br>El grupo y todos sus datos serán eliminados.</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" id="btnModalCancelar">Cancelar</button>
+                <button class="btn-modal-confirm" id="btnModalConfirmar">Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal crear nuevo grupo ── -->
+    <div class="modal-overlay" id="modalCrearGrupo">
+        <div class="modal-card">
+            <div class="modal-icon">📁</div>
+            <h3>Crear Nuevo Grupo</h3>
+            <p>Escribe el nombre del grupo que deseas crear.</p>
+            <input
+                type="text"
+                id="inputNombreGrupo"
+                class="modal-input"
+                placeholder="Ej. Grupo A — Intermedio"
+                maxlength="80"
+                autocomplete="off"
+            >
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" id="btnCrearCancelar">Cancelar</button>
+                <button class="btn-modal-save"   id="btnCrearGuardar">
+                    <i class="fas fa-floppy-disk"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal Editar Grupo ── -->
+    <div class="modal-overlay" id="modalEditarGrupo">
+        <div class="modal-edit-card">
+            <h3><i class="fas fa-pen" style="color:#a78bfa; margin-right:10px;"></i>Editar Grupo</h3>
+            <p class="modal-subtitle">Modifica el nombre del grupo.</p>
+
+            <div class="form-group">
+                <label for="editNombreGrupo">Nombre del Grupo</label>
+                <input type="text" id="editNombreGrupo" placeholder="Nombre del grupo" required maxlength="80" autocomplete="off">
+            </div>
+
+            <div class="modal-edit-actions">
+                <button class="btn-edit-cancel" id="btnEditGrupoCancelar">Cancelar</button>
+                <button class="btn-edit-save" id="btnEditGrupoGuardar">
+                    <i class="fas fa-save" style="margin-right:6px;"></i>Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal Asignar Alumnos ── -->
+    <div class="modal-overlay" id="modalAsignarAlumnos">
+        <div class="modal-card-wide">
+
+            <!-- Cabecera fija -->
+            <div class="modal-asignar-header">
+                <div class="modal-icon" style="font-size:1.8rem; margin-bottom:10px;">👥</div>
+                <h3 id="tituloModalAsignar" style="font-size:1.2rem; font-weight:700; margin:0 0 4px;">Asignar Alumnos</h3>
+                <p class="modal-subtitle" style="color:var(--text-dim); font-size:0.83rem; margin:0 0 16px;">Selecciona los alumnos que pertenecen a este grupo.</p>
+
+                <!-- Fila de filtros: buscador + toggle -->
+                <div class="modal-filter-row">
+                    <div class="modal-search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input
+                            type="text"
+                            id="buscadorModalAlumnos"
+                            placeholder="Buscar alumno por nombre o email…"
+                            autocomplete="off"
+                        >
+                    </div>
+                    <label class="toggle-label" for="toggleMostrarTodos" title="Mostrar alumnos de otros grupos">
+                        <input type="checkbox" id="toggleMostrarTodos">
+                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                        Mostrar alumnos de otros grupos
+                    </label>
+                </div>
+            </div>
+
+            <!-- Lista inyectada dinámicamente por grupos.js -->
+            <div id="listaAlumnosModal"></div>
+
+            <!-- Sin resultados -->
+            <div class="modal-sin-resultados" id="modalSinResultados">
+                <i class="fas fa-user-slash"></i>
+                Sin alumnos que coincidan con tu búsqueda.
+            </div>
+
+            <div class="modal-actions" style="flex-shrink:0; margin-top:4px;">
+                <button class="btn-modal-cancel" id="btnAsignarCancelar">Cancelar</button>
+                <button class="btn-modal-save-accent" id="btnAsignarGuardar">
+                    <i class="fas fa-floppy-disk"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/grupos.js"></script>
+</body>
+</html>

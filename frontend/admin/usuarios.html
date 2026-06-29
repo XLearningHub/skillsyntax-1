@@ -104,11 +104,13 @@
             background: rgba(0, 194, 203, 0.1);
             color: var(--primary);
             border: 1px solid rgba(0, 194, 203, 0.2);
-            padding: 10px 18px;
+            padding: 0 18px;
+            height: 42px;
+            box-sizing: border-box;
+            margin: 0;
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
-            margin-bottom: 25px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -163,6 +165,424 @@
         }
 
         .btn-delete:hover { background: var(--danger); color: white; }
+
+        /* ── Modal de confirmación ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 36px 40px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: modalIn 0.22s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.92) translateY(-12px); }
+            to   { opacity: 1; transform: scale(1)   translateY(0); }
+        }
+
+        .modal-icon {
+            font-size: 2.4rem;
+            margin-bottom: 16px;
+        }
+
+        .modal-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 10px;
+            color: var(--text-main);
+        }
+
+        .modal-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0 0 28px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-modal-cancel {
+            flex: 1;
+            padding: 11px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn-modal-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .btn-modal-confirm {
+            flex: 1;
+            padding: 11px 0;
+            border-radius: 12px;
+            border: none;
+            background: var(--danger);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 4px 18px rgba(255, 95, 82, 0.35);
+        }
+
+        .btn-modal-confirm:hover {
+            background: #ff3b2d;
+            box-shadow: 0 6px 22px rgba(255, 95, 82, 0.5);
+            transform: translateY(-1px);
+        }
+
+        /* ── Sistema de Toasts ── */
+        .toast-container {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            pointer-events: auto;
+            animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .toast.hide {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        .toast-icon {
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .toast-msg {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            border-radius: 0 0 14px 14px;
+            animation: toastProgress 3.5s linear forwards;
+        }
+
+        .toast { position: relative; overflow: hidden; }
+
+        .toast.success {
+            background: linear-gradient(135deg, #0d2b1f 0%, #0a2318 100%);
+            border-color: rgba(0, 194, 130, 0.3);
+        }
+        .toast.success .toast-progress { background: #00c282; width: 100%; }
+
+        .toast.error {
+            background: linear-gradient(135deg, #2b0d0d 0%, #230a0a 100%);
+            border-color: rgba(255, 95, 82, 0.3);
+        }
+        .toast.error .toast-progress { background: var(--danger); width: 100%; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(60px) scale(0.95); }
+            to   { opacity: 1; transform: translateX(0)    scale(1); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0)    scale(1); }
+            to   { opacity: 0; transform: translateX(60px) scale(0.95); }
+        }
+
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            pointer-events: none;
+            transition: color 0.25s;
+        }
+
+        #buscadorUsuarios {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 11px 16px 11px 40px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+        }
+
+        #buscadorUsuarios::placeholder {
+            color: var(--text-dim);
+        }
+
+        #buscadorUsuarios:focus {
+            border-color: var(--primary);
+            background: rgba(0, 194, 203, 0.05);
+            box-shadow: 0 0 0 3px rgba(0, 194, 203, 0.12);
+        }
+
+        #buscadorUsuarios:focus + i,
+        .search-wrapper:focus-within i {
+            color: var(--primary);
+        }
+
+        .sin-resultados {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        /* ── Barra de herramientas: botones + buscador ── */
+        .table-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 24px;
+            gap: 15px;
+            flex-wrap: nowrap;
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-add {
+            background: var(--primary) !important;
+            color: #000 !important;
+        }
+
+        /* ── Buscador ── */
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 280px;
+            height: 42px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            pointer-events: none;
+            transition: color 0.25s;
+        }
+
+        #buscadorUsuarios {
+            width: 100%;
+            height: 42px;
+            box-sizing: border-box;
+            margin: 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 0 16px 0 40px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+        }
+
+        #buscadorUsuarios::placeholder { color: var(--text-dim); }
+
+        #buscadorUsuarios:focus {
+            border-color: var(--primary);
+            background: rgba(0, 194, 203, 0.05);
+            box-shadow: 0 0 0 3px rgba(0, 194, 203, 0.12);
+        }
+
+        .search-wrapper:focus-within i { color: var(--primary); }
+
+        /* ── Botón Editar (mismo tamaño que btn-delete) ── */
+        .btn-edit {
+            background: rgba(108, 92, 231, 0.12);
+            color: #a78bfa;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+        }
+        .btn-edit:hover { background: #6c5ce7; color: #fff; border-color: #6c5ce7; }
+
+        /* Contenedor de botones de acción con separación uniforme */
+        .action-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* ── Modal Editar Usuario ── */
+        .modal-edit-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 36px 40px;
+            max-width: 460px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalIn 0.22s ease;
+        }
+        .modal-edit-card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: var(--text-main);
+        }
+        .modal-edit-card .modal-subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .form-group input,
+        .form-group select {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 11px 14px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 194, 203, 0.12);
+        }
+        .form-group input[readonly] {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .form-group select option { background: #0d1b2e; color: #fff; }
+        .modal-edit-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 28px;
+        }
+        .btn-edit-cancel {
+            padding: 11px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .btn-edit-cancel:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
+        .btn-edit-save {
+            padding: 11px 28px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #6c5ce7, #a78bfa);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 4px 18px rgba(108, 92, 231, 0.35);
+        }
+        .btn-edit-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(108, 92, 231, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -173,6 +593,7 @@
             <nav>
                 <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
                 <a href="usuarios.html" class="active"><i class="fas fa-users"></i> Usuarios</a>
+                <a href="grupos.html"><i class="fas fa-layer-group"></i> Grupos</a>
                 <a href="ejercicios.html"><i class="fas fa-book"></i> Ejercicios</a>
                 <a href="reportes.html"><i class="fas fa-file-alt"></i> Reportes</a>
             </nav>
@@ -187,17 +608,21 @@
         <p class="subtitle">Administra los permisos y cuentas de SkillSyntax.</p>
 
         <div class="card">
-            <div style="display:flex; gap:10px; margin-bottom:25px;">
+            <div class="table-header-actions">
+                <div class="btn-group">
+                    <button class="btn-refresh" onclick="cargarUsuarios()">
+                        <i class="fas fa-sync-alt"></i> Actualizar Lista
+                    </button>
+                    <button class="btn-refresh btn-add" onclick="irCrearUsuario()">
+                        <i class="fas fa-user-plus"></i> Agregar usuario
+                    </button>
+                </div>
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="buscadorUsuarios" placeholder="Buscar por nombre o correo..." autocomplete="off">
+                </div>
+            </div>
 
-    <button class="btn-refresh" onclick="cargarUsuarios()">
-        <i class="fas fa-sync-alt"></i> Actualizar Lista
-    </button>
-
-    <button class="btn-refresh" onclick="irCrearUsuario()" style="background: var(--primary); color:#000;">
-        <i class="fas fa-user-plus"></i> Agregar usuario
-    </button>
-
-</div>
             <table>
                 <thead>
                     <tr>
@@ -210,8 +635,74 @@
                     </tr>
                 </thead>
                 <tbody id="tablaUsuarios">
-                    </tbody>
+                </tbody>
             </table>
+            <p class="sin-resultados" id="sinResultados">
+                <i class="fas fa-search" style="font-size:1.4rem; display:block; margin-bottom:8px; opacity:0.4;"></i>
+                Sin resultados para tu búsqueda.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── Contenedor de notificaciones Toast ── -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- ── Modal confirmación eliminar usuario ── -->
+    <div class="modal-overlay" id="modalEliminar">
+        <div class="modal-card">
+            <div class="modal-icon">⚠️</div>
+            <h3>¿Eliminar usuario?</h3>
+            <p>Esta acción es permanente y no se puede deshacer.<br>El usuario y todos sus datos serán eliminados.</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" id="btnModalCancelar">Cancelar</button>
+                <button class="btn-modal-confirm" id="btnModalConfirmar">Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal Editar Usuario ── -->
+    <div class="modal-overlay" id="modalEditarUsuario">
+        <div class="modal-edit-card">
+            <h3><i class="fas fa-user-edit" style="color:#a78bfa; margin-right:10px;"></i>Editar Usuario</h3>
+            <p class="modal-subtitle">Modifica el nombre, email, nivel o rol del usuario.</p>
+
+            <div class="form-group">
+                <label for="editNombre">Nombre Completo</label>
+                <input type="text" id="editNombre" placeholder="Nombre del usuario">
+            </div>
+
+            <div class="form-group">
+                <label for="editEmail">Email</label>
+                <input type="email" id="editEmail" placeholder="email@ejemplo.com">
+            </div>
+
+            <div class="form-group">
+                <label for="editNivelUsuario">Nivel</label>
+                <select id="editNivelUsuario">
+                    <option value="">-- Sin nivel --</option>
+                    <option value="A1">A1</option>
+                    <option value="A2">A2</option>
+                    <option value="B1">B1</option>
+                    <option value="B2">B2</option>
+                    <option value="C1">C1</option>
+                    <option value="C2">C2</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="editRol">Rol</label>
+                <select id="editRol">
+                    <option value="alumno">Alumno</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <div class="modal-edit-actions">
+                <button class="btn-edit-cancel" id="btnEditCancelar">Cancelar</button>
+                <button class="btn-edit-save" id="btnEditGuardar">
+                    <i class="fas fa-save" style="margin-right:6px;"></i>Guardar Cambios
+                </button>
+            </div>
         </div>
     </div>
 

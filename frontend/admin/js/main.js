@@ -39,8 +39,9 @@ function inyectarMenu() {
 
 function logout() {
     console.log("Cerrando sesión...");
-    localStorage.clear(); 
-    window.location.href = "https://skillsyntaxai.elon.school";
+    localStorage.clear();
+    // Ruta relativa: el navegador resuelve contra el host actual (local o producción)
+    window.location.href = "/";
 }
 
 // Ejecutar al cargar

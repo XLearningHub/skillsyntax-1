@@ -7,16 +7,18 @@ router.post("/email", async (req, res) => {
   const { email } = req.body;
 
   try {
-    const [result] = await db.query(
-      "SELECT id FROM users WHERE email = ?",
-      [email]
-    );
+    const snapshot = await db
+      .collection("users")
+      .where("email", "==", email)
+      .limit(1)
+      .get();
 
-    if (result.length === 0) {
+    if (snapshot.empty) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    res.json({ id: result[0].id });
+    const doc = snapshot.docs[0];
+    res.json({ id: doc.id });
 
   } catch (err) {
     console.error(err);
@@ -27,10 +29,18 @@ router.post("/email", async (req, res) => {
 // OBTENER TODOS LOS USUARIOS (ADMIN)
 router.get("/", async (req, res) => {
   try {
-    const [result] = await db.query(
-      "SELECT id, nombre, email, nivel_general, rol, fecha FROM users ORDER BY id ASC"
-    );
-    res.json(result);
+    const snapshot = await db.collection("users").get();
+
+    const users = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Ordenar por nombre en memoria (Firestore no requiere un índice para esto)
+    users.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+
+    res.json(users);
+
   } catch (err) {
     console.error("Error al obtener usuarios:", err);
     res.status(500).json({ error: "Error servidor" });
@@ -42,16 +52,14 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [result] = await db.query(
-      "SELECT id, nombre FROM users WHERE id = ?",
-      [id]
-    );
+    const doc = await db.collection("users").doc(id).get();
 
-    if (result.length === 0) {
+    if (!doc.exists) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    res.json(result[0]);
+    const data = doc.data();
+    res.json({ id: doc.id, nombre: data.nombre });
 
   } catch (err) {
     console.error(err);
@@ -59,35 +67,40 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ACTUALIZAR ROL DE USUARIO (ADMIN)
+// ACTUALIZAR USUARIO (ADMIN) — nombre, email, rol, nivel_general
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { rol } = req.body;
+  const { nombre, email, rol, nivel_general } = req.body;
+
+  // Incluir solo los campos que llegan en el body
+  const actualizacion = {};
+  if (nombre        !== undefined) actualizacion.nombre        = nombre;
+  if (email         !== undefined) actualizacion.email         = email;
+  if (rol           !== undefined) actualizacion.rol           = rol;
+  if (nivel_general !== undefined) actualizacion.nivel_general = nivel_general;
+
+  if (Object.keys(actualizacion).length === 0) {
+    return res.status(400).json({ error: "No se proporcionaron campos para actualizar" });
+  }
 
   try {
-    await db.query(
-      "UPDATE users SET rol = ? WHERE id = ?",
-      [rol, id]
-    );
+    await db.collection("users").doc(id).update(actualizacion);
+    res.json({ mensaje: "Usuario actualizado correctamente" });
 
-    res.json({ mensaje: "Rol actualizado correctamente" });
   } catch (err) {
     console.error("Error al actualizar usuario:", err);
     res.status(500).json({ error: "Error servidor" });
   }
 });
 
-//ACTUALIZAR NIVEL GENERAL DE USUARIO (DASHBOARD)
+// ELIMINAR USUARIO (ADMIN)
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    await db.query(
-      "DELETE FROM users WHERE id = ?",
-      [id]
-    );
-
+    await db.collection("users").doc(id).delete();
     res.json({ mensaje: "Usuario eliminado correctamente" });
+
   } catch (err) {
     console.error("Error al eliminar usuario:", err);
     res.status(500).json({ error: "Error servidor" });

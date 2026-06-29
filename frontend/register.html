@@ -122,10 +122,111 @@
             font-weight: 500;
         }
 
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            color: white;
+            font-size: 14px;
+            transition: 0.3s;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0aec0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0,194,203,0.2);
+        }
+
+        select option {
+            background: #0d1b2e;
+            color: white;
+        }
+
         @media(max-width:600px) {
             .form-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* ── Sistema de Toasts ── */
+        .toast-container {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+            animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .toast.hide {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        .toast-icon { font-size: 1.15rem; flex-shrink: 0; }
+        .toast-msg  { flex: 1; line-height: 1.4; }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            border-radius: 0 0 14px 14px;
+            animation: toastProgress 3.5s linear forwards;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #0d2b1f 0%, #0a2318 100%);
+            border-color: rgba(0, 194, 130, 0.3);
+        }
+        .toast.success .toast-progress { background: #00c282; width: 100%; }
+
+        .toast.error {
+            background: linear-gradient(135deg, #2b0d0d 0%, #230a0a 100%);
+            border-color: rgba(255, 95, 82, 0.3);
+        }
+        .toast.error .toast-progress { background: #ff5f52; width: 100%; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(60px) scale(0.95); }
+            to   { opacity: 1; transform: translateX(0)    scale(1); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0)    scale(1); }
+            to   { opacity: 0; transform: translateX(60px) scale(0.95); }
+        }
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to   { width: 0%; }
         }
     </style>
 </head>
@@ -138,10 +239,25 @@
         <div class="subtitle">Comienza tu aprendizaje en SkillSyntax</div>
 
         <div class="form-grid">
-            <input id="nombre" type="text" placeholder="Usuario">
+            <input id="nombre" type="text" placeholder="Nombre Completo">
             <input id="email" type="email" placeholder="Correo electrónico">
             <input id="password" type="password" placeholder="Contraseña">
-            <input id="confirmPassword" type="password" placeholder="Confirmar">
+            <input id="confirmPassword" type="password" placeholder="Confirmar Contraseña">
+        </div>
+
+        <div style="margin-bottom: 15px; text-align: left;">
+            <label for="nivelNuevoUsuario" style="display: block; color: var(--text-dim); font-size: 13px; margin-bottom: 6px; font-weight: 500;">
+                Nivel (Opcional)
+            </label>
+            <select id="nivelNuevoUsuario">
+                <option value="">Seleccione un nivel</option>
+                <option value="A1">A1 — Beginner</option>
+                <option value="A2">A2 — Elementary</option>
+                <option value="B1">B1 — Intermediate</option>
+                <option value="B2">B2 — Upper Intermediate</option>
+                <option value="C1">C1 — Advanced</option>
+                <option value="C2">C2 — Proficient</option>
+            </select>
         </div>
 
         <button id="btnRegistro" onclick="registrar()">Crear cuenta</button>
@@ -151,49 +267,69 @@
         <div id="msg"></div>
     </div>
 
-    <script type="module">
+    <!-- ── Contenedor de notificaciones Toast ── -->
+    <div id="toastContainer" class="toast-container"></div>
 
+    <script>
+        // Guard: solo admins pueden crear usuarios
         const usuario = JSON.parse(localStorage.getItem("usuario"));
-
         if (!usuario || usuario.rol !== "admin") {
-            window.location.href = "https://skillsyntaxai.elon.school";
+            window.location.href = "/";
         }
 
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import {
-            getAuth,
-            createUserWithEmailAndPassword,
-            updateProfile
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // ── SISTEMA DE TOASTS ──
+        function mostrarToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBwkcdgnS4emDVWO2Thi3aNdAMV1N_Jf5M",
-            authDomain: "skillsyntax-ai.firebaseapp.com",
-            projectId: "skillsyntax-ai",
-            storageBucket: "skillsyntax-ai.firebasestorage.app",
-            messagingSenderId: "1027375145468",
-            appId: "1:1027375145468:web:60b7023e38a3654ccbd279"
-        };
+            const iconos = { success: '✅', error: '❌' };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${iconos[tipo] ?? 'ℹ️'}</span>
+                <span class="toast-msg">${mensaje}</span>
+                <div class="toast-progress"></div>
+            `;
 
-        window.registrar = async () => {
+            container.appendChild(toast);
+
+            const timeout = setTimeout(() => {
+                toast.classList.add('hide');
+                toast.addEventListener('animationend', () => toast.remove(), { once: true });
+            }, 3200);
+
+            toast.addEventListener('click', () => {
+                clearTimeout(timeout);
+                toast.classList.add('hide');
+                toast.addEventListener('animationend', () => toast.remove(), { once: true });
+            });
+        }
+
+        async function registrar() {
             const nombre = document.getElementById("nombre").value.trim();
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
             const confirmPassword = document.getElementById("confirmPassword").value.trim();
+            const nivelSeleccionado = document.getElementById("nivelNuevoUsuario").value || null;
             const msg = document.getElementById("msg");
             const btn = document.getElementById("btnRegistro");
 
+            // Validaciones en cliente
             if (!nombre || !email || !password || !confirmPassword) {
-                msg.innerText = "Completa todos los campos";
+                msg.innerText = "Completa todos los campos.";
                 msg.style.color = "red";
                 return;
             }
 
             if (password !== confirmPassword) {
-                msg.innerText = "Las contraseñas no coinciden";
+                msg.innerText = "Las contraseñas no coinciden.";
+                msg.style.color = "red";
+                return;
+            }
+
+            if (password.length < 6) {
+                msg.innerText = "La contraseña debe tener al menos 6 caracteres.";
                 msg.style.color = "red";
                 return;
             }
@@ -201,44 +337,47 @@
             try {
                 btn.disabled = true;
                 btn.innerText = "Creando cuenta...";
+                msg.innerText = "";
 
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-                await updateProfile(userCredential.user, { displayName: nombre });
-
-                await fetch("https://skillsyntax-2war.onrender.com/guardar_usuario", {
+                // El backend (firebase-admin) gestiona todo:
+                // hash de contraseña, verificación de duplicados y guardado en Firestore.
+                const res = await fetch("/guardar_usuario", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         nombre,
                         email,
                         password,
-                        nivel_general: "Pendiente"
+                        nivel_general: nivelSeleccionado
                     })
                 });
 
-                msg.style.color = "lightgreen";
-                msg.innerText = "Usuario creado correctamente";
+                const data = await res.json();
+
+                if (!res.ok) {
+                    // El backend devuelve mensajes de error descriptivos
+                    msg.innerText = data.error || "Hubo un problema al crear la cuenta.";
+                    msg.style.color = "red";
+                    btn.disabled = false;
+                    btn.innerText = "Crear cuenta";
+                    return;
+                }
+
+                // Solo el éxito final usa Toast flotante
+                mostrarToast('Usuario registrado con éxito. Redirigiendo...', 'success');
 
                 setTimeout(() => {
                     window.location.assign("/admin/usuarios.html");
-                }, 1500);
+                }, 1800);
 
             } catch (error) {
+                console.error("[REGISTRO] Error de red:", error);
+                msg.innerText = "Error de conexión con el servidor.";
                 msg.style.color = "red";
-
-                if (error.code === "auth/email-already-in-use") {
-                    msg.innerText = "Este correo ya está registrado";
-                } else if (error.code === "auth/weak-password") {
-                    msg.innerText = "Contraseña débil (mín. 6 caracteres)";
-                } else {
-                    msg.innerText = "Hubo un problema al crear la cuenta";
-                }
-
                 btn.disabled = false;
                 btn.innerText = "Crear cuenta";
             }
-        };
+        }
     </script>
 
 </body>
