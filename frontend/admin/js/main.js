@@ -16,18 +16,50 @@ function inyectarMenu() {
                 </nav>
             </div>
             <a href="#" class="logout" onclick="event.preventDefault(); logout();">
-                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-            </a>
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </a>
         </div>
     `;
 
-  
+    // Inyectar header del admin con el botón de role switch
+    const headerContainer = document.getElementById('admin-header');
+    if (headerContainer) {
+        const usuario = JSON.parse(localStorage.getItem('usuario'));
+        const nombre  = usuario?.nombre || 'Admin';
+        headerContainer.innerHTML = `
+            <div class="admin-header-left">
+                <h1 id="admin-page-title"></h1>
+            </div>
+            <div class="admin-header-right">
+                <button class="btn-ver-alumno" onclick="RoleSwitch.activarModoAlumno()" title="Ver la plataforma como alumno">
+                    <i class="fas fa-eye"></i>
+                    Ver como Alumno
+                </button>
+                <div class="admin-user-chip">
+                    <div class="admin-avatar">${nombre.charAt(0).toUpperCase()}</div>
+                    <span>${nombre}</span>
+                </div>
+            </div>
+        `;
+        // Poner el título de la página activa
+        const titles = {
+            'dashboard.html': 'Dashboard',
+            'usuarios.html':  'Usuarios',
+            'ejercicios.html': 'Ejercicios',
+            'grupos.html':    'Grupos',
+            'reportes.html':  'Reportes'
+        };
+        const page = window.location.pathname.split('/').pop();
+        const titleEl = document.getElementById('admin-page-title');
+        if (titleEl) titleEl.textContent = titles[page] || '';
+    }
+
     const path = window.location.pathname.split("/").pop();
     const links = {
         "dashboard.html": "link-dashboard",
-        "usuarios.html": "link-usuarios",
+        "usuarios.html":  "link-usuarios",
         "ejercicios.html": "link-ejercicios",
-        "reportes.html": "link-reportes"
+        "reportes.html":  "link-reportes"
     };
     
     const activeId = links[path];
@@ -40,7 +72,6 @@ function inyectarMenu() {
 function logout() {
     console.log("Cerrando sesión...");
     localStorage.clear();
-    // Ruta relativa: el navegador resuelve contra el host actual (local o producción)
     window.location.href = "/";
 }
 

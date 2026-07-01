@@ -7,6 +7,7 @@
     <meta name="description" content="Gestión de ejercicios generados por alumno y grupo en el panel de administración de SkillSyntax.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
     <style>
         /* ── Variables ─────────────────────────────────────────────────────── */
         :root {
@@ -555,11 +556,7 @@
     <!-- ── Main Content ─────────────────────────────────────────────────────── -->
     <div class="content">
 
-        <!-- Cabecera de página -->
-        <div class="page-header">
-            <h1>Ejercicios Generados</h1>
-            <p class="subtitle">Explora y administra los resultados por alumno, grupo o de forma global.</p>
-        </div>
+        <div id="admin-header"></div>
 
         <!-- Selector de vista (Tab Pills) -->
         <div class="vista-selector" id="vistaSelectorBar">
@@ -586,6 +583,7 @@
     <div id="toastContainer"></div>
 
     <!-- ── Scripts ──────────────────────────────────────────────────────────── -->
+    <script src="js/role-switch.js"></script>
     <script src="js/main.js"></script>
     <script src="js/ejercicios.js"></script>
 </body>

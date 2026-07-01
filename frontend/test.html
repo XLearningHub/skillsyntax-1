@@ -24,6 +24,8 @@
   </div>
 
  <div class="user-info">
+  <!-- Slot para el botón "Modo Admin" (solo aparece en impersonación) -->
+  <div id="admin-return-slot"></div>
   <div class="user-menu-container">
     <div class="user-profile-trigger">
   
@@ -170,6 +172,7 @@ function cambiarMenu(elemento,vista){
 }
 
 function logout(){
+  // Limpiar también el backup de impersonación si existe
   localStorage.clear();
   window.location.href = "/login.html";
 }
@@ -211,6 +214,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   cargarUsuario();
+
+  // Inyectar barra de retorno admin si estamos en modo impersonación
+  if (typeof RoleSwitch !== 'undefined') {
+    RoleSwitch.inyectarBarraRetorno();
+  }
 });
 
 /* VARIABLES */
@@ -294,7 +302,7 @@ async function generar(tipo) {
       <h3 style="color: #0056b3; margin-top:0;">
         <i class="fas fa-book-reader"></i> Reading Passage
       </h3>
-      <div style="margin-top:15px; line-height:1.8;">${data.texto}</div>
+      <div style="margin-top:15px; line-height:1.8; white-space: pre-line;">${data.texto}</div>
     </div>
 
     <div style="margin-top: 25px;">
@@ -735,5 +743,6 @@ async function enviarSpeaking() {
 }
 </script>
 
+<script src="admin/js/role-switch.js"></script>
 </body>
 </html>
