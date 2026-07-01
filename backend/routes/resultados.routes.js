@@ -55,10 +55,13 @@ router.get("/", async (req, res) => {
     const enriched = resultados
       .map((r) => {
         const sesion = sesionesMap[r.sesion_id] || {};
-        const user = usersMap[sesion.usuario_id] || {};
+        const usuarioId = sesion.usuario_id || null;
+        const user = usersMap[usuarioId] || {};
         return {
           id: r.id,
+          usuarioId,                          // ← UID de Firebase para filtrado
           usuario: user.nombre || "Desconocido",
+          email: user.email || "",
           habilidad: r.habilidad,
           puntaje: r.puntaje,
           feedback: r.feedback,
