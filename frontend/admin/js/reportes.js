@@ -90,7 +90,9 @@ async function cargarGraficaHabilidades() {
     try {
         const res = await fetch("/api/resultados/reporte-habilidades");
         const data = await res.json();
-        const habilidades = data.map(d => d.habilidad);
+        // Map internal skill keys to display labels (writing → Grammar)
+        const labelMap = { writing: "Grammar", speaking: "Speaking", reading: "Reading", listening: "Listening" };
+        const habilidades = data.map(d => labelMap[(d.habilidad || "").toLowerCase()] || d.habilidad);
         const totales = data.map(d => d.total);
 
         new Chart(document.getElementById("graficaHabilidades"), {

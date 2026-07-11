@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillSyntax | Free Writing</title>
+  <meta name="description" content="Practice English free writing and get instant AI feedback evaluated to Cambridge IELTS standards." />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── DESIGN TOKENS ─────────────────────────────────────────────────────── */
+    :root {
+      --bg:          #0d1117;
+      --surface:     #161b22;
+      --surface2:    #1c2230;
+      --border:      #30363d;
+      --accent:      #7c3aed;
+      --accent-glow: rgba(124, 58, 237, 0.35);
+      --accent2:     #06b6d4;
+      --success:     #10b981;
+      --warning:     #f59e0b;
+      --danger:      #ef4444;
+      --text:        #e6edf3;
+      --text-muted:  #8b949e;
+      --radius:      14px;
+      --radius-sm:   8px;
+      --shadow:      0 8px 32px rgba(0,0,0,0.45);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── NAVBAR ─────────────────────────────────────────────────────────────── */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; height: 62px;
+      background: rgba(22,27,34,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
+    .nav-logo i { color: var(--accent); font-size: 20px; }
+    .nav-badge {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .btn-back {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 18px; background: var(--surface2);
+      border: 1px solid var(--border); color: var(--text-muted);
+      border-radius: var(--radius-sm); cursor: pointer;
+      font-size: 13px; font-family: inherit; transition: all .2s;
+      text-decoration: none;
+    }
+    .btn-back:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ─── MAIN ───────────────────────────────────────────────────────────────── */
+    .main-wrapper {
+      flex: 1; padding: 40px 24px 60px;
+      max-width: 860px; margin: 0 auto; width: 100%;
+    }
+
+    /* ─── PAGE HEADER ────────────────────────────────────────────────────────── */
+    .page-header { text-align: center; margin-bottom: 36px; }
+    .page-header h1 {
+      font-size: clamp(26px, 4vw, 38px); font-weight: 800; letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 10px;
+    }
+    .page-header p { color: var(--text-muted); font-size: 15px; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+
+    /* ─── CARD ───────────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px 32px;
+      margin-bottom: 24px; box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text-muted); margin-bottom: 18px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-title i { color: var(--accent); }
+
+    /* ─── FORM ───────────────────────────────────────────────────────────────── */
+    .form-grid { display: grid; grid-template-columns: 1fr 200px; gap: 16px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input[type="text"], select {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 11px 14px;
+      color: var(--text); font-family: inherit; font-size: 14px;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    select option { background: var(--surface2); }
+
+    /* ─── TOPIC BANNER ───────────────────────────────────────────────────────── */
+    #topic-banner {
+      display: none;
+      background: linear-gradient(135deg, rgba(124,58,237,.15), rgba(6,182,212,.08));
+      border: 1px solid rgba(124,58,237,.4);
+      border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px;
+      position: relative; overflow: hidden;
+    }
+    #topic-banner::before {
+      content: ''; position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(124,58,237,.25), transparent 70%);
+      border-radius: 50%;
+    }
+    .label-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 10px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .topic-text { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.5; }
+    .level-badge {
+      position: absolute; top: 18px; right: 20px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 12px; font-weight: 700;
+      padding: 4px 14px; border-radius: 20px;
+    }
+
+    /* ─── TEXTAREA ───────────────────────────────────────────────────────────── */
+    #writing-area {
+      width: 100%; min-height: 260px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px; color: var(--text);
+      font-family: inherit; font-size: 15px; line-height: 1.75;
+      resize: vertical; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    #writing-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    #writing-area::placeholder { color: var(--text-muted); }
+
+    /* ─── WORD COUNTER ───────────────────────────────────────────────────────── */
+    .word-counter-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+    #word-count-display { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+    .count-num { font-size: 22px; font-weight: 800; color: var(--accent2); line-height: 1; transition: color .3s; }
+    .count-num.warn  { color: var(--warning); }
+    .count-num.ready { color: var(--success); }
+
+    /* ─── BUTTONS ────────────────────────────────────────────────────────────── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 13px 28px;
+      background: linear-gradient(135deg, var(--accent), #5b21b6);
+      color: #fff; border: none; border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: transform .15s, box-shadow .15s, opacity .15s;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px var(--accent-glow); }
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 22px; background: transparent;
+      border: 1px solid var(--border); color: var(--text-muted);
+      border-radius: var(--radius-sm); font-family: inherit;
+      font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent2); color: var(--text); }
+    .btn-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 20px; }
+
+    /* ─── LOADING ────────────────────────────────────────────────────────────── */
+    #loading-overlay { display: none; text-align: center; padding: 50px 20px; }
+    .spinner-ring {
+      width: 56px; height: 56px;
+      border: 4px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.9s linear infinite;
+      margin: 0 auto 18px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading-overlay p { color: var(--text-muted); font-size: 15px; }
+    #loading-overlay strong { color: var(--accent); }
+
+    /* ─── RESULTS ────────────────────────────────────────────────────────────── */
+    #results-section { display: none; }
+
+    .score-card { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+    .score-ring-wrapper { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+    .score-ring-wrapper svg { transform: rotate(-90deg); overflow: visible; }
+    .score-ring-bg { fill: none; stroke: var(--border); stroke-width: 9; }
+    .score-ring-fill {
+      fill: none; stroke-width: 9; stroke-linecap: round;
+      transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1), stroke .6s ease;
+    }
+    .score-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+    .score-val { font-size: 30px; font-weight: 800; line-height: 1; }
+    .score-label-small { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .score-meta { flex: 1; min-width: 200px; }
+    .score-meta h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .score-meta p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+    .perf-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid;
+    }
+    .chip-pass  { color: var(--success); border-color: var(--success); background: rgba(16,185,129,.1); }
+    .chip-warn  { color: var(--warning); border-color: var(--warning); background: rgba(245,158,11,.1); }
+    .chip-fail  { color: var(--danger);  border-color: var(--danger);  background: rgba(239,68,68,.1); }
+
+    .feedback-box {
+      background: var(--surface2); border-left: 3px solid var(--accent2);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 16px 20px; font-size: 15px; line-height: 1.7;
+    }
+
+    .corrections-count { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+    .corrections-count span { color: var(--text); font-weight: 700; }
+
+    .correction-item {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 18px;
+      margin-bottom: 12px; animation: slideIn .4s ease both;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .correction-item:nth-child(1) { animation-delay: .05s; }
+    .correction-item:nth-child(2) { animation-delay: .10s; }
+    .correction-item:nth-child(3) { animation-delay: .15s; }
+    .correction-item:nth-child(4) { animation-delay: .20s; }
+    .correction-item:nth-child(5) { animation-delay: .25s; }
+
+    .ci-row { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; margin-bottom: 8px; }
+    .ci-original .ci-row { color: var(--danger); }
+    .ci-correction .ci-row { color: var(--success); }
+    .ci-row i { flex-shrink: 0; margin-top: 2px; }
+    .ci-reason {
+      font-size: 12.5px; color: var(--text-muted);
+      background: rgba(255,255,255,.04); border-radius: 6px;
+      padding: 7px 10px; line-height: 1.55;
+    }
+    .ci-reason i { color: var(--accent2); margin-right: 6px; }
+
+    .no-corrections { text-align: center; padding: 28px 16px; color: var(--success); font-size: 15px; font-weight: 500; }
+    .no-corrections i { font-size: 30px; display: block; margin-bottom: 10px; }
+
+    /* ─── TOAST ──────────────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 12px 22px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 500; box-shadow: var(--shadow);
+      transition: transform .3s ease; z-index: 999; white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.error { border-color: var(--danger); color: var(--danger); }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .card { padding: 20px 18px; }
+      .score-card { justify-content: center; text-align: center; }
+      .perf-chips { justify-content: center; }
+      .main-wrapper { padding: 24px 14px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <i class="fas fa-pen-fancy"></i>
+    <span>SkillSyntax</span>
+    <span class="nav-badge">Free Writing</span>
+  </div>
+  <a class="btn-back" href="test.html">
+    <i class="fas fa-arrow-left"></i> Back to Practice
+  </a>
+</nav>
+
+<main class="main-wrapper">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <h1><i class="fas fa-feather-alt" style="font-size:.8em;color:var(--accent)"></i> Free Writing</h1>
+    <p>Write freely about the assigned topic and receive instant AI feedback evaluated to Cambridge IELTS standards.</p>
+  </div>
+
+  <!-- SETUP CARD -->
+  <div class="card" id="setup-card">
+    <div class="card-title"><i class="fas fa-sliders-h"></i> Exercise Setup</div>
+    <div class="form-grid">
+      <div>
+        <label for="fw-tema">Topic / Theme</label>
+        <input id="fw-tema" type="text" placeholder="e.g. Climate Change, Social Media, My Hometown…" autocomplete="off" />
+      </div>
+      <div>
+        <label for="fw-nivel">CEFR Level</label>
+        <select id="fw-nivel">
+          <option value="">Select level</option>
+          <option value="A1">A1 · Beginner</option>
+          <option value="A2">A2 · Elementary</option>
+          <option value="B1">B1 · Intermediate</option>
+          <option value="B2">B2 · Upper Intermediate</option>
+          <option value="C1">C1 · Advanced</option>
+          <option value="C2">C2 · Proficient</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-start" onclick="startExercise()">
+        <i class="fas fa-play"></i> Start Exercise
+      </button>
+    </div>
+  </div>
+
+  <!-- TOPIC BANNER -->
+  <div id="topic-banner">
+    <span class="label-chip"><i class="fas fa-tasks"></i> Topic to develop</span>
+    <div class="topic-text" id="banner-topic-text"></div>
+    <div class="level-badge" id="banner-level-badge"></div>
+  </div>
+
+  <!-- WRITING AREA -->
+  <div id="writing-card" class="card" style="display:none;">
+    <div class="card-title"><i class="fas fa-edit"></i> Your Writing</div>
+    <textarea
+      id="writing-area"
+      placeholder="Start writing here… Express your ideas clearly and develop your argument."
+      spellcheck="true"
+      oninput="updateWordCount()"
+    ></textarea>
+    <div class="word-counter-bar">
+      <div id="word-count-display">
+        <span class="count-num" id="word-num">0</span>
+        <span>words written</span>
+      </div>
+      <span id="wc-hint" style="font-size:12px;color:var(--text-muted);">Aim for at least 50 words</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-evaluate" onclick="submitForEvaluation()" disabled>
+        <i class="fas fa-paper-plane"></i> Submit for Evaluation
+      </button>
+      <button class="btn-secondary" onclick="resetAll()">
+        <i class="fas fa-redo"></i> Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading-overlay">
+    <div class="spinner-ring"></div>
+    <p>Your examiner is reviewing your text…<br><strong>Cambridge AI Evaluator</strong></p>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-section">
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-star"></i> Overall Score</div>
+      <div class="score-card">
+        <div class="score-ring-wrapper">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle class="score-ring-bg" cx="60" cy="60" r="50" />
+            <circle class="score-ring-fill" id="score-ring-fill" cx="60" cy="60" r="50"
+              stroke-dasharray="314.16" stroke-dashoffset="314.16" />
+          </svg>
+          <div class="score-center-text">
+            <div class="score-val" id="score-number">0</div>
+            <div class="score-label-small">/ 100</div>
+          </div>
+        </div>
+        <div class="score-meta">
+          <h2 id="score-title"></h2>
+          <p id="score-description"></p>
+          <div class="perf-chips" id="perf-chips"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-comment-dots"></i> Examiner's Feedback</div>
+      <div class="feedback-box" id="feedback-text"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-highlighter"></i> Specific Corrections</div>
+      <div class="corrections-count" id="corrections-count"></div>
+      <div id="corrections-list"></div>
+    </div>
+
+    <div class="btn-row" style="justify-content:center;margin-top:8px;">
+      <button class="btn-primary" onclick="resetAll()">
+        <i class="fas fa-plus"></i> New Exercise
+      </button>
+      <button class="btn-secondary" onclick="window.location.href='test.html'">
+        <i class="fas fa-arrow-left"></i> Back to Practice
+      </button>
+    </div>
+
+  </div><!-- /results-section -->
+
+</main>
+
+<div id="toast"></div>
+
+<script src="admin/js/freewriting.js"></script>
+</body>
+</html>

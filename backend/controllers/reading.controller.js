@@ -27,6 +27,17 @@ exports.generarReading = async (req, res) => {
       default:   numPreguntas = 3;
     }
 
+    // ── MAPA ESTRICTO DE PALABRAS POR NIVEL CEFR ────────────────────────
+    const wordCountMap = {
+      A1: 50,
+      A2: 150,
+      B1: 250,
+      B2: 350,
+      C1: 400,
+      C2: 600
+    };
+    const exactWordCount = wordCountMap[nivel] || 150;
+
     // Helper: genera el bloque de N objetos pregunta para el JSON schema del prompt
     const schemaPreguntas = Array.from({ length: numPreguntas }, () =>
       `    { "pregunta": "...", "opciones": ["...", "...", "...", "..."], "respuesta_correcta": "..." }`
@@ -47,8 +58,8 @@ Create a SHORT reading exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
-1. Write EXACTLY 3 to 4 sentences organized into 1 SHORT PARAGRAPH.
-   FORMAT RULE: Each paragraph must be separated by a double line break (\\n\\n). Each paragraph must contain 3 to 5 cohesive sentences. Do NOT run all sentences together as one block. Think of a professionally formatted book.
+1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
+   FORMAT RULE: Organize the text into SHORT PARAGRAPHS separated by a double line break (\\n\\n). Each paragraph must contain 3 to 5 cohesive sentences. Think of a professionally formatted book.
 2. Use ONLY Present Simple tense or the verb "To Be" (am / is / are).
 3. Every word must be A1 basic vocabulary DIRECTLY related to "${tema}".
 4. NO compound words (e.g., no "daydream", "sunlight").
@@ -81,7 +92,7 @@ Create a SHORT reading exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it internally. DO NOT output any Spanish words.
-1. Write 1 to 2 SHORT PARAGRAPHS totaling 4 to 6 sentences.
+1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Separate paragraphs with a double line break (\\n\\n). Each paragraph must contain 3 to 5 cohesive sentences. Structure the text like a professionally formatted book — do NOT create a single wall of text.
 2. Allowed grammar: Present Simple, Past Simple, and Future with "going to". No other tenses.
 3. Every word must be A2 vocabulary STRICTLY related to the topic "${tema}". No idioms, no phrasal verbs.
@@ -114,7 +125,7 @@ Create a READING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is in Spanish or has typos, translate it internally. NO Spanish output.
-1. Write 2 to 3 PARAGRAPHS totaling approximately 100 to 150 words.
+1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Separate each paragraph with a double line break (\\n\\n). Each paragraph must contain 3 to 5 cohesive, well-connected sentences. Structure the text like a professionally formatted article — do NOT produce a wall of text.
 2. Allowed grammar: Present Simple, Past Simple, Future (will / going to), and Present Perfect. No other tenses.
 3. Use B1-level vocabulary related to "${tema}". Phrasal verbs and common idioms are allowed.
@@ -146,7 +157,7 @@ Create a READING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
-1. Write 3 to 4 PARAGRAPHS totaling approximately 200 words.
+1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Separate each paragraph with a double line break (\\n\\n). Each paragraph must contain 3 to 5 cohesive sentences with smooth transitions between ideas. Write like a professional journalist or essayist — never a wall of text.
 2. Use passive voice constructions (e.g., "it has been argued", "the results were found") and conditional sentences (e.g., "if this trend continues", "had they known").
 3. Vocabulary must be B2 level, clearly related to "${tema}". Phrasal verbs and idiomatic expressions are encouraged.
@@ -177,7 +188,7 @@ Create a READING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
-1. Write 4 to 5 PARAGRAPHS totaling approximately 250 to 300 words.
+1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Separate each paragraph with a double line break (\\n\\n). Each paragraph must contain 3 to 5 cohesive sentences with sophisticated transitions. Write with the structure and polish of an academic journal article — never a wall of text.
 2. Use an academic and professional tone throughout. Incorporate complex phrasal verbs (e.g., "bring about", "give rise to", "account for") and grammatical inversions (e.g., "Not only does...", "Rarely have...", "Should this prove...").
 3. Vocabulary must be C1 level, sophisticated and nuanced, directly related to "${tema}".
@@ -209,7 +220,7 @@ Create a READING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it internally. DO NOT output any Spanish words.
-1. Write 4 to 6 DENSE PARAGRAPHS totaling approximately 300 to 350 words.
+1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Separate each paragraph with a double line break (\\n\\n). Each paragraph must contain 3 to 5 richly constructed sentences with masterful transitions. Write with the depth and structure of a literary essay or philosophical treatise — never a wall of text.
 2. Use a highly academic, literary, or philosophical tone throughout. Incorporate native-level sophisticated vocabulary, advanced collocations, irony, implied meaning, and highly complex syntax (e.g., embedded clauses, appositives, periodic sentences).
 3. Include advanced collocations, rhetorical devices (e.g., antithesis, epistrophe), and subtle cultural or ideological references related to "${tema}".
@@ -249,7 +260,10 @@ Return ONLY valid JSON: { "tipo": "reading", "nivel": "${nivel}", "tema": "${tem
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a teacher who only communicates in English and provides structured JSON." },
+        {
+          role: "system",
+          content: `You are a teacher who only communicates in English and provides structured JSON. CRITICAL RULE: The "texto" field in your JSON response MUST contain EXACTLY ${exactWordCount} words — no more, no less. Count the words meticulously before returning.`
+        },
         { role: "user", content: prompt }
       ],
       temperature: 0.5,

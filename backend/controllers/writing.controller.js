@@ -361,3 +361,229 @@ Be encouraging and helpful.
     });
   }
 };
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GENERAR PROMPT DE EXAMEN  ·  POST /api/writing/generate-prompt
+// ─────────────────────────────────────────────────────────────────────────────
+exports.generateWritingPrompt = async (req, res) => {
+  try {
+    const { tema, nivelCEFR } = req.body;
+
+    if (!tema || !nivelCEFR) {
+      return res.status(400).json({ error: "Faltan datos: tema y nivelCEFR son requeridos." });
+    }
+
+    // ── Límites de palabras por nivel CEFR ───────────────────────────────────
+    const wordLimits = {
+      A1: { min: 30,  max: 50  },
+      A2: { min: 80,  max: 100 },
+      B1: { min: 150, max: 200 },
+      B2: { min: 250, max: 300 },
+      C1: { min: 350, max: 400 },
+      C2: { min: 500, max: 600 }
+    };
+    const wl = wordLimits[nivelCEFR] || { min: 80, max: 100 };
+
+    // ── Ejemplos de referencia por nivel ─────────────────────────────────────
+    const ejemplos = {
+      A1: `You just moved to a new house. Write a short message to a friend telling them about your new home and one thing you like about it. (Write between 30 and 50 words.)`,
+      A2: `Your neighbour's dog keeps you awake at night. Write a note to your neighbour explaining the problem and asking them to help. (Write between 80 and 100 words.)`,
+      B1: `You went on a trip last month and something unexpected happened. Write a post for your travel blog describing what happened and how you felt. (Write between 150 and 200 words.)`,
+      B2: `A local newspaper has asked readers to share their opinion on whether people should be allowed to work from home permanently. Write your response giving your views and supporting them with reasons. (Write between 250 and 300 words.)`,
+      C1: `A philosophy journal has invited contributors to examine how modern technology is reshaping the concept of personal identity. Write a structured argument presenting your position. (Write between 350 and 400 words.)`,
+      C2: `Consider the paradox that absolute freedom may be the greatest threat to human flourishing. Write a critical commentary evaluating this claim from philosophical, political, and ethical perspectives. (Write between 500 and 600 words.)`
+    };
+
+    const ejemplo = ejemplos[nivelCEFR] || ejemplos["B1"];
+
+    // ── Perfil de complejidad por grupo de nivel ──────────────────────────────
+    const levelGuidance = {
+      A1: "LEVEL A1 — Scenarios must involve very simple, familiar, everyday topics (e.g. food, family, home, daily routine, greetings). The situation must be immediately understandable for a complete beginner. Keep the vocabulary and context extremely basic.",
+      A2: "LEVEL A2 — Scenarios must be realistic and close to daily life (e.g. sending a message to a friend, describing a place, talking about plans or past events). Slightly more detail than A1 but still very concrete and accessible.",
+      B1: "LEVEL B1 — Scenarios may involve opinions, past experiences, or interpersonal situations (e.g. giving a review, recounting an anecdote, expressing a preference, writing an informal complaint). Language can be more varied but context must remain relatable.",
+      B2: "LEVEL B2 — Scenarios should involve argumentation, analysis, or structured opinion (e.g. debating a social issue, writing a formal letter, analysing a trend or problem). Context can be professional or semi-academic.",
+      C1: "LEVEL C1 — Scenarios should involve complex, abstract, or academic themes (e.g. analysing a philosophical concept, arguing a professional position, evaluating a policy or ethical dilemma). Language and context must be sophisticated.",
+      C2: "LEVEL C2 — Scenarios must be intellectually challenging and nuanced (e.g. philosophical paradoxes, rhetorical analysis, cross-disciplinary debates, critique of socio-political systems). Expect near-native critical thinking."
+    };
+
+    const guidance = levelGuidance[nivelCEFR] || levelGuidance["B1"];
+
+    const systemPrompt = `You are an experienced Cambridge and TOEFL writing examiner.
+Your task is to generate ONE original writing task instruction for a student.
+
+STRICT RULES — follow every rule without exception:
+1. ${guidance}
+2. The scenario must be directly related to the topic: "${tema}".
+3. The instruction must describe a clear situation that the student should write about (e.g. who they are, what happened, what they need to write).
+4. The instruction must be 2 to 3 sentences long and feel natural and realistic for the level.
+5. MANDATORY WORD COUNT: At the very end of your response, you MUST append exactly this phrase (replacing X and Y with the correct numbers): "(Write between ${wl.min} and ${wl.max} words.)" — this phrase must always appear as the last part of your output, with no text after it.
+6. Do NOT include labels, headers, JSON, or any extra text — return ONLY the instruction itself followed by the word-count phrase.
+7. Vary the type of scenario each time (e.g. emails, blog posts, letters, personal stories, reviews, arguments, reflections) — avoid repeating the same format.
+
+EXAMPLE of the expected output style for level ${nivelCEFR}:
+"${ejemplo}"`;
+
+    const userPrompt = `Generate a writing task instruction for CEFR level ${nivelCEFR} about the topic: "${tema}".`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user",   content: userPrompt   }
+      ],
+      temperature: 0.75,
+      max_tokens: 200
+    });
+
+    const prompt = response.choices?.[0]?.message?.content?.trim();
+
+    if (!prompt) {
+      return res.status(500).json({ error: "La IA no generó una instrucción." });
+    }
+
+    console.log(`[generateWritingPrompt] Level=${nivelCEFR} | Topic="${tema}" | Prompt="${prompt.substring(0,80)}..."`);
+
+    res.json({ prompt });
+
+  } catch (error) {
+    console.error("Error generateWritingPrompt:", error);
+    res.status(500).json({ error: "Error al generar la instrucción de escritura." });
+  }
+};
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVALUAR REDACCIÓN LIBRE  ·  POST /api/writing/evaluate
+// ─────────────────────────────────────────────────────────────────────────────
+exports.evaluateWriting = async (req, res) => {
+
+  try {
+    const { texto, nivelCEFR, tema } = req.body;
+
+    if (!texto || !nivelCEFR || !tema) {
+      return res.status(400).json({
+        error: "Faltan datos: texto, nivelCEFR y tema son requeridos."
+      });
+    }
+
+    // ── MAPA DE EXPECTATIVAS POR NIVEL ───────────────────────────────────────
+    const levelProfiles = {
+      A1: "The student is a complete beginner. Expect very simple sentences, basic vocabulary, and frequent errors. Evaluate with kindness but mark clear mistakes.",
+      A2: "The student is elementary. Expect short paragraphs, basic connectors, and some errors in tense or agreement.",
+      B1: "The student is intermediate. Expect developed paragraphs, use of connectors, and reasonable control of Past and Present tenses.",
+      B2: "The student is upper-intermediate. Expect coherent essays, varied vocabulary, passive constructions, and conditionals.",
+      C1: "The student is advanced. Expect sophisticated vocabulary, complex grammar, academic register, and well-structured argumentation.",
+      C2: "The student is at mastery level. Expect near-native fluency, nuanced expression, rhetorical devices, and masterful cohesion."
+    };
+
+    const profile = levelProfiles[nivelCEFR] || levelProfiles["B1"];
+
+    // ── SYSTEM PROMPT — EXAMINADOR ESTRICTO ──────────────────────────────────
+    const systemPrompt = `You are a strict, experienced native English examiner with the standards of Cambridge IELTS and TOEFL iBT.
+Your role is to evaluate a student's free-writing submission with absolute professional rigour.
+
+OFF-TOPIC RULE:
+- Apply the off-topic penalty (Task Achievement = 0, total score capped at 40) ONLY if the student's text is 100% completely unrelated to the core subject of the assigned task — for example, writing about a wholly different topic or submitting nonsense/placeholder text.
+- DO NOT penalize or mark as OFF-TOPIC if the student forgets structural formatting such as email headers (To:, From:, Subject:), formal letter greetings, or document titles. As long as the core message and vocabulary address the requested topic, the student passes Task Achievement — missing format elements are minor deductions under Coherence, not grounds for an off-topic penalty.
+- If the student addresses the main topic, even in a creative, unexpected, or imperfect way, evaluate them fairly using the CEFR ${nivelCEFR} rubric WITHOUT applying any off-topic penalty.
+- When the off-topic penalty IS applied, include this warning at the START of the "feedback" field: "⚠️ OFF-TOPIC WARNING: Your response does not address the assigned task. Task Achievement has been scored 0. No matter how grammatically accurate your writing is, the overall score cannot exceed 40 when the task is ignored."
+
+EVALUATION CRITERIA (weight each equally):
+1. Grammar accuracy — verb tenses, subject-verb agreement, articles, prepositions.
+2. Vocabulary range and appropriacy — word choice for the CEFR level.
+3. Coherence and cohesion — logical flow, use of connectors, paragraph organisation.
+4. Task achievement — how well the student addressed the assigned topic AND scenario.
+
+STUDENT LEVEL CONTEXT: ${profile}
+
+SCORING SCALE (0–100):
+- 90–100: Near-native / flawless for the level.
+- 75–89: Strong performance with minor errors.
+- 60–74: Satisfactory, clear weak areas.
+- 45–59: Below expected level, significant errors.
+- 0–44: Poor, fundamental problems.
+
+OUTPUT FORMAT — return ONLY valid JSON, no markdown, no extra text:
+{
+  "score": <integer 0-100>,
+  "feedback": "<2-4 sentences of professional overall commentary in English>",
+  "corrections": [
+    {
+      "original": "<exact phrase or sentence from student text that contains an error>",
+      "correction": "<corrected version of that phrase or sentence>",
+      "reason": "<concise grammatical or stylistic explanation in English>"
+    }
+  ]
+}
+
+RULES:
+- "corrections" must contain ONLY real errors found in the student's text.
+- If the text is flawless, return an empty array: "corrections": [].
+- Do NOT invent errors that do not exist.
+- "original" must be a verbatim excerpt from the student text.
+- Limit corrections to the most important ones (max 8).`;
+
+    // ── USER PROMPT ───────────────────────────────────────────────────────────
+    const userPrompt = `CEFR Level: ${nivelCEFR}
+Topic assigned: "${tema}"
+
+Student's submission:
+"""
+${texto.trim()}
+"""
+
+Evaluate the above submission strictly following the instructions and return valid JSON only.`;
+
+    // ── LLAMADA A OPENAI ──────────────────────────────────────────────────────
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user",   content: userPrompt   }
+      ],
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+
+    let rawContent = response.choices?.[0]?.message?.content;
+
+    if (!rawContent) {
+      return res.status(500).json({ error: "La IA no devolvió contenido." });
+    }
+
+    // Limpieza defensiva (por si acaso lleva markdown)
+    rawContent = rawContent
+      .replace(/```json/g, "")
+      .replace(/```/g,     "")
+      .trim();
+
+    let evaluation;
+    try {
+      evaluation = JSON.parse(rawContent);
+    } catch (parseErr) {
+      console.error("JSON inválido de OpenAI:", rawContent);
+      return res.status(500).json({ error: "Formato de respuesta inválido de la IA." });
+    }
+
+    // Validación estructural mínima
+    if (
+      typeof evaluation.score        !== "number"  ||
+      typeof evaluation.feedback     !== "string"  ||
+      !Array.isArray(evaluation.corrections)
+    ) {
+      return res.status(500).json({ error: "La IA devolvió una estructura JSON incompleta." });
+    }
+
+    // Asegurar rango del score
+    evaluation.score = Math.max(0, Math.min(100, Math.round(evaluation.score)));
+
+    console.log(`[evaluateWriting] Level=${nivelCEFR} | Score=${evaluation.score} | Corrections=${evaluation.corrections.length}`);
+
+    res.json(evaluation);
+
+  } catch (error) {
+    console.error("Error evaluateWriting:", error);
+    res.status(500).json({ error: "Error al evaluar la redacción." });
+  }
+};

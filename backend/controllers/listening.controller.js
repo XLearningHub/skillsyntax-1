@@ -39,6 +39,17 @@ exports.generarListening = async (req, res) => {
       default:   numPreguntas = 3;
     }
 
+    // ── MAPA ESTRICTO DE PALABRAS POR NIVEL CEFR ────────────────────────
+    const wordCountMap = {
+      A1:  50,
+      A2:  150,
+      B1:  250,
+      B2:  350,
+      C1:  400,
+      C2:  600
+    };
+    const exactWordCount = wordCountMap[nivel] || 150;
+
     // Helper: genera N entradas de pregunta para el JSON schema del prompt
     const schemaPreguntas = Array.from({ length: numPreguntas }, () =>
       `    { "pregunta": "...", "opciones": ["...", "...", "..."], "correcta": "..." }`
@@ -59,7 +70,7 @@ Create a very simple LISTENING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
-1. The audio text (audio_texto) must be a short dialogue OR monologue of MAXIMUM 40 words.
+1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Structure the audio text in short paragraphs of 3 to 5 sentences, separated by double line breaks (\\n\\n). Do NOT produce a single wall of text.
 2. Use ONLY Present Simple tense or the verb "To Be" (am / is / are).
 3. Vocabulary must be A1 basic level DIRECTLY related to "${tema}". No idioms, no contractions.
@@ -88,7 +99,7 @@ Create a LISTENING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
-1. The audio text (audio_texto) must be a short dialogue OR monologue of EXACTLY 60 to 80 words. Count the words carefully.
+1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Divide the audio text into paragraphs of 3 to 5 sentences, separated by double line breaks (\\n\\n). Write like a professionally formatted script — do NOT create a wall of text.
 2. Allowed grammar: Present Simple, Past Simple, and Future with "going to". No other tenses.
 3. Vocabulary must be A2 level DIRECTLY related to "${tema}". No idioms, no complex expressions.
@@ -117,7 +128,7 @@ Create a LISTENING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is in Spanish or has typos, translate it to English internally. NO Spanish output.
-1. The audio text (audio_texto) must be a dialogue OR monologue set in an everyday situation (travel, work, or school) related to "${tema}", of EXACTLY 100 to 130 words. Count the words carefully.
+1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Organize the audio text into paragraphs of 3 to 5 sentences, separated by double line breaks (\\n\\n). Structure it like a well-formatted article or script — never a wall of text.
 2. Allowed grammar: Present Simple, Past Simple, Future (will / going to), and Present Perfect. Natural conversational language is expected.
 3. Vocabulary must be B1 level, related to "${tema}". Common phrasal verbs and connectors (however, although, because) are allowed.
@@ -146,7 +157,7 @@ Create a LISTENING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
-1. The audio text (audio_texto) must be a dialogue OR monologue of EXACTLY 150 to 180 words. Count the words carefully.
+1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Divide the audio text into paragraphs of 3 to 5 sentences, separated by double line breaks (\\n\\n). Write like a professional journalist or broadcaster — never a wall of text.
 2. Use a natural, fluent register appropriate to "${tema}". Include B2-level vocabulary, phrasal verbs, and discourse markers (nevertheless, in contrast, on the other hand).
 3. Grammar may include: Present Simple/Perfect/Continuous, Past Simple/Perfect, Future forms, passive voice, and conditionals.
@@ -175,7 +186,7 @@ Create a LISTENING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
-1. The audio text (audio_texto) must be a monologue or formal dialogue of EXACTLY 200 words. Count the words carefully.
+1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Structure the audio text into paragraphs of 3 to 5 sentences, separated by double line breaks (\\n\\n). Write with the polish of an academic lecture or editorial — never a wall of text.
 2. Use a sophisticated, academic or professional register appropriate to "${tema}". Include C1-level vocabulary, complex phrasal verbs, and advanced discourse markers (furthermore, notwithstanding, to that end, by extension).
 3. Grammar may include: all tenses, complex conditionals, passive constructions, inversion, and nominalization.
@@ -205,7 +216,7 @@ Create a LISTENING exercise strictly about the topic: "${tema}".
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it internally. DO NOT output any Spanish words.
-1. The audio text (audio_texto) must simulate a masterclass lecture, a high-level academic debate, or a technical interview of EXACTLY 200 to 250 words. Count the words carefully.
+1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
    FORMAT RULE: Structure the audio text into paragraphs of 3 to 5 sentences, separated by double line breaks (\\n\\n). Write with the sophistication of a philosophical treatise or literary essay — never a wall of text.
 2. Use a highly sophisticated, native-level register with complex syntax, subtle irony, implicit arguments, and nuanced transitions (notwithstanding, by the same token, it stands to reason that, predicated upon, in contradistinction to).
 3. Grammar must include: all tenses, complex conditionals, inversions, nominalization, passive voice, and cleft sentences.
@@ -242,6 +253,7 @@ Return ONLY valid JSON: { "tipo": "opcion_multiple", "audio_texto": "...", "preg
 
     const response = await openai.responses.create({
       model: "gpt-4.1-mini",
+      instructions: `You are a teacher who only communicates in English and provides structured JSON. CRITICAL RULE: The "audio_texto" field in your JSON response MUST contain EXACTLY ${exactWordCount} words — no more, no less. Count the words meticulously before returning.`,
       input: prompt
     });
 

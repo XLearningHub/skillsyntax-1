@@ -190,6 +190,18 @@ function _getHabilidadClass(hab) {
     return mapa[(hab || "").toLowerCase()] || "hab-default";
 }
 
+// Maps internal skill keys to user-facing display labels.
+function _getHabilidadLabel(hab) {
+    const labels = {
+        writing:   "Writing",
+        grammar:   "Grammar",
+        speaking:  "Speaking",
+        reading:   "Reading",
+        listening: "Listening"
+    };
+    return labels[(hab || "").toLowerCase()] || hab || "—";
+}
+
 function _getScoreClass(score) {
     const n = parseFloat(score);
     if (isNaN(n)) return "score-mid";
@@ -259,7 +271,7 @@ function renderVistaTodos() {
                     </div>
                 </div>
             </td>
-            <td><span class="badge-hab ${habCls}">${escapeHtml(hab)}</span></td>
+            <td><span class="badge-hab ${habCls}">${escapeHtml(_getHabilidadLabel(hab))}</span></td>
             <td><span class="score-badge ${scoreCls}">${e.puntaje ?? "—"}</span></td>
             <td class="feedback-cell">${escapeHtml(e.feedback || "Sin feedback")}</td>
             <td>
@@ -509,7 +521,7 @@ function renderDetalleAlumno(uid) {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td class="id-cell">${idx + 1}</td>
-            <td><span class="badge-hab ${habCls}">${escapeHtml(hab)}</span></td>
+            <td><span class="badge-hab ${habCls}">${escapeHtml(_getHabilidadLabel(hab))}</span></td>
             <td style="text-align:center;"><span class="score-badge ${scoreCls}">${e.puntaje ?? "—"}</span></td>
             <td class="feedback-cell">${escapeHtml(e.feedback || "Sin feedback")}</td>
             <td>

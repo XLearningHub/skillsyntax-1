@@ -11,6 +11,7 @@ function inyectarMenu() {
                 <nav>
                     <a href="dashboard.html" id="link-dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
                     <a href="usuarios.html" id="link-usuarios"><i class="fas fa-users"></i> Usuarios</a>
+                    <a href="grupos.html" id="link-grupos"><i class="fas fa-layer-group"></i> Grupos</a>
                     <a href="ejercicios.html" id="link-ejercicios"><i class="fas fa-book"></i> Ejercicios</a>
                     <a href="reportes.html" id="link-reportes"><i class="fas fa-file-alt"></i> Reportes</a>
                 </nav>
@@ -45,8 +46,8 @@ function inyectarMenu() {
         const titles = {
             'dashboard.html': 'Dashboard',
             'usuarios.html':  'Usuarios',
-            'ejercicios.html': 'Ejercicios',
             'grupos.html':    'Grupos',
+            'ejercicios.html': 'Ejercicios',
             'reportes.html':  'Reportes'
         };
         const page = window.location.pathname.split('/').pop();
@@ -56,10 +57,11 @@ function inyectarMenu() {
 
     const path = window.location.pathname.split("/").pop();
     const links = {
-        "dashboard.html": "link-dashboard",
-        "usuarios.html":  "link-usuarios",
+        "dashboard.html":  "link-dashboard",
+        "usuarios.html":   "link-usuarios",
+        "grupos.html":     "link-grupos",
         "ejercicios.html": "link-ejercicios",
-        "reportes.html":  "link-reportes"
+        "reportes.html":   "link-reportes"
     };
     
     const activeId = links[path];
