@@ -8,6 +8,7 @@ window.chartHabilidades = window.chartHabilidades ?? null;
 let rawUsuarios    = [];
 let rawHabilidades = [];
 
+
 // ─── Paleta profesional (una por habilidad canónica) ─────────────────────────
 const SKILL_COLORS = {
     Reading:   "#00c2cb",   // cyan
@@ -332,7 +333,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!document.getElementById("graficaUsuarios")) return;
 
     // Render inicial con el filtro por defecto ("all" – Histórico)
-    // cargarDatos() fue eliminado: cada render function hace su propio fetch
     const filtroInicial = document.getElementById("dateFilter")?.value ?? "all";
     await Promise.all([
         renderGraficaUsuarios(filtroInicial),
@@ -340,5 +340,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     ]);
 
     inicializarFiltro();
-});
-
+});

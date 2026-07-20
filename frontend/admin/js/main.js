@@ -14,6 +14,7 @@ function inyectarMenu() {
                     <a href="grupos.html" id="link-grupos"><i class="fas fa-layer-group"></i> Grupos</a>
                     <a href="ejercicios.html" id="link-ejercicios"><i class="fas fa-book"></i> Ejercicios</a>
                     <a href="reportes.html" id="link-reportes"><i class="fas fa-file-alt"></i> Reportes</a>
+                    <a href="reportes-grupales.html" id="link-reportes-grupales"><i class="fas fa-chart-bar"></i> Reportes Grupales</a>
                 </nav>
             </div>
             <a href="#" class="logout" onclick="event.preventDefault(); logout();">
@@ -44,11 +45,12 @@ function inyectarMenu() {
         `;
         // Poner el título de la página activa
         const titles = {
-            'dashboard.html': 'Dashboard',
-            'usuarios.html':  'Usuarios',
-            'grupos.html':    'Grupos',
-            'ejercicios.html': 'Ejercicios',
-            'reportes.html':  'Reportes'
+            'dashboard.html':         'Dashboard',
+            'usuarios.html':          'Usuarios',
+            'grupos.html':            'Grupos',
+            'ejercicios.html':        'Ejercicios',
+            'reportes.html':          'Reportes',
+            'reportes-grupales.html': 'Reportes Grupales'
         };
         const page = window.location.pathname.split('/').pop();
         const titleEl = document.getElementById('admin-page-title');
@@ -57,11 +59,12 @@ function inyectarMenu() {
 
     const path = window.location.pathname.split("/").pop();
     const links = {
-        "dashboard.html":  "link-dashboard",
-        "usuarios.html":   "link-usuarios",
-        "grupos.html":     "link-grupos",
-        "ejercicios.html": "link-ejercicios",
-        "reportes.html":   "link-reportes"
+        "dashboard.html":          "link-dashboard",
+        "usuarios.html":           "link-usuarios",
+        "grupos.html":             "link-grupos",
+        "ejercicios.html":         "link-ejercicios",
+        "reportes.html":           "link-reportes",
+        "reportes-grupales.html":  "link-reportes-grupales"
     };
     
     const activeId = links[path];

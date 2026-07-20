@@ -199,4 +199,262 @@ router.get("/reporte-habilidades", async (req, res) => {
   }
 });
 
-module.exports = router;
+// ─────────────────────────────────────────────────────────────────────────────
+// REPORTES GRUPALES
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Utilidad compartida: dado un grupoId, devuelve el array de UID de alumnos.
+ * Si el grupo no existe o no tiene alumnos retorna [].
+ */
+async function obtenerAlumnosDeGrupo(grupoId) {
+  if (!grupoId) return [];
+  const grupoDoc = await db.collection("grupos").doc(grupoId).get();
+  if (!grupoDoc.exists) return [];
+  return grupoDoc.data().alumnos || [];
+}
+
+/**
+ * Dado un array de UID de alumnos, devuelve un Map { sesionId → sesionData }
+ * con todas las sesiones que pertenecen a esos usuarios.
+ */
+async function obtenerSesionesDeAlumnos(alumnoIds) {
+  if (!alumnoIds.length) return {};
+  const sesionesMap = {};
+  const chunkSize   = 30;
+
+  for (let i = 0; i < alumnoIds.length; i += chunkSize) {
+    const chunk = alumnoIds.slice(i, i + chunkSize);
+    const snap  = await db
+      .collection("sesiones")
+      .where("usuario_id", "in", chunk)
+      .get();
+    snap.docs.forEach((d) => { sesionesMap[d.id] = d.data(); });
+  }
+  return sesionesMap;
+}
+
+// GET /reporte-grupal-usuarios?grupoId=XXX&dias=YYY
+router.get("/reporte-grupal-usuarios", async (req, res) => {
+  const { grupoId, dias: diasRaw } = req.query;
+
+  try {
+    console.log(`[reporte-grupal-usuarios] grupoId=${grupoId} dias=${diasRaw}`);
+
+    // 1. Alumnos del grupo
+    const alumnoIds = await obtenerAlumnosDeGrupo(grupoId);
+    if (!alumnoIds.length) {
+      return res.json([]);
+    }
+
+    // 2. Sesiones de esos alumnos
+    const sesionesMap = await obtenerSesionesDeAlumnos(alumnoIds);
+    const sesionIdsDelGrupo = new Set(Object.keys(sesionesMap));
+
+    if (!sesionIdsDelGrupo.size) return res.json([]);
+
+    // 3. Todos los resultados y filtrar por sesion_id del grupo
+    const allSnap = await db.collection("resultados").get();
+    let resultados = allSnap.docs
+      .map((d) => d.data())
+      .filter((r) => sesionIdsDelGrupo.has(r.sesion_id));
+
+    // 4. Filtro de fecha
+    if (diasRaw && diasRaw !== "all") {
+      const dias        = parseInt(diasRaw, 10);
+      const fechaMinima = new Date();
+      fechaMinima.setDate(fechaMinima.getDate() - dias);
+      fechaMinima.setHours(0, 0, 0, 0);
+      resultados = resultados.filter((r) => {
+        if (!r.fecha) return false;
+        return new Date(r.fecha).getTime() >= fechaMinima.getTime();
+      });
+    }
+
+    // 5. Obtener nombres de usuarios
+    const usersMap  = {};
+    const chunkSize = 30;
+    for (let i = 0; i < alumnoIds.length; i += chunkSize) {
+      const chunk = alumnoIds.slice(i, i + chunkSize);
+      const snap  = await db.collection("users").where("__name__", "in", chunk).get();
+      snap.docs.forEach((d) => { usersMap[d.id] = d.data(); });
+    }
+
+    // 6. Agregar por usuario
+    const conteo = {};
+    resultados.forEach((r) => {
+      const sesion   = sesionesMap[r.sesion_id] || {};
+      const user     = usersMap[sesion.usuario_id] || {};
+      const nombre   = user.nombre || "Desconocido";
+      conteo[nombre] = (conteo[nombre] || 0) + 1;
+    });
+
+    const rows = Object.entries(conteo).map(([usuario, total]) => ({ usuario, total }));
+    console.log(`[reporte-grupal-usuarios] Filas: ${rows.length}`);
+    res.json(rows);
+
+  } catch (error) {
+    console.error("[reporte-grupal-usuarios] ERROR:", error);
+    res.status(500).json({ error: "Error en reporte grupal usuarios" });
+  }
+});
+
+// GET /reporte-grupal-habilidades?grupoId=XXX&dias=YYY
+router.get("/reporte-grupal-habilidades", async (req, res) => {
+  const { grupoId, dias: diasRaw } = req.query;
+
+  try {
+    console.log(`[reporte-grupal-habilidades] grupoId=${grupoId} dias=${diasRaw}`);
+
+    // 1. Alumnos del grupo
+    const alumnoIds = await obtenerAlumnosDeGrupo(grupoId);
+    if (!alumnoIds.length) {
+      return res.json([]);
+    }
+
+    // 2. Sesiones de esos alumnos
+    const sesionesMap = await obtenerSesionesDeAlumnos(alumnoIds);
+    const sesionIdsDelGrupo = new Set(Object.keys(sesionesMap));
+
+    if (!sesionIdsDelGrupo.size) return res.json([]);
+
+    // 3. Todos los resultados y filtrar por sesion_id del grupo
+    const allSnap = await db.collection("resultados").get();
+    let resultados = allSnap.docs
+      .map((d) => d.data())
+      .filter((r) => sesionIdsDelGrupo.has(r.sesion_id));
+
+    // 4. Filtro de fecha
+    let fechaMinima = null;
+    if (diasRaw && diasRaw !== "all") {
+      const dias = parseInt(diasRaw, 10);
+      fechaMinima = new Date();
+      fechaMinima.setDate(fechaMinima.getDate() - dias);
+      fechaMinima.setHours(0, 0, 0, 0);
+    }
+
+    // 5. Agregar por habilidad
+    const conteo = {};
+    resultados.forEach((r) => {
+      if (!r.habilidad) return;
+      if (fechaMinima) {
+        if (!r.fecha) return;
+        if (new Date(r.fecha).getTime() < fechaMinima.getTime()) return;
+      }
+      conteo[r.habilidad] = (conteo[r.habilidad] || 0) + 1;
+    });
+
+    const rows = Object.entries(conteo).map(([habilidad, total]) => ({ habilidad, total }));
+    console.log(`[reporte-grupal-habilidades] Filas: ${rows.length}`);
+    res.json(rows);
+
+  } catch (error) {
+    console.error("[reporte-grupal-habilidades] ERROR:", error);
+    res.status(500).json({ error: "Error en reporte grupal habilidades" });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// REPORTE GENERAL DE GRUPOS  –  GET /reporte-general-grupos?dias=N
+// Devuelve un array con un objeto por grupo:
+//   { grupo, totalEjercicios, promedioGeneral }
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+router.get("/reporte-general-grupos", async (req, res) => {
+  const { dias: diasRaw } = req.query;
+
+  try {
+    console.log(`[reporte-general-grupos] dias=${diasRaw}`);
+    const chunkSize = 30;
+
+    // 1. Obtener todos los grupos con sus alumnos
+    const gruposSnap = await db.collection("grupos").get();
+    const grupos = gruposSnap.docs.map((d) => ({
+      id:       d.id,
+      nombre:   d.data().nombre || d.id,
+      alumnos:  d.data().alumnos || [],
+    }));
+
+    if (!grupos.length) return res.json([]);
+
+    // 2. Recoger todos los alumnoIds únicos de todos los grupos
+    const todosAlumnos = [...new Set(grupos.flatMap((g) => g.alumnos))];
+
+    // 3. Cargar sesiones de todos esos alumnos (by usuario_id)
+    const sesionesMap = {}; // { sesionId → { usuario_id, ... } }
+    for (let i = 0; i < todosAlumnos.length; i += chunkSize) {
+      const chunk = todosAlumnos.slice(i, i + chunkSize);
+      const snap  = await db.collection("sesiones")
+        .where("usuario_id", "in", chunk).get();
+      snap.docs.forEach((d) => { sesionesMap[d.id] = d.data(); });
+    }
+
+    // 4. Construir mapa inverso: usuarioId → Set<sesionId>
+    const usuarioASesiones = {}; // { usuarioId → Set<sesionId> }
+    Object.entries(sesionesMap).forEach(([sesId, sesData]) => {
+      const uid = sesData.usuario_id;
+      if (!uid) return;
+      if (!usuarioASesiones[uid]) usuarioASesiones[uid] = new Set();
+      usuarioASesiones[uid].add(sesId);
+    });
+
+    // 5. Cargar todos los resultados y aplicar filtro de fecha
+    const allSnap = await db.collection("resultados").get();
+    let resultados = allSnap.docs.map((d) => d.data());
+
+    if (diasRaw && diasRaw !== "all") {
+      const dias        = parseInt(diasRaw, 10);
+      const fechaMinima = new Date();
+      fechaMinima.setDate(fechaMinima.getDate() - dias);
+      fechaMinima.setHours(0, 0, 0, 0);
+      resultados = resultados.filter((r) => {
+        if (!r.fecha) return false;
+        return new Date(r.fecha).getTime() >= fechaMinima.getTime();
+      });
+    }
+
+    // 6. Para cada resultado, saber a qué usuario pertenece
+    //    Mapa: sesionId → usuarioId  (ya lo tenemos en sesionesMap)
+    const resultadoConUsuario = resultados.map((r) => ({
+      ...r,
+      usuarioId: sesionesMap[r.sesion_id]?.usuario_id ?? null,
+    }));
+
+    // 7. Calcular totalEjercicios y promedioGeneral por grupo
+    const filas = grupos.map((g) => {
+      const sesionIdsDelGrupo = new Set(
+        g.alumnos.flatMap((uid) => [...(usuarioASesiones[uid] || [])])
+      );
+
+      const resultadosDelGrupo = resultadoConUsuario.filter(
+        (r) => sesionIdsDelGrupo.has(r.sesion_id)
+      );
+
+      const totalEjercicios = resultadosDelGrupo.length;
+      const puntajesValidos = resultadosDelGrupo
+        .map((r) => Number(r.puntaje))
+        .filter((p) => !isNaN(p));
+
+      const promedioGeneral = puntajesValidos.length > 0
+        ? puntajesValidos.reduce((a, b) => a + b, 0) / puntajesValidos.length
+        : 0;
+
+      return {
+        grupo:           g.nombre,
+        totalEjercicios,
+        promedioGeneral: parseFloat(promedioGeneral.toFixed(2)),
+      };
+    });
+
+    // Ordenar por promedio desc para visualización más clara
+    filas.sort((a, b) => b.promedioGeneral - a.promedioGeneral);
+
+    console.log(`[reporte-general-grupos] Grupos devueltos: ${filas.length}`);
+    res.json(filas);
+
+  } catch (error) {
+    console.error("[reporte-general-grupos] ERROR:", error);
+    res.status(500).json({ error: "Error en reporte general de grupos" });
+  }
+});
+
+module.exports = router;

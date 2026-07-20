@@ -187,9 +187,54 @@ function eliminarUsuario(id) {
     }
 }
 
-function irCrearUsuario() {
-    window.location.href = "../register.html";
+// \u2500\u2500 MODAL CREAR USUARIO \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+/**
+ * Carga los grupos desde /api/grupos y rellena el select#createGrupo.
+ * Se llama cada vez que se abre el modal para asegurar datos frescos.
+ */
+async function cargarGruposEnCrear() {
+    const select = document.getElementById('createGrupo');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Sin grupo (Opcional)</option>';
+
+    try {
+        const res    = await fetch('/api/grupos');
+        const grupos = await res.json();
+
+        if (Array.isArray(grupos) && grupos.length > 0) {
+            grupos.forEach((g) => {
+                const opt = document.createElement('option');
+                opt.value       = g.id;
+                opt.textContent = g.nombre || g.id;
+                select.appendChild(opt);
+            });
+        }
+    } catch (err) {
+        console.warn('[Usuarios] No se pudieron cargar grupos:', err);
+    }
 }
+
+/** Abre el modal de creaci\u00f3n y carga los grupos disponibles. */
+function abrirModalCrear() {
+    const modal = document.getElementById('modalCrearUsuario');
+    if (!modal) return;
+
+    // Limpiar formulario
+    ['createNombre', 'createEmail', 'createPassword'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const nivel  = document.getElementById('createNivel');
+    if (nivel) nivel.value = '';
+
+    cargarGruposEnCrear();
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('createNombre')?.focus(), 100);
+}
+
 
 // ── MODAL EDITAR USUARIO ──
 let _currentEditId = null;
@@ -279,3 +324,80 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// \u2500\u2500 MODAL CREAR USUARIO: listeners \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+document.addEventListener('DOMContentLoaded', () => {
+    const modalCrear    = document.getElementById('modalCrearUsuario');
+    const btnCancelar   = document.getElementById('btnCrearCancelar');
+    const btnGuardar    = document.getElementById('btnCrearGuardar');
+
+    function cerrarModalCrear() {
+        if (modalCrear) {
+            modalCrear.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Cerrar con botón Cancelar
+    btnCancelar?.addEventListener('click', cerrarModalCrear);
+
+    // Cerrar al hacer clic en el overlay (fuera de la tarjeta)
+    modalCrear?.addEventListener('click', (e) => {
+        if (e.target === modalCrear) cerrarModalCrear();
+    });
+
+    // Envío del formulario
+    btnGuardar?.addEventListener('click', async () => {
+        const nombre   = document.getElementById('createNombre')?.value.trim()   ?? '';
+        const email    = document.getElementById('createEmail')?.value.trim()    ?? '';
+        const password = document.getElementById('createPassword')?.value.trim() ?? '';
+        const nivel    = document.getElementById('createNivel')?.value            ?? '';
+        const grupoId  = document.getElementById('createGrupo')?.value            ?? '';
+
+        // Validaciones básicas
+        if (!nombre) {
+            mostrarToast('El nombre es obligatorio.', 'error');
+            return;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            mostrarToast('Ingresa un email v\u00e1lido.', 'error');
+            return;
+        }
+        if (password.length < 6) {
+            mostrarToast('La contrase\u00f1a debe tener al menos 6 caracteres.', 'error');
+            return;
+        }
+
+        // Bloquear botón para evitar doble envío
+        btnGuardar.disabled = true;
+        btnGuardar.textContent = 'Creando...';
+
+        try {
+            const payload = { nombre, email, password, nivel_general: nivel || null };
+            if (grupoId) payload.grupoId = grupoId;   // solo si el admin seleccionó uno
+
+            const res = await fetch('/guardar_usuario', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                cerrarModalCrear();
+                const grupoMsg = grupoId ? ' y asignado al grupo.' : '.';
+                mostrarToast(`Usuario "${nombre}" creado correctamente${grupoMsg}`, 'success');
+                cargarUsuarios();
+            } else {
+                mostrarToast(data.error || 'No se pudo crear el usuario.', 'error');
+            }
+        } catch (err) {
+            console.error('[Usuarios] Error al crear:', err);
+            mostrarToast('Error de conexión al crear el usuario.', 'error');
+        } finally {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<i class="fas fa-user-plus" style="margin-right:6px;"></i>Crear Usuario';
+        }
+    });
+});

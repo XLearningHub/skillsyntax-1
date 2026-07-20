@@ -2,20 +2,26 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="description" content="Panel de control principal — SkillSyntax Admin">
     <title>Dashboard | SkillSyntax Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/admin.css">
     <style>
         :root {
-            --bg-dark: #060e1a;
-            --bg-card: #0d1b2e;
+            --bg-dark:    #060e1a;
+            --bg-card:    #0d1b2e;
             --bg-sidebar: #081427;
-            --primary: #00c2cb;
-            --danger: #ff5f52;
-            --text-main: #ffffff;
-            --text-dim: #a0aec0;
+            --primary:    #00c2cb;
+            --success:    #06d6a0;
+            --warning:    #ffd166;
+            --purple:     #9b5de5;
+            --danger:     #ff5f52;
+            --text-main:  #ffffff;
+            --text-dim:   #a0aec0;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -25,6 +31,7 @@
             display: flex;
         }
 
+        /* ── Sidebar ─────────────────────────────────────────────────────── */
         .sidebar {
             width: 260px;
             height: 100vh;
@@ -34,7 +41,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255,255,255,0.05);
             box-sizing: border-box;
         }
 
@@ -45,6 +52,7 @@
             padding-left: 10px;
             border-left: 4px solid var(--primary);
             letter-spacing: -1px;
+            font-weight: 700;
         }
 
         .sidebar nav a {
@@ -60,20 +68,18 @@
         }
 
         .sidebar nav a i { width: 20px; margin-right: 12px; text-align: center; }
-
-        .sidebar nav a:hover { background: rgba(0, 194, 203, 0.1); color: var(--primary); }
-
+        .sidebar nav a:hover { background: rgba(0,194,203,0.1); color: var(--primary); }
         .sidebar nav a.active {
             background: var(--primary) !important;
             color: #000 !important;
             font-weight: 700;
-            box-shadow: 0 4px 15px rgba(0, 194, 203, 0.3);
+            box-shadow: 0 4px 15px rgba(0,194,203,0.3);
         }
 
         .logout {
-            background: rgba(231, 76, 60, 0.1) !important;
+            background: rgba(231,76,60,0.1) !important;
             color: var(--danger) !important;
-            border: 1px solid rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231,76,60,0.2);
             padding: 12px;
             border-radius: 12px;
             text-decoration: none;
@@ -84,33 +90,224 @@
             font-weight: 600;
             margin-bottom: 10px;
         }
-
         .logout:hover { background: var(--danger) !important; color: white !important; }
 
+        /* ── Content ─────────────────────────────────────────────────────── */
         .content {
             margin-left: 260px;
             padding: 40px;
             width: calc(100% - 260px);
         }
 
-        h1 { font-size: 2.2rem; margin-bottom: 5px; font-weight: 700; }
-        .subtitle { color: var(--text-dim); margin-bottom: 40px; }
+        /* ── Page Header ─────────────────────────────────────────────────── */
+        .page-intro {
+            margin-bottom: 36px;
+        }
+        .page-intro h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0 0 6px;
+        }
+        .page-intro p {
+            color: var(--text-dim);
+            margin: 0;
+            font-size: 0.92rem;
+        }
 
-        .cards {
+        /* ── KPI Grid ────────────────────────────────────────────────────── */
+        .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 36px;
         }
-        .card {
+
+        .kpi-card {
             background: var(--bg-card);
-            padding: 35px;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: 0.3s;
+            border-radius: 20px;
+            padding: 28px 28px 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
         }
-        .card:hover { transform: translateY(-5px); border-color: rgba(0, 194, 203, 0.2); }
-        .card h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
-        .card p { font-size: 3rem; font-weight: 800; margin: 0; color: var(--primary); }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Acento de color lateral */
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            border-radius: 20px 0 0 20px;
+        }
+        .kpi-card.accent-cyan  { border-color: rgba(0,194,203,0.2); box-shadow: 0 8px 28px rgba(0,194,203,0.08); }
+        .kpi-card.accent-cyan::before  { background: var(--primary); }
+        .kpi-card.accent-cyan:hover    { border-color: rgba(0,194,203,0.4); box-shadow: 0 12px 36px rgba(0,194,203,0.15); }
+
+        .kpi-card.accent-purple { border-color: rgba(155,93,229,0.2); box-shadow: 0 8px 28px rgba(155,93,229,0.08); }
+        .kpi-card.accent-purple::before { background: var(--purple); }
+        .kpi-card.accent-purple:hover   { border-color: rgba(155,93,229,0.4); box-shadow: 0 12px 36px rgba(155,93,229,0.15); }
+
+        .kpi-card.accent-green  { border-color: rgba(6,214,160,0.2); box-shadow: 0 8px 28px rgba(6,214,160,0.08); }
+        .kpi-card.accent-green::before  { background: var(--success); }
+        .kpi-card.accent-green:hover    { border-color: rgba(6,214,160,0.4); box-shadow: 0 12px 36px rgba(6,214,160,0.15); }
+
+        .kpi-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .kpi-icon-wrap {
+            width: 46px; height: 46px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+        .accent-cyan   .kpi-icon-wrap { background: rgba(0,194,203,0.12);  color: var(--primary); }
+        .accent-purple .kpi-icon-wrap { background: rgba(155,93,229,0.12); color: var(--purple); }
+        .accent-green  .kpi-icon-wrap { background: rgba(6,214,160,0.12);  color: var(--success); }
+
+        .kpi-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        .kpi-value {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -2px;
+        }
+        .accent-cyan   .kpi-value { color: var(--primary); }
+        .accent-purple .kpi-value { color: var(--purple); }
+        .accent-green  .kpi-value { color: var(--success); }
+
+        .kpi-footer {
+            margin-top: 16px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .kpi-footer i { margin-right: 5px; opacity: 0.6; }
+
+        /* ── Dashboard Grid (dos columnas) ───────────────────────────────── */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 28px;
+        }
+
+        /* ── Panel base ──────────────────────────────────────────────────── */
+        .dash-panel {
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 28px 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .panel-header .panel-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            background: rgba(0,194,203,0.1);
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .panel-header p {
+            margin: 2px 0 0;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+        }
+
+        /* ── Timeline ────────────────────────────────────────────────────── */
+        #actividadFeed {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 14px 0;
+            position: relative;
+        }
+
+        /* Línea vertical conectora */
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 16px;            /* center del dot (dot width 34px / 2 + gap ajuste) */
+            top: 48px;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .timeline-dot {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-body {
+            flex: 1;
+            padding-top: 6px;
+        }
+        .timeline-text {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+        .timeline-time {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 3px;
+        }
+
+        .timeline-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 0;
+            color: var(--text-dim);
+            gap: 10px;
+            opacity: 0.5;
+        }
+        .timeline-empty i { font-size: 1.8rem; }
+        .timeline-empty p { margin: 0; font-size: 0.88rem; }
     </style>
 </head>
 <body>
@@ -120,20 +317,72 @@
     <div class="content">
         <div id="admin-header"></div>
 
-        <div class="cards">
-            <div class="card">
-                <h3><i class="fas fa-users"></i> Total Usuarios</h3>
-                <p id="totalUsuarios">0</p>
+        <!-- Page intro -->
+        <div class="page-intro">
+            <h1>¡Bienvenido al panel 👋</h1>
+            <p>Vista general del estado actual de la plataforma SkillSyntax.</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+
+            <div class="kpi-card accent-cyan">
+                <div class="kpi-top">
+                    <div>
+                        <div class="kpi-label">Total Usuarios</div>
+                        <div class="kpi-value" id="totalUsuarios">0</div>
+                    </div>
+                    <div class="kpi-icon-wrap"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="kpi-footer">
+                    <i class="fas fa-circle-info"></i>Alumnos y admins registrados
+                </div>
             </div>
-            <div class="card">
-                <h3><i class="fas fa-dumbbell"></i> Ejercicios Creados</h3>
-                <p id="totalEjercicios">0</p>
+
+            <div class="kpi-card accent-purple">
+                <div class="kpi-top">
+                    <div>
+                        <div class="kpi-label">Ejercicios Completados</div>
+                        <div class="kpi-value" id="totalEjercicios">0</div>
+                    </div>
+                    <div class="kpi-icon-wrap"><i class="fas fa-dumbbell"></i></div>
+                </div>
+                <div class="kpi-footer">
+                    <i class="fas fa-circle-info"></i>Resultados en la plataforma
+                </div>
             </div>
-            <div class="card">
-                <h3><i class="fas fa-history"></i> Sesiones Hoy</h3>
-                <p id="totalSesiones">0</p>
+
+            <div class="kpi-card accent-green">
+                <div class="kpi-top">
+                    <div>
+                        <div class="kpi-label">Sesiones Hoy</div>
+                        <div class="kpi-value" id="totalSesiones">0</div>
+                    </div>
+                    <div class="kpi-icon-wrap"><i class="fas fa-bolt"></i></div>
+                </div>
+                <div class="kpi-footer">
+                    <i class="fas fa-calendar-day"></i>Desde la medianoche de hoy
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Actividad Reciente (Timeline) -->
+        <div class="dash-grid">
+            <div class="dash-panel">
+                <div class="panel-header">
+                    <div class="panel-icon"><i class="fas fa-timeline"></i></div>
+                    <div>
+                        <h2>Actividad Reciente</h2>
+                        <p>Últimos eventos registrados en la plataforma</p>
+                    </div>
+                </div>
+                <div id="actividadFeed">
+                    <!-- Poblado dinámicamente por dashboard.js -->
+                </div>
             </div>
         </div>
+
     </div>
 
     <script src="js/role-switch.js"></script>

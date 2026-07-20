@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const db = require("./db");
+const admin = require("firebase-admin");   // Para FieldValue.arrayUnion
 const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -50,7 +51,7 @@ app.post("/guardar_usuario", async (req, res) => {
 
   console.log("[REGISTRO] Datos recibidos:", req.body);
 
-  const { nombre, email, password, nivel_general } = req.body;
+  const { nombre, email, password, nivel_general, grupoId } = req.body;
 
   if (!nombre || !email || !password) {
     return res.status(400).json({ error: "Faltan datos" });
@@ -61,7 +62,7 @@ app.post("/guardar_usuario", async (req, res) => {
     const existing = await db.collection("users").where("email", "==", email).limit(1).get();
 
     if (!existing.empty) {
-      const existingDoc = existing.docs[0];
+      const existingDoc  = existing.docs[0];
       const existingData = existingDoc.data();
 
       // BUG-02 FIX: Si el documento existe pero está incompleto (huérfano de un
@@ -89,11 +90,26 @@ app.post("/guardar_usuario", async (req, res) => {
       createdAt: new Date().toISOString(),
     });
 
-    console.log("[REGISTRO] Usuario creado con ID:", docRef.id);
+    const nuevoUsuarioId = docRef.id;
+    console.log("[REGISTRO] Usuario creado con ID:", nuevoUsuarioId);
+
+    // ── Asignar al grupo si se indicó uno ──────────────────────────────
+    if (grupoId && grupoId.trim()) {
+      try {
+        await db.collection("grupos").doc(grupoId.trim()).update({
+          alumnos: admin.firestore.FieldValue.arrayUnion(nuevoUsuarioId),
+        });
+        console.log(`[REGISTRO] Usuario ${nuevoUsuarioId} añadido al grupo ${grupoId.trim()}`);
+      } catch (grupoErr) {
+        // No cancelamos la creación del usuario si el grupo falla;
+        // simplemente lo reportamos para que el admin lo corrija manualmente.
+        console.error("[REGISTRO] Error al asignar grupo:", grupoErr.message);
+      }
+    }
 
     res.json({
       success: true,
-      id: docRef.id,
+      id: nuevoUsuarioId,
       mensaje: "Usuario guardado correctamente"
     });
 
