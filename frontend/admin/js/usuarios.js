@@ -75,7 +75,7 @@ async function cargarUsuarios() {
                                 <i class="fas fa-pen"></i> Editar
                             </button>
                             <button class="btn-delete" onclick="eliminarUsuario('${user.id}')">
-                                🗑️ Eliminar
+                                <i class="fas fa-trash-can"></i> Eliminar
                             </button>
                         </div>
                     </td>
@@ -245,6 +245,13 @@ function abrirModalEditar(id, nombre, rol, email, nivel) {
     document.getElementById('editEmail').value         = email;
     document.getElementById('editRol').value           = rol;
     document.getElementById('editNivelUsuario').value  = nivel || '';
+
+    // Resetear campo de contraseña al abrir
+    const chkPass  = document.getElementById('editCambiarPass');
+    const passInput = document.getElementById('editNuevaPassword');
+    if (chkPass)  { chkPass.checked = false; }
+    if (passInput) { passInput.value = ''; passInput.disabled = true; passInput.style.opacity = '0.4'; }
+
     document.getElementById('modalEditarUsuario').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -260,6 +267,18 @@ document.addEventListener('DOMContentLoaded', () => {
             modalEditar.classList.remove('active');
             document.body.style.overflow = '';
             _currentEditId = null;
+        });
+    }
+
+    // Toggle del campo de contraseña
+    const chkPass   = document.getElementById('editCambiarPass');
+    const passInput = document.getElementById('editNuevaPassword');
+    if (chkPass && passInput) {
+        chkPass.addEventListener('change', () => {
+            passInput.disabled    = !chkPass.checked;
+            passInput.style.opacity = chkPass.checked ? '1' : '0.4';
+            if (!chkPass.checked) passInput.value = '';
+            if (chkPass.checked) setTimeout(() => passInput.focus(), 50);
         });
     }
 
@@ -284,6 +303,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const rol    = document.getElementById('editRol').value;
             const nivel  = document.getElementById('editNivelUsuario').value;
 
+            // Contraseña: solo si el admin marcó el checkbox
+            const cambiarPass = document.getElementById('editCambiarPass')?.checked;
+            const nuevaPass   = document.getElementById('editNuevaPassword')?.value.trim() ?? '';
+
             if (!nombre) {
                 mostrarToast('El nombre no puede estar vacío.', 'error');
                 return;
@@ -292,16 +315,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 mostrarToast('El email no puede estar vacío.', 'error');
                 return;
             }
+            if (cambiarPass && nuevaPass.length < 6) {
+                mostrarToast('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+                return;
+            }
 
             // Bloquear botón para evitar doble envío
             btnGuardar.disabled = true;
             btnGuardar.textContent = 'Guardando...';
 
+            const payload = { nombre, email, rol, nivel_general: nivel };
+            if (cambiarPass && nuevaPass) payload.nueva_password = nuevaPass;
+
             try {
                 const res = await fetch(`/api/usuarios/${_currentEditId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, email, rol, nivel_general: nivel })
+                    body: JSON.stringify(payload)
                 });
 
                 if (res.ok) {

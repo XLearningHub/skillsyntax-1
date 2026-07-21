@@ -24,16 +24,17 @@ router.get("/total-ejercicios", async (req, res) => {
   }
 });
 
-// SESIONES HOY  ─  solo las creadas desde la medianoche local de hoy
+// SESIONES HOY  ─  logins registrados en eventos_sistema desde medianoche
 router.get("/total-sesiones", async (req, res) => {
   try {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    const isoStart = startOfDay.toISOString(); // "2025-07-20T06:00:00.000Z"
+    const isoStart = startOfDay.toISOString();
 
-    // Firestore guarda 'fecha' como string ISO → comparación lexicográfica válida
+    // Cuenta exclusivamente eventos de tipo LOGIN del día actual
     const snapshot = await db
-      .collection("sesiones")
+      .collection("eventos_sistema")
+      .where("tipo",  "==", "LOGIN")
       .where("fecha", ">=", isoStart)
       .count()
       .get();
@@ -45,46 +46,35 @@ router.get("/total-sesiones", async (req, res) => {
   }
 });
 
-// ACTIVIDAD RECIENTE  ─  últimos 8 eventos (usuarios + sesiones) para el feed
+// ACTIVIDAD RECIENTE  ─  últimos 10 eventos del Audit Trail
 router.get("/actividad-reciente", async (req, res) => {
   try {
-    const LIMIT = 8;
-
-    // Últimos usuarios registrados
-    const usersSnap = await db
-      .collection("users")
-      .orderBy("createdAt", "desc")
-      .limit(LIMIT)
-      .get();
-
-    const usuariosRecientes = usersSnap.docs.map((d) => ({
-      tipo:   "usuario",
-      icono:  "fa-user-plus",
-      color:  "#00c2cb",
-      texto:  `Nuevo usuario: ${d.data().nombre || d.data().email || "sin nombre"}`,
-      fecha:  d.data().createdAt || null,
-    }));
-
-    // Últimas sesiones
-    const sesionesSnap = await db
-      .collection("sesiones")
+    const snap = await db
+      .collection("eventos_sistema")
       .orderBy("fecha", "desc")
-      .limit(LIMIT)
+      .limit(10)
       .get();
 
-    const sesionesRecientes = sesionesSnap.docs.map((d) => ({
-      tipo:   "sesion",
-      icono:  "fa-sign-in-alt",
-      color:  "#06d6a0",
-      texto:  `Nueva sesión iniciada`,
-      fecha:  d.data().fecha || null,
-    }));
+    // Mapa de icono y color por tipo de evento
+    const metaEvento = {
+      LOGIN:             { icono: "fa-sign-in-alt",   color: "#06d6a0" },
+      USUARIO_CREADO:    { icono: "fa-user-plus",     color: "#9b5de5" },
+      USUARIO_ELIMINADO: { icono: "fa-user-minus",    color: "#ff5f52" },
+      GRUPO_CREADO:      { icono: "fa-users-line",    color: "#00c2cb" },
+      GRUPO_ELIMINADO:   { icono: "fa-users-slash",   color: "#ffd166" },
+    };
 
-    // Unir y ordenar por fecha desc, tomar los N más recientes
-    const actividad = [...usuariosRecientes, ...sesionesRecientes]
-      .filter((e) => e.fecha)
-      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-      .slice(0, LIMIT);
+    const actividad = snap.docs.map((d) => {
+      const data = d.data();
+      const meta = metaEvento[data.tipo] || { icono: "fa-circle-info", color: "#a0aec0" };
+      return {
+        tipo:        data.tipo,
+        icono:       meta.icono,
+        color:       meta.color,
+        texto:       data.descripcion || data.tipo,
+        fecha:       data.fecha || null,
+      };
+    });
 
     res.json(actividad);
   } catch (error) {

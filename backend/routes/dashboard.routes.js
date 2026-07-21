@@ -15,6 +15,82 @@ function calcularPromedios(resultados) {
   }));
 }
 
+// ── GET /grafica-7-dias ── Datos agrupados por día para Chart.js ───────────
+router.get("/grafica-7-dias", async (req, res) => {
+  try {
+    // Calcular rango: medianoche de hace 6 días → ahora
+    const hoy       = new Date();
+    const dias      = [];
+    const labels    = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(hoy);
+      d.setDate(hoy.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      const key = d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+      dias.push({ key, from: d.toISOString() });
+      labels.push(
+        d.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" })
+      );
+    }
+
+    const isoInicio = dias[0].from;
+
+    // Lanzar las dos queries en paralelo
+    const [loginsSnap, sesionesSnap] = await Promise.all([
+      db.collection("eventos_sistema")
+        .where("tipo",  "==", "LOGIN")
+        .where("fecha", ">=", isoInicio)
+        .get(),
+      db.collection("sesiones")
+        .where("fecha", ">=", isoInicio)
+        .get(),
+    ]);
+
+    // Agrupar por día (YYYY-MM-DD)
+    const loginsPorDia   = Object.fromEntries(dias.map(d => [d.key, 0]));
+    const ejerciciosPorDia = Object.fromEntries(dias.map(d => [d.key, 0]));
+
+    loginsSnap.docs.forEach(doc => {
+      const fecha = (doc.data().fecha || "").slice(0, 10);
+      if (loginsPorDia[fecha] !== undefined) loginsPorDia[fecha]++;
+    });
+
+    sesionesSnap.docs.forEach(doc => {
+      const fecha = (doc.data().fecha || "").slice(0, 10);
+      if (ejerciciosPorDia[fecha] !== undefined) ejerciciosPorDia[fecha]++;
+    });
+
+    res.json({
+      labels,
+      datasets: [
+        {
+          label:           "Inicios de Sesión",
+          data:            dias.map(d => loginsPorDia[d.key]),
+          borderColor:     "#06d6a0",
+          backgroundColor: "rgba(6,214,160,0.15)",
+          tension:         0.4,
+          pointRadius:     4,
+          pointHoverRadius: 6,
+        },
+        {
+          label:           "Ejercicios Realizados",
+          data:            dias.map(d => ejerciciosPorDia[d.key]),
+          borderColor:     "#9b5de5",
+          backgroundColor: "rgba(155,93,229,0.12)",
+          tension:         0.4,
+          pointRadius:     4,
+          pointHoverRadius: 6,
+        },
+      ],
+    });
+
+  } catch (error) {
+    console.error("[Dashboard] Error en grafica-7-dias:", error);
+    res.status(500).json({ error: "Error al obtener datos de la gráfica" });
+  }
+});
+
 router.get("/:usuario_id", async (req, res) => {
   const { usuario_id } = req.params;
 

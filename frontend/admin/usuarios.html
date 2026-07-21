@@ -483,6 +483,25 @@
         }
         .btn-edit:hover { background: #6c5ce7; color: #fff; border-color: #6c5ce7; }
 
+        /* ── Botón Eliminar (peligro) ── */
+        .btn-delete {
+            background: rgba(255, 95, 82, 0.1);
+            color: #ff5f52;
+            border: 1px solid rgba(255, 95, 82, 0.3);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            transition: 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+        }
+        .btn-delete:hover { background: #ff5f52; color: #fff; border-color: #ff5f52; }
+
         /* Contenedor de botones de acción con separación uniforme */
         .action-cell {
             display: flex;
@@ -755,6 +774,20 @@
                     <option value="alumno">Alumno</option>
                     <option value="admin">Admin</option>
                 </select>
+            </div>
+
+            <!-- ── Cambio de Contraseña (colapsado por defecto) ── -->
+            <div class="form-group" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;margin-top:4px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.82rem;">
+                    <input type="checkbox" id="editCambiarPass"
+                           style="width:15px;height:15px;accent-color:var(--danger);cursor:pointer;">
+                    <span style="color:var(--text-dim);">&#xf023;&nbsp; ¿Cambiar contraseña de este usuario?</span>
+                </label>
+                <input type="password" id="editNuevaPassword"
+                       placeholder="Nueva contraseña (mín. 6 caracteres)"
+                       disabled
+                       style="margin-top:10px;opacity:0.4;transition:opacity 0.25s;">
+                <span class="field-hint" style="margin-top:4px;">Deja el campo vacío para no cambiar la contraseña actual.</span>
             </div>
 
             <div class="modal-edit-actions">

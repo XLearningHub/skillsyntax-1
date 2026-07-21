@@ -1,0 +1,442 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Perfil de usuario - SkillSyntax">
+    <title>Mi Perfil | SkillSyntax</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark:   #060e1a;
+            --bg-card:   #0d1b2e;
+            --primary:   #00c2cb;
+            --success:   #06d6a0;
+            --purple:    #9b5de5;
+            --danger:    #ff5f52;
+            --text-main: #ffffff;
+            --text-dim:  #a0aec0;
+            --border:    rgba(255,255,255,0.07);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family:'Inter',sans-serif; background:var(--bg-dark); color:var(--text-main); min-height:100vh; }
+
+        .page-wrapper { max-width:860px; margin:0 auto; padding:48px 24px 80px; }
+
+        /* Header */
+        .page-header { display:flex; align-items:center; gap:18px; margin-bottom:40px; }
+        .back-btn {
+            width:40px; height:40px; border-radius:12px;
+            border:1px solid var(--border); background:rgba(255,255,255,0.04);
+            color:var(--text-dim); display:flex; align-items:center; justify-content:center;
+            cursor:pointer; transition:all 0.25s; text-decoration:none; font-size:0.9rem; flex-shrink:0;
+        }
+        .back-btn:hover { background:rgba(255,255,255,0.1); color:var(--text-main); }
+        .page-header-text h1 { font-size:1.75rem; font-weight:800; letter-spacing:-0.5px; }
+        .page-header-text p  { color:var(--text-dim); font-size:0.88rem; margin-top:4px; }
+
+        /* Card */
+        .profile-card {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:24px; padding:36px 40px; margin-bottom:28px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.25);
+        }
+        .card-header {
+            display:flex; align-items:center; gap:14px;
+            margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--border);
+        }
+        .card-icon {
+            width:42px; height:42px; border-radius:13px;
+            display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;
+        }
+        .card-icon.cyan   { background:rgba(0,194,203,0.12); color:var(--primary); }
+        .card-icon.danger { background:rgba(255,95,82,0.1);  color:var(--danger); }
+        .card-header h2 { font-size:1.05rem; font-weight:700; }
+        .card-header p  { font-size:0.8rem; color:var(--text-dim); margin-top:2px; }
+
+        /* Avatar strip */
+        .avatar-strip {
+            display:flex; align-items:center; gap:20px; margin-bottom:28px;
+            padding:18px 22px; background:rgba(255,255,255,0.03);
+            border-radius:16px; border:1px solid var(--border);
+        }
+        .avatar-preview {
+            width:68px; height:68px; border-radius:50%;
+            background:linear-gradient(135deg,#00c2cb,#9b5de5);
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.8rem; border:3px solid rgba(0,194,203,0.4);
+            box-shadow:0 0 20px rgba(0,194,203,0.2); transition:all 0.3s; overflow:hidden; flex-shrink:0;
+        }
+        .avatar-preview img { width:100%; height:100%; object-fit:cover; }
+        .avatar-strip-info strong { display:block; font-size:1rem; font-weight:700; }
+        .avatar-strip-info span  { font-size:0.82rem; color:var(--text-dim); }
+
+        /* Avatar grid */
+        .section-label {
+            font-size:0.75rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:0.08em; color:var(--text-dim); margin-bottom:14px;
+        }
+        .avatar-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
+        .avatar-option {
+            aspect-ratio:1; border-radius:18px; border:2px solid var(--border);
+            background:rgba(255,255,255,0.03); display:flex; align-items:center;
+            justify-content:center; cursor:pointer; transition:all 0.25s ease;
+            position:relative; overflow:hidden; padding:8%;
+        }
+        .avatar-option:hover { border-color:rgba(0,194,203,0.5); background:rgba(0,194,203,0.06); transform:translateY(-2px); }
+        .avatar-option.selected { border-color:var(--primary); background:rgba(0,194,203,0.1); box-shadow:0 0 20px rgba(0,194,203,0.2); }
+        .avatar-option.selected::after {
+            content:'\f00c'; font-family:'Font Awesome 6 Free'; font-weight:900;
+            position:absolute; bottom:6px; right:8px; font-size:0.65rem; color:var(--primary);
+        }
+        .avatar-option img { width:100%; height:100%; object-fit:contain; border-radius:50%; }
+
+        /* Forms */
+        .form-group { display:flex; flex-direction:column; gap:7px; margin-bottom:20px; }
+        .form-group label {
+            font-size:0.75rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:0.07em; color:var(--text-dim);
+        }
+        .input-wrap { position:relative; }
+        .input-wrap .field-icon {
+            position:absolute; left:14px; top:50%; transform:translateY(-50%);
+            color:var(--text-dim); font-size:0.85rem; pointer-events:none; transition:color 0.2s;
+        }
+        .input-wrap input {
+            width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+            border-radius:12px; padding:12px 42px 12px 40px; color:var(--text-main);
+            font-family:'Inter',sans-serif; font-size:0.9rem; outline:none;
+            transition:border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+        .input-wrap input:focus {
+            border-color:var(--primary); background:rgba(0,194,203,0.05);
+            box-shadow:0 0 0 3px rgba(0,194,203,0.12);
+        }
+        .input-wrap:focus-within .field-icon { color:var(--primary); }
+        .toggle-pass {
+            position:absolute; right:14px; top:50%; transform:translateY(-50%);
+            color:var(--text-dim); cursor:pointer; font-size:0.85rem;
+            transition:color 0.2s; background:none; border:none; padding:0;
+        }
+        .toggle-pass:hover { color:var(--primary); }
+
+        /* Strength bar */
+        .strength-bar { height:4px; border-radius:4px; background:rgba(255,255,255,0.08); margin-top:6px; overflow:hidden; }
+        .strength-fill { height:100%; border-radius:4px; width:0%; transition:width 0.3s, background 0.3s; }
+        .strength-text { font-size:0.73rem; margin-top:4px; color:var(--text-dim); }
+
+        /* Buttons */
+        .btn-primary {
+            display:inline-flex; align-items:center; gap:8px; padding:12px 28px;
+            border-radius:12px; border:none; background:linear-gradient(135deg,#00c2cb,#00a8b0);
+            color:#000; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700;
+            cursor:pointer; transition:all 0.25s; box-shadow:0 4px 18px rgba(0,194,203,0.3);
+        }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 24px rgba(0,194,203,0.45); }
+        .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+        .btn-danger-outline {
+            display:inline-flex; align-items:center; gap:8px; padding:12px 28px;
+            border-radius:12px; border:1.5px solid rgba(255,95,82,0.4);
+            background:rgba(255,95,82,0.08); color:var(--danger); font-family:'Inter',sans-serif;
+            font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.25s;
+        }
+        .btn-danger-outline:hover { background:var(--danger); color:#fff; border-color:var(--danger); }
+        .btn-danger-outline:disabled { opacity:0.5; cursor:not-allowed; }
+        .card-actions { display:flex; justify-content:flex-end; padding-top:8px; }
+
+        /* Divider */
+        .divider { height:1px; background:var(--border); margin:24px 0; }
+
+        /* Toast */
+        .toast-container { position:fixed; bottom:28px; right:28px; display:flex; flex-direction:column; gap:10px; z-index:9999; }
+        .toast {
+            display:flex; align-items:center; gap:12px; background:var(--bg-card);
+            border:1px solid var(--border); border-radius:14px; padding:14px 18px;
+            min-width:280px; max-width:360px; box-shadow:0 8px 28px rgba(0,0,0,0.4);
+            animation:toastIn 0.3s ease; position:relative; overflow:hidden; font-size:0.875rem;
+        }
+        .toast.success { background:linear-gradient(135deg,#0d2b1f,#0a2318); border-color:rgba(6,214,160,0.3); }
+        .toast.error   { background:linear-gradient(135deg,#2b0d0d,#230a0a); border-color:rgba(255,95,82,0.3); }
+        .toast-progress { position:absolute; bottom:0; left:0; height:3px; border-radius:0 0 14px 14px; animation:toastProg 3.5s linear forwards; }
+        .toast.success .toast-progress { background:#06d6a0; width:100%; }
+        .toast.error   .toast-progress { background:var(--danger); width:100%; }
+        @keyframes toastIn  { from{opacity:0;transform:translateX(50px) scale(0.95);} to{opacity:1;transform:translateX(0) scale(1);} }
+        @keyframes toastOut { from{opacity:1;transform:translateX(0);}              to{opacity:0;transform:translateX(50px);} }
+        @keyframes toastProg { from{width:100%;} to{width:0%;} }
+
+        @media(max-width:600px){
+            .profile-card{padding:24px 20px;}
+            .avatar-grid{grid-template-columns:repeat(4,1fr);gap:8px;}
+            .avatar-strip{flex-direction:column;text-align:center;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <div class="page-header">
+        <a href="javascript:history.back()" class="back-btn" title="Volver">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div class="page-header-text">
+            <h1>Mi Perfil</h1>
+            <p>Personaliza tu avatar y gestiona la seguridad de tu cuenta</p>
+        </div>
+    </div>
+
+    <!-- CARD 1: Avatar -->
+    <div class="profile-card">
+        <div class="card-header">
+            <div class="card-icon cyan"><i class="fas fa-user-circle"></i></div>
+            <div>
+                <h2>Personalización</h2>
+                <p>Elige el avatar que te represente en la plataforma</p>
+            </div>
+        </div>
+
+        <div class="avatar-strip">
+            <div class="avatar-preview" id="avatarPreview">
+                <i class="fas fa-user" style="color:rgba(255,255,255,0.8);"></i>
+            </div>
+            <div class="avatar-strip-info">
+                <strong id="nombreAlumno">Cargando...</strong>
+                <span id="emailAlumno"></span>
+            </div>
+        </div>
+
+        <p class="section-label">Selecciona tu avatar</p>
+        <div class="avatar-grid" id="avatarGrid"></div>
+
+        <div class="card-actions">
+            <button class="btn-primary" id="btnGuardarAvatar">
+                <i class="fas fa-save"></i> Guardar Avatar
+            </button>
+        </div>
+    </div>
+
+    <!-- CARD 2: Password -->
+    <div class="profile-card">
+        <div class="card-header">
+            <div class="card-icon danger"><i class="fas fa-shield-halved"></i></div>
+            <div>
+                <h2>Seguridad de la Cuenta</h2>
+                <p>Actualiza tu contrasena para mantener tu cuenta protegida</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="passActual">Contrasena Actual</label>
+            <div class="input-wrap">
+                <i class="fas fa-lock field-icon"></i>
+                <input type="password" id="passActual" placeholder="Tu contrasena actual" autocomplete="current-password">
+                <button class="toggle-pass" type="button" onclick="togglePass('passActual',this)" tabindex="-1">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-group">
+            <label for="passNueva">Nueva Contrasena</label>
+            <div class="input-wrap">
+                <i class="fas fa-key field-icon"></i>
+                <input type="password" id="passNueva" placeholder="Minimo 6 caracteres"
+                       autocomplete="new-password" oninput="calcularFortaleza(this.value)">
+                <button class="toggle-pass" type="button" onclick="togglePass('passNueva',this)" tabindex="-1">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <span class="strength-text" id="strengthText"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="passConfirmar">Confirmar Nueva Contrasena</label>
+            <div class="input-wrap">
+                <i class="fas fa-check-double field-icon"></i>
+                <input type="password" id="passConfirmar" placeholder="Repite la nueva contrasena" autocomplete="new-password">
+                <button class="toggle-pass" type="button" onclick="togglePass('passConfirmar',this)" tabindex="-1">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="card-actions">
+            <button class="btn-danger-outline" id="btnCambiarPass">
+                <i class="fas fa-lock-open"></i> Actualizar Contrasena
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const AVATARES = [
+    { id:"av1", src:"https://api.dicebear.com/8.x/bottts/svg?seed=skillsyntax1&backgroundColor=00c2cb",  label:"Robot Cyan"   },
+    { id:"av2", src:"https://api.dicebear.com/8.x/bottts/svg?seed=skillsyntax2&backgroundColor=9b5de5",  label:"Robot Morado" },
+    { id:"av3", src:"https://api.dicebear.com/8.x/bottts/svg?seed=skillsyntax3&backgroundColor=06d6a0",  label:"Robot Verde"  },
+    { id:"av4", src:"https://api.dicebear.com/8.x/bottts/svg?seed=skillsyntax4&backgroundColor=ffd166",  label:"Robot Dorado" },
+    { id:"av5", src:"https://api.dicebear.com/8.x/adventurer/svg?seed=profile5&backgroundColor=060e1a",  label:"Aventurero"   },
+    { id:"av6", src:"https://api.dicebear.com/8.x/adventurer/svg?seed=profile6&backgroundColor=060e1a",  label:"Aventurero 2" },
+    { id:"av7", src:"https://api.dicebear.com/8.x/pixel-art/svg?seed=pixel7&backgroundColor=0d1b2e",     label:"Pixel"        },
+    { id:"av8", src:"https://api.dicebear.com/8.x/pixel-art/svg?seed=pixel8&backgroundColor=0d1b2e",     label:"Pixel 2"      },
+];
+
+let usuarioLocal  = null;
+let avatarSelecto = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+    usuarioLocal = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuarioLocal) { window.location.href = "/"; return; }
+
+    document.getElementById("nombreAlumno").textContent = usuarioLocal.nombre || "Usuario";
+    document.getElementById("emailAlumno").textContent  = usuarioLocal.email  || "";
+
+    renderizarGrid();
+    if (usuarioLocal.avatar) seleccionarAvatar(usuarioLocal.avatar, true);
+
+    document.getElementById("btnGuardarAvatar").addEventListener("click", guardarAvatar);
+    document.getElementById("btnCambiarPass").addEventListener("click", cambiarPassword);
+});
+
+function renderizarGrid() {
+    const grid = document.getElementById("avatarGrid");
+    grid.innerHTML = AVATARES.map(av => `
+        <div class="avatar-option" data-id="${av.id}" onclick="seleccionarAvatar('${av.id}',true)" title="${av.label}">
+            <img src="${av.src}" alt="${av.label}" loading="lazy">
+        </div>
+    `).join("");
+}
+
+function seleccionarAvatar(id, updatePreview) {
+    avatarSelecto = id;
+    document.querySelectorAll(".avatar-option").forEach(el =>
+        el.classList.toggle("selected", el.dataset.id === id)
+    );
+    if (updatePreview) {
+        const av = AVATARES.find(a => a.id === id);
+        if (av) {
+            document.getElementById("avatarPreview").innerHTML =
+                `<img src="${av.src}" alt="${av.label}">`;
+        }
+    }
+}
+
+async function guardarAvatar() {
+    if (!avatarSelecto) { mostrarToast("Selecciona un avatar primero.", "error"); return; }
+    const btn = document.getElementById("btnGuardarAvatar");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    try {
+        const res  = await fetch("/api/perfil/avatar", {
+            method:"PUT", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ usuarioId: usuarioLocal.id, avatar: avatarSelecto }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            usuarioLocal.avatar = avatarSelecto;
+            localStorage.setItem("usuario", JSON.stringify(usuarioLocal));
+            mostrarToast("Avatar guardado correctamente!", "success");
+        } else {
+            mostrarToast(data.error || "No se pudo guardar el avatar.", "error");
+        }
+    } catch(err) {
+        mostrarToast("Error de conexion.", "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Avatar';
+    }
+}
+
+async function cambiarPassword() {
+    const actual    = document.getElementById("passActual").value.trim();
+    const nueva     = document.getElementById("passNueva").value.trim();
+    const confirmar = document.getElementById("passConfirmar").value.trim();
+
+    if (!actual)           { mostrarToast("Ingresa tu contrasena actual.", "error"); return; }
+    if (!nueva)            { mostrarToast("Ingresa la nueva contrasena.", "error"); return; }
+    if (nueva.length < 6)  { mostrarToast("La nueva contrasena debe tener minimo 6 caracteres.", "error"); return; }
+    if (nueva !== confirmar){ mostrarToast("Las contrasenias no coinciden.", "error"); return; }
+    if (actual === nueva)  { mostrarToast("La nueva contrasena debe ser diferente a la actual.", "error"); return; }
+
+    const btn = document.getElementById("btnCambiarPass");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualizando...';
+    try {
+        const res  = await fetch("/api/perfil/password", {
+            method:"PUT", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ usuarioId: usuarioLocal.id, passwordActual: actual, nuevaPassword: nueva }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            mostrarToast("Contrasena actualizada correctamente!", "success");
+            ["passActual","passNueva","passConfirmar"].forEach(id => document.getElementById(id).value = "");
+            document.getElementById("strengthFill").style.width = "0%";
+            document.getElementById("strengthText").textContent = "";
+        } else {
+            mostrarToast(data.error || "No se pudo actualizar la contrasena.", "error");
+        }
+    } catch(err) {
+        mostrarToast("Error de conexion.", "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-lock-open"></i> Actualizar Contrasena';
+    }
+}
+
+function togglePass(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon  = btn.querySelector("i");
+    if (input.type === "password") { input.type = "text"; icon.className = "fas fa-eye-slash"; }
+    else                           { input.type = "password"; icon.className = "fas fa-eye"; }
+}
+
+function calcularFortaleza(pass) {
+    const fill = document.getElementById("strengthFill");
+    const text = document.getElementById("strengthText");
+    let score = 0;
+    if (pass.length >= 6)         score++;
+    if (pass.length >= 10)        score++;
+    if (/[A-Z]/.test(pass))       score++;
+    if (/[0-9]/.test(pass))       score++;
+    if (/[^A-Za-z0-9]/.test(pass))score++;
+    const niveles = [
+        { pct:"0%",   color:"transparent", label:"" },
+        { pct:"25%",  color:"#ff5f52",     label:"Muy debil" },
+        { pct:"50%",  color:"#ffd166",     label:"Debil" },
+        { pct:"75%",  color:"#00c2cb",     label:"Aceptable" },
+        { pct:"90%",  color:"#06d6a0",     label:"Fuerte" },
+        { pct:"100%", color:"#06d6a0",     label:"Muy fuerte" },
+    ];
+    const nivel = niveles[Math.min(score,5)];
+    fill.style.width      = nivel.pct;
+    fill.style.background = nivel.color;
+    text.textContent      = pass ? nivel.label : "";
+    text.style.color      = nivel.color;
+}
+
+function mostrarToast(mensaje, tipo = "success") {
+    const container = document.getElementById("toastContainer");
+    const toast     = document.createElement("div");
+    toast.className = `toast ${tipo}`;
+    const icono = tipo === "success" ? "fa-circle-check" : "fa-circle-exclamation";
+    toast.innerHTML = `
+        <i class="fas ${icono}" style="font-size:1.1rem;flex-shrink:0;"></i>
+        <span style="flex:1;line-height:1.4;">${mensaje}</span>
+        <div class="toast-progress"></div>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = "toastOut 0.3s ease forwards";
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+</script>
+</body>
+</html>

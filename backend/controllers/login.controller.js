@@ -64,7 +64,17 @@ exports.login = async (req, res) => {
 
     console.log("[LOGIN] Login exitoso para:", email);
 
-    // 6. Responder con datos + token
+    // 6. Registrar el evento de login en el Audit Trail (no bloqueante)
+    db.collection("eventos_sistema").add({
+      tipo:        "LOGIN",
+      descripcion: `Inicio de sesión: ${user.nombre || user.email}`,
+      usuarioId:   user.id,
+      fecha:       new Date().toISOString(),
+    }).catch((err) =>
+      console.error("[LOGIN] Error al registrar evento:", err)
+    );
+
+    // 7. Responder con datos + token
     res.json({
       token,
       id: user.id,

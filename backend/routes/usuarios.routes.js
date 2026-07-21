@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
+const bcrypt = require("bcrypt");
 
 // OBTENER USUARIO POR EMAIL (PARA LOGIN)
 router.post("/email", async (req, res) => {
@@ -67,10 +68,10 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ACTUALIZAR USUARIO (ADMIN) — nombre, email, rol, nivel_general
+// ACTUALIZAR USUARIO (ADMIN) — nombre, email, rol, nivel_general y opcionalmente nueva_password
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { nombre, email, rol, nivel_general } = req.body;
+  const { nombre, email, rol, nivel_general, nueva_password } = req.body;
 
   // Incluir solo los campos que llegan en el body
   const actualizacion = {};
@@ -78,6 +79,11 @@ router.put("/:id", async (req, res) => {
   if (email         !== undefined) actualizacion.email         = email;
   if (rol           !== undefined) actualizacion.rol           = rol;
   if (nivel_general !== undefined) actualizacion.nivel_general = nivel_general;
+
+  // Si el admin envía una nueva contraseña, hashearla antes de guardar
+  if (nueva_password && nueva_password.trim().length >= 6) {
+    actualizacion.password = await bcrypt.hash(nueva_password.trim(), 10);
+  }
 
   if (Object.keys(actualizacion).length === 0) {
     return res.status(400).json({ error: "No se proporcionaron campos para actualizar" });
@@ -98,7 +104,21 @@ router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Leer el documento antes de eliminarlo para obtener nombre/email
+    const userDoc = await db.collection("users").doc(id).get();
+    const userData = userDoc.exists ? userDoc.data() : {};
+    const nombreUsuario = userData.nombre || userData.email || id;
+
     await db.collection("users").doc(id).delete();
+
+    // Registrar evento en el Audit Trail (no bloqueante)
+    db.collection("eventos_sistema").add({
+      tipo:        "USUARIO_ELIMINADO",
+      descripcion: `Usuario eliminado: ${nombreUsuario}`,
+      usuarioId:   id,
+      fecha:       new Date().toISOString(),
+    }).catch((err) => console.error("[AUDIT] Error al registrar evento:", err));
+
     res.json({ mensaje: "Usuario eliminado correctamente" });
 
   } catch (err) {

@@ -33,6 +33,10 @@ function inyectarMenu() {
                 <h1 id="admin-page-title"></h1>
             </div>
             <div class="admin-header-right">
+                <button id="btnQuickCreateUser" class="btn-ver-alumno" title="Crear nuevo usuario" style="display:none;">
+                    <i class="fas fa-user-plus"></i>
+                    Crear Usuario
+                </button>
                 <button class="btn-ver-alumno" onclick="RoleSwitch.activarModoAlumno()" title="Ver la plataforma como alumno">
                     <i class="fas fa-eye"></i>
                     Ver como Alumno

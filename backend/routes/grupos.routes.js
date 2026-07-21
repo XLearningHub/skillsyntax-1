@@ -43,6 +43,14 @@ router.post("/", async (req, res) => {
 
     console.log("[GRUPOS] Grupo creado con ID:", docRef.id);
 
+    // Registrar evento en el Audit Trail (no bloqueante)
+    db.collection("eventos_sistema").add({
+      tipo:        "GRUPO_CREADO",
+      descripcion: `Nuevo grupo creado: ${nombre.trim()}`,
+      grupoId:     docRef.id,
+      fecha:       new Date().toISOString(),
+    }).catch((err) => console.error("[AUDIT] Error al registrar evento:", err));
+
     res.status(201).json({
       success: true,
       id: docRef.id,
@@ -66,7 +74,17 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ error: "Grupo no encontrado." });
     }
 
+    const nombreGrupo = doc.data().nombre || id;
+
     await docRef.delete();
+
+    // Registrar evento en el Audit Trail (no bloqueante)
+    db.collection("eventos_sistema").add({
+      tipo:        "GRUPO_ELIMINADO",
+      descripcion: `Grupo eliminado: ${nombreGrupo}`,
+      grupoId:     id,
+      fecha:       new Date().toISOString(),
+    }).catch((err) => console.error("[AUDIT] Error al registrar evento:", err));
 
     res.json({ success: true, mensaje: "Grupo eliminado correctamente." });
   } catch (err) {

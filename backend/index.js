@@ -31,6 +31,7 @@ const resultadosRoutes = require("./routes/resultados.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const adminRoutes  = require("./routes/admin.routes");
 const gruposRoutes = require("./routes/grupos.routes");
+const perfilRoutes = require("./routes/perfil.routes");
 
 
 app.use("/api/niveles", nivelesRoutes);
@@ -45,6 +46,7 @@ app.use("/api/resultados", resultadosRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin",  adminRoutes);
 app.use("/api/grupos", gruposRoutes);
+app.use("/api/perfil", perfilRoutes);
 
 // REGISTRO DE USUARIO (Firestore)
 app.post("/guardar_usuario", async (req, res) => {
@@ -92,6 +94,14 @@ app.post("/guardar_usuario", async (req, res) => {
 
     const nuevoUsuarioId = docRef.id;
     console.log("[REGISTRO] Usuario creado con ID:", nuevoUsuarioId);
+
+    // ── Registrar evento en el Audit Trail (no bloqueante) ─────────────
+    db.collection("eventos_sistema").add({
+      tipo:        "USUARIO_CREADO",
+      descripcion: `Nuevo usuario registrado: ${nombre}`,
+      usuarioId:   nuevoUsuarioId,
+      fecha:       new Date().toISOString(),
+    }).catch((err) => console.error("[AUDIT] Error al registrar evento:", err));
 
     // ── Asignar al grupo si se indicó uno ──────────────────────────────
     if (grupoId && grupoId.trim()) {

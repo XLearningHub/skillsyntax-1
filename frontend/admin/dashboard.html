@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --bg-dark:    #060e1a;
@@ -308,6 +309,183 @@
         }
         .timeline-empty i { font-size: 1.8rem; }
         .timeline-empty p { margin: 0; font-size: 0.88rem; }
+
+        /* ── Panel Gráfica ────────────────────────────────────── */
+        .chart-panel {
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 28px 30px 22px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            margin-bottom: 28px;
+        }
+        .chart-panel .panel-header {
+            margin-bottom: 20px;
+        }
+        .chart-panel canvas {
+            max-height: 260px;
+            width: 100% !important;
+        }
+
+        /* ── Modal Crear Usuario (espejo de usuarios.html) ────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.94) translateY(10px); }
+            to   { opacity: 1; transform: scale(1)    translateY(0); }
+        }
+
+        .modal-create-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(0,194,203,0.15);
+            border-radius: 24px;
+            padding: 38px 42px;
+            max-width: 500px;
+            width: 92%;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+            animation: modalIn 0.22s ease;
+        }
+        .modal-create-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: var(--text-main);
+        }
+        .modal-create-card .modal-subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .form-group input,
+        .form-group select {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 11px 14px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,194,203,0.12);
+        }
+        .form-group select option { background: #0d1b2e; color: #fff; }
+        #dash-createGrupo { border-color: rgba(0,194,203,0.25); }
+        #dash-createGrupo:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,194,203,0.12);
+        }
+        .field-hint {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+            opacity: 0.75;
+        }
+        .modal-edit-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 28px;
+        }
+        .btn-edit-cancel {
+            padding: 11px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .btn-edit-cancel:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
+        .btn-create-save {
+            padding: 12px 28px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #00c2cb, #00a8b0);
+            color: #000;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 4px 18px rgba(0,194,203,0.35);
+        }
+        .btn-create-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(0,194,203,0.5);
+        }
+        .btn-create-save:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 9999;
+        }
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #0d1b2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 14px 18px;
+            min-width: 280px;
+            max-width: 380px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+            animation: toastIn 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+        }
+        .toast.success { background: linear-gradient(135deg,#0d2b1f,#0a2318); border-color: rgba(0,194,130,0.3); }
+        .toast.error   { background: linear-gradient(135deg,#2b0d0d,#230a0a); border-color: rgba(255,95,82,0.3); }
+        .toast-progress {
+            position: absolute; bottom: 0; left: 0; height: 3px;
+            border-radius: 0 0 14px 14px;
+            animation: toastProgress 3.5s linear forwards;
+        }
+        .toast.success .toast-progress { background: #00c282; width: 100%; }
+        .toast.error   .toast-progress { background: var(--danger); width: 100%; }
+        @keyframes toastIn  { from { opacity:0; transform: translateX(60px) scale(0.95); } to { opacity:1; transform: translateX(0) scale(1); } }
+        @keyframes toastOut { from { opacity:1; transform: translateX(0) scale(1); } to { opacity:0; transform: translateX(60px) scale(0.95); } }
+        @keyframes toastProgress { from { width:100%; } to { width:0%; } }
     </style>
 </head>
 <body>
@@ -367,6 +545,20 @@
 
         </div>
 
+        <!-- Gráfica 7 días -->
+        <div class="chart-panel">
+            <div class="panel-header">
+                <div class="panel-icon" style="background:rgba(6,214,160,0.1);color:#06d6a0;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <h2>Actividad — Últimos 7 días</h2>
+                    <p>Inicios de sesión y ejercicios realizados por día</p>
+                </div>
+            </div>
+            <canvas id="dashboardChart"></canvas>
+        </div>
+
         <!-- Actividad Reciente (Timeline) -->
         <div class="dash-grid">
             <div class="dash-panel">
@@ -383,6 +575,64 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- ── Toast Container ── -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- ── Modal Crear Usuario (acceso rápido desde el Dashboard) ── -->
+    <div class="modal-overlay" id="modalCrearUsuario">
+        <div class="modal-create-card">
+            <h3><i class="fas fa-user-plus" style="color:#00c2cb;margin-right:10px;"></i>Crear Nuevo Usuario</h3>
+            <p class="modal-subtitle">Completa los campos para registrar al alumno en la plataforma.</p>
+
+            <div class="form-group">
+                <label for="dash-createNombre">Nombre Completo <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="dash-createNombre" placeholder="Ej. Ana López" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="dash-createEmail">Email <span style="color:var(--danger)">*</span></label>
+                <input type="email" id="dash-createEmail" placeholder="alumno@ejemplo.com" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="dash-createPassword">Contraseña <span style="color:var(--danger)">*</span></label>
+                <input type="password" id="dash-createPassword" placeholder="Mínimo 6 caracteres">
+            </div>
+
+            <div class="form-group">
+                <label for="dash-createNivel">Nivel <span style="color:var(--text-dim);font-weight:400;">(Opcional)</span></label>
+                <select id="dash-createNivel">
+                    <option value="">Sin nivel (Opcional)</option>
+                    <option value="A1">A1</option>
+                    <option value="A2">A2</option>
+                    <option value="B1">B1</option>
+                    <option value="B2">B2</option>
+                    <option value="C1">C1</option>
+                    <option value="C2">C2</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="dash-createGrupo">
+                    <i class="fas fa-layer-group" style="margin-right:5px;color:var(--primary);"></i>
+                    Grupo <span style="color:var(--text-dim);font-weight:400;">(Opcional)</span>
+                </label>
+                <select id="dash-createGrupo">
+                    <option value="">Sin grupo (Opcional)</option>
+                    <!-- Se puebla dinámicamente desde /api/grupos -->
+                </select>
+                <span class="field-hint">El alumno quedará inscrito en el grupo seleccionado al crearse.</span>
+            </div>
+
+            <div class="modal-edit-actions">
+                <button class="btn-edit-cancel" id="dash-btnCrearCancelar">Cancelar</button>
+                <button class="btn-create-save" id="dash-btnCrearGuardar">
+                    <i class="fas fa-user-plus" style="margin-right:6px;"></i>Crear Usuario
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="js/role-switch.js"></script>
