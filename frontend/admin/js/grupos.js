@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnCancel) {
         btnCancel.addEventListener("click", () => {
             modal.classList.remove("active");
-            document.body.style.overflow = '';
+            _liberarScroll();
             _pendingDeleteId = null;
         });
     }
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnOk) {
         btnOk.addEventListener("click", async () => {
             modal.classList.remove("active");
-            document.body.style.overflow = '';
+            _liberarScroll();
             if (_pendingDeleteId === null) return;
 
             const id = _pendingDeleteId;
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.addEventListener("click", (e) => {
             if (e.target === modal) {
                 modal.classList.remove("active");
-                document.body.style.overflow = '';
+                _liberarScroll();
                 _pendingDeleteId = null;
             }
         });
@@ -187,17 +187,20 @@ document.addEventListener("DOMContentLoaded", () => {
  * que el modal de asignación pueda saber en qué grupo está cada alumno
  * sin necesidad de nuevas peticiones al backend.
  */
-async function cargarGrupos() {
+async function cargarGrupos(scrollPos = 0) {
     const tabla         = document.getElementById("tablaGrupos");
     const sinResultados = document.getElementById("sinResultados");
 
-    // Estado de carga visual
-    tabla.innerHTML = `
-        <tr>
-            <td colspan="4" style="color: var(--text-dim); padding: 40px; text-align: center;">
-                <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Cargando grupos...
-            </td>
-        </tr>`;
+    // Solo mostramos el spinner en la carga inicial (scrollPos === 0)
+    // para evitar el salto brusco al recargar tras una acción
+    if (scrollPos === 0) {
+        tabla.innerHTML = `
+            <tr>
+                <td colspan="4" style="color: var(--text-dim); padding: 40px; text-align: center;">
+                    <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Cargando grupos...
+                </td>
+            </tr>`;
+    }
     if (sinResultados) sinResultados.style.display = "none";
 
     try {
@@ -220,6 +223,14 @@ async function cargarGrupos() {
             return;
         }
 
+        // Ordenar por id_num ASC; grupos sin id_num van al final por nombre
+        grupos.sort((a, b) => {
+            if (a.id_num != null && b.id_num != null) return a.id_num - b.id_num;
+            if (a.id_num != null) return -1;
+            if (b.id_num != null) return  1;
+            return (a.nombre || "").localeCompare(b.nombre || "");
+        });
+
         grupos.forEach(grupo => {
             // Cantidad real de alumnos
             const cantidadAlumnos = grupo.alumnos ? grupo.alumnos.length : 0;
@@ -229,8 +240,8 @@ async function cargarGrupos() {
             tr.className    = "fila-grupo";
             tr.dataset.id   = grupo.id;
             tr.innerHTML = `
-                <td class="id-cell">${escapeHtml(grupo.id)}</td>
-                <td class="name-cell">
+                <td class="id-cell">#${grupo.id_num ?? escapeHtml(grupo.id)}</td>
+                <td class="name-cell texto-largo-wrap">
                     <span class="name-cell-inner">
                         <span class="icono-flecha"><i class="fas fa-chevron-down"></i></span>
                         ${escapeHtml(grupo.nombre)}
@@ -261,6 +272,15 @@ async function cargarGrupos() {
 
             tabla.appendChild(tr);
         });
+
+        // ── Restaurar posición de scroll tras redibujar el DOM ─────────────────
+        // requestAnimationFrame garantiza que el navegador ha pintado las filas
+        // antes de hacer scrollTo, evitando el salto al inicio.
+        if (scrollPos > 0) {
+            requestAnimationFrame(() => {
+                window.scrollTo({ top: scrollPos, behavior: 'instant' });
+            });
+        }
 
     } catch (error) {
         console.error("[GRUPOS] Error al cargar:", error);
@@ -402,7 +422,7 @@ function _cerrarModalCrear() {
     const inputNombre = document.getElementById("inputNombreGrupo");
     if (modalCrear) modalCrear.classList.remove("active");
     if (inputNombre) inputNombre.value = "";
-    document.body.style.overflow = '';
+    _liberarScroll();
 }
 
 /**
@@ -440,7 +460,7 @@ async function _guardarNuevoGrupo() {
         if (res.ok && data.success) {
             _cerrarModalCrear();
             mostrarToast(`Grupo "${escapeHtml(nombreTrimmed)}" creado correctamente.`, "success");
-            cargarGrupos();
+            cargarGrupos(); // carga inicial → sin scrollPos (el grupo nuevo aparece en la tabla)
         } else {
             mostrarToast(data.error || "No se pudo crear el grupo.", "error");
         }
@@ -485,7 +505,7 @@ function _cerrarModalEditarGrupo() {
     const input = document.getElementById("editNombreGrupo");
     if (modal) modal.classList.remove("active");
     if (input) input.value = "";
-    document.body.style.overflow = '';
+    _liberarScroll();
     _pendingEditId     = null;
     _pendingEditNombre = "";
 }
@@ -524,9 +544,10 @@ async function _guardarEditarGrupo() {
         const data = await res.json();
 
         if (res.ok && data.success) {
+            const scrollPos = window.scrollY; // ← capturar ANTES de cerrar el modal
             _cerrarModalEditarGrupo();
             mostrarToast(`Grupo renombrado a "${escapeHtml(nuevoNombre)}" correctamente.`, "success");
-            cargarGrupos();
+            cargarGrupos(scrollPos); // restaurar posición tras redibujar
         } else {
             mostrarToast(data.error || "No se pudo actualizar el grupo.", "error");
         }
@@ -568,7 +589,9 @@ async function _ejecutarEliminarGrupo(id) {
 
         if (res.ok && data.success) {
             mostrarToast("Grupo eliminado correctamente.", "success");
-            cargarGrupos();
+            // El grupo eliminado ya no existe → no restaurar scroll,
+            // pero sí evitamos el salto al inicio usando scrollY actual
+            cargarGrupos(window.scrollY);
         } else {
             mostrarToast(data.error || "No se pudo eliminar el grupo.", "error");
         }
@@ -629,6 +652,18 @@ function escapeHtml(str) {
         .replace(/'/g,  "&#039;");
 }
 
+/**
+ * Libera el bloqueo de scroll del body.
+ * Limpia tanto el estilo directo como las clases de Bootstrap (modal-open)
+ * y cualquier backdrop residual, para máxima compatibilidad.
+ */
+function _liberarScroll() {
+    document.body.style.overflow    = '';
+    document.body.style.paddingRight = '';
+    document.body.classList.remove('modal-open');
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+}
+
 // ── ASIGNAR ALUMNOS ───────────────────────────────────────────────────────────
 // ID del grupo cuya asignación está en curso
 let _pendingAsignarId    = null;
@@ -643,7 +678,7 @@ let _alumnosActualesSet  = new Set();
 function _cerrarModalAsignar() {
     const modal = document.getElementById("modalAsignarAlumnos");
     if (modal) modal.classList.remove("active");
-    document.body.style.overflow = '';
+    _liberarScroll();
     _pendingAsignarId   = null;
     _usuariosCacheModal = [];
     _alumnosActualesSet = new Set();
@@ -862,13 +897,15 @@ async function _guardarAsignacion() {
         const data = await res.json();
 
         if (res.ok && data.success) {
+            const scrollPos = window.scrollY; // ← capturar ANTES de cerrar el modal
             modal.classList.remove("active");
+            _liberarScroll();
             _pendingAsignarId = null;
             mostrarToast(
                 `${alumnosIds.length} alumno${alumnosIds.length !== 1 ? "s" : ""} asignado${alumnosIds.length !== 1 ? "s" : ""} correctamente.`,
                 "success"
             );
-            cargarGrupos();
+            cargarGrupos(scrollPos); // restaurar posición tras redibujar
         } else {
             mostrarToast(data.error || "No se pudo guardar la asignación.", "error");
         }

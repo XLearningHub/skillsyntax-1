@@ -160,8 +160,13 @@ async function renderGraficaUsuarios(filtro) {
         console.log(`[DEBUG reporte-usuarios] ${datos.length} items. Primer item:`, datos[0]);
     }
 
-    const nombres = datos.length > 0 ? datos.map((d) => d.usuario) : ["Sin datos"];
-    const totales = datos.length > 0 ? datos.map((d) => d.total)   : [0];
+    // ── Top 10: ordenar por ejercicios completados DESC y limitar a 10 alumnos ──
+    const top10 = [...datos]
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 10);
+
+    const nombres = top10.length > 0 ? top10.map((d) => d.usuario) : ["Sin datos"];
+    const totales = top10.length > 0 ? top10.map((d) => d.total)   : [0];
 
     // ✔ Reset del canvas: garantiza contexto 2D limpio tras destroy()
     // (Chart.js puede dejar estado sucio en el canvas al destruirse)

@@ -35,10 +35,21 @@ router.post("/", async (req, res) => {
   }
 
   try {
+    // Obtener el siguiente id_num de forma atómica vía transacción
+    const contadorRef = db.collection("contadores").doc("grupos");
+    let id_num;
+
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(contadorRef);
+      id_num = (snap.exists ? (snap.data().ultimo_id || 0) : 0) + 1;
+      tx.set(contadorRef, { ultimo_id: id_num }, { merge: true });
+    });
+
     const docRef = await db.collection(COLECCION).add({
       nombre: nombre.trim(),
       creadoEn: new Date().toISOString(),
       alumnos: [],
+      id_num,   // ← ID numérico secuencial para mostrar en el frontend
     });
 
     console.log("[GRUPOS] Grupo creado con ID:", docRef.id);

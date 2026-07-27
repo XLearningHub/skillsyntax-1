@@ -166,3 +166,26 @@
     font-family: 'Inter', sans-serif;
     flex-shrink: 0;
 }
+
+/* ── COLUMNA NOMBRE EN TABLA DE USUARIOS ─────────────────────────────── */
+/* Evita que nombres muy largos estiren la tabla horizontalmente.         */
+/* El texto hace salto de línea natural dentro de la celda.               */
+.nombre-cell {
+    max-width: 220px;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+/* ── CLASE GLOBAL: word-wrap para textos largos en tablas ─────────────── */
+/* Uso: añadir la clase "texto-largo-wrap" a cualquier <td> o elemento    */
+/* que contenga nombres de usuario, grupos, etc. para evitar que          */
+/* el texto estire la tabla horizontalmente.                              */
+/* Compatible con: tablas de grupos, ejercicios, reportes, acordeón.      */
+.texto-largo-wrap {
+    max-width: 200px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.45;
+}

@@ -29,7 +29,7 @@ const usuariosRoutes = require("./routes/usuarios.routes");
 const loginRoutes = require("./routes/login.routes");
 const resultadosRoutes = require("./routes/resultados.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
-const adminRoutes  = require("./routes/admin.routes");
+const adminRoutes = require("./routes/admin.routes");
 const gruposRoutes = require("./routes/grupos.routes");
 const perfilRoutes = require("./routes/perfil.routes");
 
@@ -44,91 +44,18 @@ app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/login", loginRoutes);
 app.use("/api/resultados", resultadosRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/admin",  adminRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/grupos", gruposRoutes);
 app.use("/api/perfil", perfilRoutes);
 
-// REGISTRO DE USUARIO (Firestore)
+// REGISTRO DE USUARIO (Firestore) — DESACTIVADO
+// Esta ruta "fantasma" escribía solo en Firestore y evadía Firebase Auth.
+// El flujo correcto ahora está en: POST /api/usuarios (usuarios.controller.js)
+/*
 app.post("/guardar_usuario", async (req, res) => {
-
-  console.log("[REGISTRO] Datos recibidos:", req.body);
-
-  const { nombre, email, password, nivel_general, grupoId } = req.body;
-
-  if (!nombre || !email || !password) {
-    return res.status(400).json({ error: "Faltan datos" });
-  }
-
-  try {
-    // Verificar si ya existe el correo
-    const existing = await db.collection("users").where("email", "==", email).limit(1).get();
-
-    if (!existing.empty) {
-      const existingDoc  = existing.docs[0];
-      const existingData = existingDoc.data();
-
-      // BUG-02 FIX: Si el documento existe pero está incompleto (huérfano de un
-      // intento fallido anterior), lo eliminamos para permitir el reintento.
-      // Un registro se considera "completo" únicamente si tiene campo `password`.
-      if (!existingData.password) {
-        console.warn("[REGISTRO] Documento huérfano detectado para:", email, "— eliminando y reintentando.");
-        await db.collection("users").doc(existingDoc.id).delete();
-      } else {
-        // El registro anterior sí fue exitoso; bloqueamos el intento.
-        return res.status(400).json({ error: "El correo ya está registrado" });
-      }
-    }
-
-    // Encriptar contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Guardar en Firestore
-    const docRef = await db.collection("users").add({
-      nombre,
-      email,
-      password: hashedPassword,
-      nivel_general: nivel_general || null,
-      rol: "alumno",
-      createdAt: new Date().toISOString(),
-    });
-
-    const nuevoUsuarioId = docRef.id;
-    console.log("[REGISTRO] Usuario creado con ID:", nuevoUsuarioId);
-
-    // ── Registrar evento en el Audit Trail (no bloqueante) ─────────────
-    db.collection("eventos_sistema").add({
-      tipo:        "USUARIO_CREADO",
-      descripcion: `Nuevo usuario registrado: ${nombre}`,
-      usuarioId:   nuevoUsuarioId,
-      fecha:       new Date().toISOString(),
-    }).catch((err) => console.error("[AUDIT] Error al registrar evento:", err));
-
-    // ── Asignar al grupo si se indicó uno ──────────────────────────────
-    if (grupoId && grupoId.trim()) {
-      try {
-        await db.collection("grupos").doc(grupoId.trim()).update({
-          alumnos: admin.firestore.FieldValue.arrayUnion(nuevoUsuarioId),
-        });
-        console.log(`[REGISTRO] Usuario ${nuevoUsuarioId} añadido al grupo ${grupoId.trim()}`);
-      } catch (grupoErr) {
-        // No cancelamos la creación del usuario si el grupo falla;
-        // simplemente lo reportamos para que el admin lo corrija manualmente.
-        console.error("[REGISTRO] Error al asignar grupo:", grupoErr.message);
-      }
-    }
-
-    res.json({
-      success: true,
-      id: nuevoUsuarioId,
-      mensaje: "Usuario guardado correctamente"
-    });
-
-  } catch (error) {
-    console.error("[REGISTRO] Error servidor:", error);
-    res.status(500).json({ error: "Error servidor" });
-  }
-
+  // ... código antiguo comentado por seguridad
 });
+*/
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/login.html"));

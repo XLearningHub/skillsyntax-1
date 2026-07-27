@@ -101,9 +101,15 @@ function renderGraficaDesempeno(datos) {
     }
 
     const ctx    = canvas.getContext("2d");
-    const labels = datos.map((d) => d.grupo);
-    const values = datos.map((d) => parseFloat(d.promedioGeneral.toFixed(2)));
-    const colors = datos.map((_, i) => colorForIndex(i));
+
+    // ── Top 10: grupos con mayor promedio ────────────────────────────────────
+    const top10 = [...datos]
+        .sort((a, b) => b.promedioGeneral - a.promedioGeneral)
+        .slice(0, 10);
+
+    const labels = top10.map((d) => d.grupo);
+    const values = top10.map((d) => parseFloat(d.promedioGeneral.toFixed(2)));
+    const colors = top10.map((_, i) => colorForIndex(i));
 
     // Degradado vertical por grupo
     const gradientes = colors.map((hex) => {
@@ -176,10 +182,25 @@ function renderGraficaDistribucion(datos) {
         return;
     }
 
-    const labels  = datos.map((d) => d.grupo);
-    const values  = datos.map((d) => d.totalEjercicios);
-    const colors  = datos.map((_, i) => colorForIndex(i));
-    const total   = values.reduce((a, b) => a + b, 0);
+    // ── Top 10 + "Otros": mantiene el 100% sin saturar la dona ────────────────
+    const TOP_N = 10;
+    const ordenados = [...datos].sort((a, b) => b.totalEjercicios - a.totalEjercicios);
+    const top10    = ordenados.slice(0, TOP_N);
+    const resto    = ordenados.slice(TOP_N);
+    const sumaResto = resto.reduce((s, d) => s + d.totalEjercicios, 0);
+
+    const labels = top10.map((d) => d.grupo);
+    const values = top10.map((d) => d.totalEjercicios);
+    const colors = top10.map((_, i) => colorForIndex(i));
+
+    // Si quedan grupos fuera del Top 10, agregarlos como "Otros"
+    if (sumaResto > 0) {
+        labels.push(`Otros (${resto.length})`);
+        values.push(sumaResto);
+        colors.push("#4a5568"); // gris neutro para "Otros"
+    }
+
+    const total = values.reduce((a, b) => a + b, 0);
 
     window.chartDistribucion = new Chart(canvas, {
         type: "doughnut",

@@ -53,6 +53,14 @@ async function cargarUsuarios() {
             return;
         }
 
+        // Ordenar por id_num ASC; usuarios sin id_num van al final ordenados por nombre
+        usuarios.sort((a, b) => {
+            if (a.id_num != null && b.id_num != null) return a.id_num - b.id_num;
+            if (a.id_num != null) return -1;
+            if (b.id_num != null) return  1;
+            return (a.nombre || "").localeCompare(b.nombre || "");
+        });
+
         usuarios.forEach(user => {
             const roleClass = user.rol.toLowerCase() === 'admin' ? 'role-admin' : 'role-user';
          
@@ -60,8 +68,8 @@ async function cargarUsuarios() {
 
             tabla.innerHTML += `
                 <tr>
-                    <td style="font-weight: 600; color: var(--primary);">#${user.id}</td>
-                    <td style="font-weight: 500;">${user.nombre}</td>
+                    <td style="font-weight: 600; color: var(--primary);">#${user.id_num ?? user.id}</td>
+                    <td class="nombre-cell" style="font-weight: 500;">${user.nombre}</td>
                     <td style="color: var(--text-dim);">${user.email}</td>
                     <td>
                         <span class="level-badge">${nivelText}</span>
@@ -403,10 +411,10 @@ document.addEventListener('DOMContentLoaded', () => {
         btnGuardar.textContent = 'Creando...';
 
         try {
-            const payload = { nombre, email, password, nivel_general: nivel || null };
+            const payload = { nombre, email, password, rol: 'alumno', nivel_general: nivel || 'A1' };
             if (grupoId) payload.grupoId = grupoId;   // solo si el admin seleccionó uno
 
-            const res = await fetch('/guardar_usuario', {
+            const res = await fetch('/api/usuarios', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify(payload),
@@ -414,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await res.json();
 
-            if (res.ok && data.success) {
+            if (res.ok) {
                 cerrarModalCrear();
                 const grupoMsg = grupoId ? ' y asignado al grupo.' : '.';
                 mostrarToast(`Usuario "${nombre}" creado correctamente${grupoMsg}`, 'success');

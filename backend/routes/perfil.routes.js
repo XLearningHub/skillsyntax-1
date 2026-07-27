@@ -2,15 +2,11 @@
 const express = require("express");
 const router  = express.Router();
 const db      = require("../db");
-const bcrypt  = require("bcrypt");
-
-// Avatares válidos aceptados por el servidor (lista blanca)
-const AVATARES_VALIDOS = [
-  "av1","av2","av3","av4","av5","av6","av7","av8",
-];
+const admin   = require("firebase-admin");
 
 // ── PUT /api/perfil/avatar ──────────────────────────────────────────────────
 // Body: { usuarioId: string, avatar: string }
+// Acepta cualquier URL de avatar válida (DiceBear u otra) enviada por el frontend.
 router.put("/avatar", async (req, res) => {
   const { usuarioId, avatar } = req.body;
 
@@ -18,8 +14,9 @@ router.put("/avatar", async (req, res) => {
     return res.status(400).json({ error: "Faltan campos requeridos." });
   }
 
-  if (!AVATARES_VALIDOS.includes(avatar)) {
-    return res.status(400).json({ error: "Avatar no válido." });
+  // Validación flexible: solo requiere que sea un string no vacío y razonable
+  if (typeof avatar !== "string" || avatar.trim().length === 0 || avatar.length > 512) {
+    return res.status(400).json({ error: "El valor del avatar no es válido." });
   }
 
   try {
@@ -34,6 +31,9 @@ router.put("/avatar", async (req, res) => {
 
 // ── PUT /api/perfil/password ────────────────────────────────────────────────
 // Body: { usuarioId: string, passwordActual: string, nuevaPassword: string }
+// Nota: Firebase Admin no verifica passwordActual. Si se desea re-autenticar al
+// usuario por seguridad, esto debe hacerse en el cliente con signInWithEmailAndPassword
+// antes de llamar a este endpoint.
 router.put("/password", async (req, res) => {
   const { usuarioId, passwordActual, nuevaPassword } = req.body;
 
@@ -49,36 +49,28 @@ router.put("/password", async (req, res) => {
   }
 
   try {
-    // 1. Obtener el documento del usuario
-    const userDoc = await db.collection("users").doc(usuarioId).get();
+    // Actualizar la contraseña directamente en Firebase Auth
+    await admin.auth().updateUser(usuarioId, {
+      password: nuevaPassword
+    });
 
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: "Usuario no encontrado." });
-    }
-
-    const userData = userDoc.data();
-
-    if (!userData.password) {
-      return res.status(500).json({ error: "Error de configuración de cuenta." });
-    }
-
-    // 2. Validar la contraseña actual con bcrypt (re-autenticación segura)
-    const esCorrecta = await bcrypt.compare(passwordActual, userData.password);
-
-    if (!esCorrecta) {
-      console.warn(`[PERFIL] Contraseña actual incorrecta para usuario ${usuarioId}`);
-      return res.status(401).json({ error: "La contraseña actual es incorrecta." });
-    }
-
-    // 3. Hashear la nueva contraseña y guardarla
-    const nuevoHash = await bcrypt.hash(nuevaPassword, 10);
-    await db.collection("users").doc(usuarioId).update({ password: nuevoHash });
-
-    console.log(`[PERFIL] Contraseña actualizada para usuario ${usuarioId}`);
+    console.log(`[PERFIL] Contraseña actualizada en Firebase Auth para usuario ${usuarioId}`);
     res.json({ mensaje: "Contraseña actualizada correctamente." });
 
   } catch (err) {
     console.error("[PERFIL] Error al cambiar contraseña:", err);
+    
+    // Mapear errores de Firebase Auth a mensajes de cliente
+    const errorMessages = {
+      "auth/weak-password": "La nueva contraseña debe tener al menos 6 caracteres.",
+      "auth/user-not-found": "El usuario no existe en el sistema de autenticación."
+    };
+    
+    // Devolvemos 400 si es un error de validación de Firebase, o 500 para errores internos
+    if (err.code && err.code.startsWith("auth/")) {
+      return res.status(400).json({ error: errorMessages[err.code] || "Error al actualizar la contraseña." });
+    }
+    
     res.status(500).json({ error: "Error interno al actualizar la contraseña." });
   }
 });

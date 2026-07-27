@@ -181,6 +181,9 @@
         </p>
 
         <div id="recuperacionBox" style="display:none; text-align:center; margin-top:15px;">
+          <p style="font-size:13px; color:#777; margin-bottom:10px; text-align:left;">
+            Ingresa tu correo y te enviaremos un enlace para restablecerla.
+          </p>
           <input id="emailRecuperar" type="email" placeholder="Ingresa tu correo"
             style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px;">
 
@@ -204,15 +207,59 @@
   </div>
 
 
+  <!-- Firebase Client SDK v9 (CDN módulos — no requiere empaquetador) -->
+  <script type="module">
+    import { initializeApp }             from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyCglctEjMo6G6lE264KG878-7BtyiqhEMM",
+      authDomain:        "skillsyntax-977ef.firebaseapp.com",
+      projectId:         "skillsyntax-977ef",
+      storageBucket:     "skillsyntax-977ef.firebasestorage.app",
+      messagingSenderId: "7666267890",
+      appId:             "1:7666267890:web:90ca984cc0a13210b8426b"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Exponer función para recuperación
+    window._firebaseSendResetEmail = async (email) => {
+      await sendPasswordResetEmail(auth, email);
+    };
+
+    // Exponer función para login nativo
+    window._firebaseLogin = async (email, password) => {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return userCredential.user;
+    };
+  </script>
+
   <script>
 
-    // 🔴 FIX: limpiar sesión vieja al entrar al login
-    localStorage.removeItem("usuario");
-    localStorage.removeItem("usuario_id");
-    localStorage.removeItem("token");
-
-    // ── Soporte de tecla Enter en los campos de login ─────────────────────────
+    // ── Al cargar la página ───────────────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", () => {
+
+      // 1. Si ya hay sesión activa, redirigir directamente al dashboard
+      const sesionActiva = JSON.parse(localStorage.getItem("usuario"));
+      if (sesionActiva && sesionActiva.id) {
+        window.location.href = sesionActiva.rol === "admin"
+          ? "/admin/dashboard.html"
+          : "/test.html";
+        return;
+      }
+
+      // 2. Limpiar sesión vieja y los inputs (evita datos residuales al pulsar 'Atrás')
+      localStorage.removeItem("usuario");
+      localStorage.removeItem("usuario_id");
+      localStorage.removeItem("token");
+      ["email", "password", "emailRecuperar"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      // 3. Soporte de tecla Enter en los campos de login
       ["email", "password"].forEach(id => {
         const input = document.getElementById(id);
         if (input) {
@@ -239,11 +286,17 @@
       }
 
       try {
+        msg.innerText = "Autenticando...";
+        msg.style.color = "#777";
 
+        // 1. Validar credenciales con Firebase Auth nativo
+        const firebaseUser = await window._firebaseLogin(email, password);
+
+        // 2. Si Firebase aprueba, solicitar sesión al backend
         const res = await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ uid: firebaseUser.uid, email: firebaseUser.email })
         });
 
         const data = await res.json();
@@ -271,7 +324,17 @@
 
       } catch (error) {
         console.error(error);
-        msg.innerText = "Error de conexión con servidor";
+        
+        // Mapear errores de Firebase Auth a mensajes amigables en español
+        const errorCodes = {
+          "auth/invalid-credential": "Correo o contraseña incorrectos",
+          "auth/user-not-found": "No existe una cuenta con este correo",
+          "auth/wrong-password": "La contraseña es incorrecta",
+          "auth/too-many-requests": "Demasiados intentos. Intenta más tarde."
+        };
+
+        const errorMsg = errorCodes[error.code] || "Error al iniciar sesión";
+        msg.innerText = errorMsg;
         msg.style.color = "red";
       }
     };
@@ -283,30 +346,33 @@
 
     window.enviarRecuperacion = async () => {
       const email = document.getElementById("emailRecuperar").value.trim();
-      const msg = document.getElementById("msgRecuperacion");
+      const msg   = document.getElementById("msgRecuperacion");
 
       if (!email) {
-        msg.innerText = "Ingresa tu correo";
+        msg.innerText   = "Ingresa tu correo";
         msg.style.color = "red";
         return;
       }
 
+      msg.innerText   = "Enviando...";
+      msg.style.color = "#777";
+
       try {
-        const res = await fetch("/api/login/forgot-password", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ email })
-        });
+        // ✅ Llamada directa a Firebase Auth (sin pasar por nuestro backend)
+        await window._firebaseSendResetEmail(email);
 
-        const data = await res.json();
-
-        msg.innerText = data.msg || data.error;
+        msg.innerText   = "✅ Revisa tu correo para restablecer tu contraseña.";
         msg.style.color = "green";
 
       } catch (error) {
-        msg.innerText = "Error al enviar solicitud";
+        // Mapear los códigos de error de Firebase a mensajes amigables
+        const errorMessages = {
+          "auth/user-not-found":   "❌ No existe una cuenta con ese correo.",
+          "auth/invalid-email":    "❌ El correo ingresado no es válido.",
+          "auth/too-many-requests":"❌ Demasiados intentos. Intenta más tarde.",
+          "auth/network-request-failed": "❌ Error de red. Verifica tu conexión.",
+        };
+        msg.innerText   = errorMessages[error.code] || `❌ Error: ${error.message}`;
         msg.style.color = "red";
       }
     };

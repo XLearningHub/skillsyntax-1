@@ -248,7 +248,18 @@ function renderVistaTodos() {
     const tbody = document.getElementById("tbodyTodos");
     const { usuarios } = _cache;
 
-    ejercicios.forEach(e => {
+    // Ordenar por 'fecha' DESC — campo confirmado en resultados.routes.js
+    // El backend ya envía 'fecha' (ISO string) en cada resultado enriquecido.
+    const ejerciciosOrdenados = [...ejercicios].sort((a, b) => {
+        const fa = a.fecha || "";
+        const fb = b.fecha || "";
+        if (!fa && !fb) return 0;
+        if (!fa) return  1;  // sin fecha → al final
+        if (!fb) return -1;
+        return new Date(b.fecha) - new Date(a.fecha); // DESC: más reciente arriba
+    });
+
+    ejerciciosOrdenados.forEach(e => {
         const inicial = (e.usuario || "?").charAt(0).toUpperCase();
         const hab     = e.habilidad || "—";
         const habCls  = _getHabilidadClass(hab);
@@ -257,7 +268,7 @@ function renderVistaTodos() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td class="id-cell">#${escapeHtml(String(e.id).slice(-5))}</td>
-            <td>
+            <td class="texto-largo-wrap" style="max-width: 150px; white-space: normal; word-break: break-word;">
                 <div class="user-chip">
                     <div class="avatar">${inicial}</div>
                     <div>
@@ -376,7 +387,7 @@ function renderVistaAlumnos() {
                 <div class="user-chip">
                     <div class="avatar" style="${sinEjercicios ? 'opacity:0.5;' : ''}">${inicial}</div>
                     <div>
-                        <button class="btn-link user-info-name" onclick="navegar('alumno','${escapeHtml(uid)}')">
+                        <button class="btn-link user-info-name texto-largo-wrap" onclick="navegar('alumno','${escapeHtml(uid)}')">
                             ${escapeHtml(datos.nombre)}
                         </button>
                         ${sinEjercicios ? '<div class="user-info-email">Sin ejercicios aún</div>' : ''}
@@ -593,7 +604,7 @@ function renderVistaGrupos() {
         tr.innerHTML = `
             <td class="id-cell" style="text-align:left;">${idx + 1}</td>
             <td>
-                <button class="btn-link name-cell" onclick="navegar('grupo','${escapeHtml(g.id)}')">
+                <button class="btn-link name-cell texto-largo-wrap" onclick="navegar('grupo','${escapeHtml(g.id)}')">
                     <i class="fas fa-layer-group" style="margin-right:8px; opacity:0.6;"></i>${escapeHtml(g.nombre)}
                 </button>
             </td>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -73,22 +73,20 @@
         .avatar-strip-info span  { font-size:0.82rem; color:var(--text-dim); }
 
         /* Avatar grid */
-        .section-label {
-            font-size:0.75rem; font-weight:700; text-transform:uppercase;
-            letter-spacing:0.08em; color:var(--text-dim); margin-bottom:14px;
+        .avatar-grid {
+            display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:28px;
         }
-        .avatar-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
         .avatar-option {
-            aspect-ratio:1; border-radius:18px; border:2px solid var(--border);
+            aspect-ratio:1; border-radius:16px; border:2px solid var(--border);
             background:rgba(255,255,255,0.03); display:flex; align-items:center;
             justify-content:center; cursor:pointer; transition:all 0.25s ease;
-            position:relative; overflow:hidden; padding:8%;
+            position:relative; overflow:hidden; padding:7%;
         }
         .avatar-option:hover { border-color:rgba(0,194,203,0.5); background:rgba(0,194,203,0.06); transform:translateY(-2px); }
         .avatar-option.selected { border-color:var(--primary); background:rgba(0,194,203,0.1); box-shadow:0 0 20px rgba(0,194,203,0.2); }
         .avatar-option.selected::after {
             content:'\f00c'; font-family:'Font Awesome 6 Free'; font-weight:900;
-            position:absolute; bottom:6px; right:8px; font-size:0.65rem; color:var(--primary);
+            position:absolute; bottom:5px; right:7px; font-size:0.6rem; color:var(--primary);
         }
         .avatar-option img { width:100%; height:100%; object-fit:contain; border-radius:50%; }
 
@@ -148,6 +146,55 @@
         /* Divider */
         .divider { height:1px; background:var(--border); margin:24px 0; }
 
+        /* ── Password collapsible section ── */
+        .security-separator {
+            display:flex; align-items:center; gap:16px;
+            margin:32px 0 0; padding:20px 24px;
+            border-radius:18px; border:1.5px dashed rgba(255,95,82,0.25);
+            background:rgba(255,95,82,0.04); cursor:pointer;
+            transition:all 0.25s; user-select:none;
+        }
+        .security-separator:hover {
+            border-color:rgba(255,95,82,0.5);
+            background:rgba(255,95,82,0.08);
+        }
+        .security-separator .sec-icon {
+            width:40px; height:40px; border-radius:12px;
+            background:rgba(255,95,82,0.12); color:var(--danger);
+            display:flex; align-items:center; justify-content:center;
+            font-size:1rem; flex-shrink:0;
+        }
+        .security-separator .sec-text { flex:1; }
+        .security-separator .sec-text strong { display:block; font-size:0.95rem; font-weight:700; }
+        .security-separator .sec-text span  { font-size:0.78rem; color:var(--text-dim); }
+        .security-separator .sec-chevron {
+            color:var(--text-dim); font-size:0.85rem;
+            transition:transform 0.3s ease;
+        }
+        .security-separator.open .sec-chevron { transform:rotate(180deg); }
+
+        .pass-form-wrapper {
+            max-height:0; overflow:hidden;
+            transition:max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+            opacity:0;
+        }
+        .pass-form-wrapper.open {
+            max-height:700px;
+            opacity:1;
+        }
+        .pass-form-inner {
+            padding:24px 0 8px;
+            border-top:1px solid var(--border);
+            margin-top:20px;
+        }
+        .pass-privacy-note {
+            display:flex; align-items:center; gap:10px;
+            background:rgba(0,194,203,0.06); border:1px solid rgba(0,194,203,0.15);
+            border-radius:12px; padding:12px 16px; margin-bottom:22px;
+            font-size:0.8rem; color:var(--text-dim);
+        }
+        .pass-privacy-note i { color:var(--primary); font-size:1rem; flex-shrink:0; }
+
         /* Toast */
         .toast-container { position:fixed; bottom:28px; right:28px; display:flex; flex-direction:column; gap:10px; z-index:9999; }
         .toast {
@@ -169,6 +216,9 @@
             .profile-card{padding:24px 20px;}
             .avatar-grid{grid-template-columns:repeat(4,1fr);gap:8px;}
             .avatar-strip{flex-direction:column;text-align:center;}
+        }
+        @media(max-width:420px){
+            .avatar-grid{grid-template-columns:repeat(3,1fr);}
         }
     </style>
 </head>
@@ -207,7 +257,6 @@
             </div>
         </div>
 
-        <p class="section-label">Selecciona tu avatar</p>
         <div class="avatar-grid" id="avatarGrid"></div>
 
         <div class="card-actions">
@@ -217,58 +266,79 @@
         </div>
     </div>
 
-    <!-- CARD 2: Password -->
+    <!-- CARD 2: Seguridad (colapsable) -->
     <div class="profile-card">
         <div class="card-header">
             <div class="card-icon danger"><i class="fas fa-shield-halved"></i></div>
             <div>
                 <h2>Seguridad de la Cuenta</h2>
-                <p>Actualiza tu contrasena para mantener tu cuenta protegida</p>
+                <p>Mantén tu contraseña segura y actualizada</p>
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="passActual">Contrasena Actual</label>
-            <div class="input-wrap">
-                <i class="fas fa-lock field-icon"></i>
-                <input type="password" id="passActual" placeholder="Tu contrasena actual" autocomplete="current-password">
-                <button class="toggle-pass" type="button" onclick="togglePass('passActual',this)" tabindex="-1">
-                    <i class="fas fa-eye"></i>
-                </button>
+        <!-- Botón colapsable -->
+        <div class="security-separator" id="btnTogglePass" onclick="togglePassSection()">
+            <div class="sec-icon"><i class="fas fa-lock"></i></div>
+            <div class="sec-text">
+                <strong>⚙️ Deseo cambiar mi contraseña</strong>
+                <span>Haz clic para desplegar el formulario de cambio de contraseña</span>
             </div>
+            <i class="fas fa-chevron-down sec-chevron"></i>
         </div>
 
-        <div class="divider"></div>
+        <!-- Formulario colapsable -->
+        <div class="pass-form-wrapper" id="passFormWrapper">
+            <div class="pass-form-inner">
 
-        <div class="form-group">
-            <label for="passNueva">Nueva Contrasena</label>
-            <div class="input-wrap">
-                <i class="fas fa-key field-icon"></i>
-                <input type="password" id="passNueva" placeholder="Minimo 6 caracteres"
-                       autocomplete="new-password" oninput="calcularFortaleza(this.value)">
-                <button class="toggle-pass" type="button" onclick="togglePass('passNueva',this)" tabindex="-1">
-                    <i class="fas fa-eye"></i>
-                </button>
+                <div class="pass-privacy-note">
+                    <i class="fas fa-shield-check"></i>
+                    <span>Tu información es privada y cifrada. Nadie más puede ver tu contraseña.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="passActual">Contraseña Actual</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock field-icon"></i>
+                        <input type="password" id="passActual" placeholder="Tu contraseña actual" autocomplete="current-password">
+                        <button class="toggle-pass" type="button" onclick="togglePass('passActual',this)" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-group">
+                    <label for="passNueva">Nueva Contraseña</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-key field-icon"></i>
+                        <input type="password" id="passNueva" placeholder="Mínimo 6 caracteres"
+                               autocomplete="new-password" oninput="calcularFortaleza(this.value)">
+                        <button class="toggle-pass" type="button" onclick="togglePass('passNueva',this)" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                    <span class="strength-text" id="strengthText"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="passConfirmar">Confirmar Nueva Contraseña</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-check-double field-icon"></i>
+                        <input type="password" id="passConfirmar" placeholder="Repite la nueva contraseña" autocomplete="new-password">
+                        <button class="toggle-pass" type="button" onclick="togglePass('passConfirmar',this)" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="btn-danger-outline" id="btnCambiarPass">
+                        <i class="fas fa-lock-open"></i> Actualizar Contraseña
+                    </button>
+                </div>
             </div>
-            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
-            <span class="strength-text" id="strengthText"></span>
-        </div>
-
-        <div class="form-group">
-            <label for="passConfirmar">Confirmar Nueva Contrasena</label>
-            <div class="input-wrap">
-                <i class="fas fa-check-double field-icon"></i>
-                <input type="password" id="passConfirmar" placeholder="Repite la nueva contrasena" autocomplete="new-password">
-                <button class="toggle-pass" type="button" onclick="togglePass('passConfirmar',this)" tabindex="-1">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="card-actions">
-            <button class="btn-danger-outline" id="btnCambiarPass">
-                <i class="fas fa-lock-open"></i> Actualizar Contrasena
-            </button>
         </div>
     </div>
 
@@ -277,19 +347,30 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-const AVATARES = [
-    { id:"av1", src:"https://api.dicebear.com/8.x/bottts/svg?seed=skillsyntax1&backgroundColor=00c2cb",  label:"Robot Cyan"   },
-    { id:"av2", src:"https://api.dicebear.com/8.x/bottts/svg?seed=skillsyntax2&backgroundColor=9b5de5",  label:"Robot Morado" },
-    { id:"av3", src:"https://api.dicebear.com/8.x/bottts/svg?seed=skillsyntax3&backgroundColor=06d6a0",  label:"Robot Verde"  },
-    { id:"av4", src:"https://api.dicebear.com/8.x/bottts/svg?seed=skillsyntax4&backgroundColor=ffd166",  label:"Robot Dorado" },
-    { id:"av5", src:"https://api.dicebear.com/8.x/adventurer/svg?seed=profile5&backgroundColor=060e1a",  label:"Aventurero"   },
-    { id:"av6", src:"https://api.dicebear.com/8.x/adventurer/svg?seed=profile6&backgroundColor=060e1a",  label:"Aventurero 2" },
-    { id:"av7", src:"https://api.dicebear.com/8.x/pixel-art/svg?seed=pixel7&backgroundColor=0d1b2e",     label:"Pixel"        },
-    { id:"av8", src:"https://api.dicebear.com/8.x/pixel-art/svg?seed=pixel8&backgroundColor=0d1b2e",     label:"Pixel 2"      },
+// ── Array estático de 18 avatares disponibles (URLs completas DiceBear) ──────
+const avataresDisponibles = [
+  "https://api.dicebear.com/10.x/notionists-neutral/svg?seed=ledsi04t",
+  "https://api.dicebear.com/10.x/notionists-neutral/svg?seed=r3a145i2",
+  "https://api.dicebear.com/10.x/bottts/svg?seed=pw01ean0",
+  "https://api.dicebear.com/10.x/bottts-neutral/svg?seed=rwjgrxzc",
+  "https://api.dicebear.com/10.x/fun-emoji/svg?seed=hc2ryvao",
+  "https://api.dicebear.com/10.x/fun-emoji/svg?seed=k4v2eau4",
+  "https://api.dicebear.com/10.x/fun-emoji/svg?seed=77kpjwx1",
+  "https://api.dicebear.com/10.x/fun-emoji/svg?seed=vepfqj71",
+  "https://api.dicebear.com/10.x/fun-emoji/svg?seed=s91fr84q",
+  "https://api.dicebear.com/10.x/fun-emoji/svg?seed=mmln2svc",
+  "https://api.dicebear.com/10.x/big-smile/svg?seed=hstez6nt",
+  "https://api.dicebear.com/10.x/notionists/svg?seed=vqps7zkl",
+  "https://api.dicebear.com/10.x/notionists/svg?seed=3ge6zlsn",
+  "https://api.dicebear.com/10.x/lorelei/svg?mouthVariant=happy16&seed=irv2gff6",
+  "https://api.dicebear.com/10.x/micah/svg?seed=Felix",
+  "https://api.dicebear.com/10.x/micah/svg?seed=fy34y9wi",
+  "https://api.dicebear.com/10.x/big-smile/svg?seed=Felix",
+  "https://api.dicebear.com/10.x/big-smile/svg?seed=djgy1e4i",
 ];
 
 let usuarioLocal  = null;
-let avatarSelecto = null;
+let avatarSelecto = null; // guarda la URL completa del avatar seleccionado
 
 document.addEventListener("DOMContentLoaded", () => {
     usuarioLocal = JSON.parse(localStorage.getItem("usuario"));
@@ -299,6 +380,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("emailAlumno").textContent  = usuarioLocal.email  || "";
 
     renderizarGrid();
+
+    // Si ya tiene avatar guardado, pre-seleccionarlo
     if (usuarioLocal.avatar) seleccionarAvatar(usuarioLocal.avatar, true);
 
     document.getElementById("btnGuardarAvatar").addEventListener("click", guardarAvatar);
@@ -307,27 +390,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function renderizarGrid() {
     const grid = document.getElementById("avatarGrid");
-    grid.innerHTML = AVATARES.map(av => `
-        <div class="avatar-option" data-id="${av.id}" onclick="seleccionarAvatar('${av.id}',true)" title="${av.label}">
-            <img src="${av.src}" alt="${av.label}" loading="lazy">
+    grid.innerHTML = avataresDisponibles.map(url => `
+        <div class="avatar-option" data-src="${url}" onclick="seleccionarAvatar('${url}',true)">
+            <img src="${url}" alt="Avatar" loading="lazy">
         </div>
     `).join("");
 }
 
-function seleccionarAvatar(id, updatePreview) {
-    avatarSelecto = id;
+function seleccionarAvatar(url, updatePreview) {
+    avatarSelecto = url;
     document.querySelectorAll(".avatar-option").forEach(el =>
-        el.classList.toggle("selected", el.dataset.id === id)
+        el.classList.toggle("selected", el.dataset.src === url)
     );
     if (updatePreview) {
-        const av = AVATARES.find(a => a.id === id);
-        if (av) {
-            document.getElementById("avatarPreview").innerHTML =
-                `<img src="${av.src}" alt="${av.label}">`;
-        }
+        document.getElementById("avatarPreview").innerHTML =
+            `<img src="${url}" alt="Avatar seleccionado">`;
     }
 }
 
+// ── Sección contraseña colapsable ────────────────────────────────────────────
+function togglePassSection() {
+    const btn     = document.getElementById("btnTogglePass");
+    const wrapper = document.getElementById("passFormWrapper");
+    const isOpen  = wrapper.classList.contains("open");
+    btn.classList.toggle("open", !isOpen);
+    wrapper.classList.toggle("open", !isOpen);
+}
+
+// ── Guardar avatar + actualizar menú en tiempo real (200 OK) ─────────────────
 async function guardarAvatar() {
     if (!avatarSelecto) { mostrarToast("Selecciona un avatar primero.", "error"); return; }
     const btn = document.getElementById("btnGuardarAvatar");
@@ -336,18 +426,31 @@ async function guardarAvatar() {
     try {
         const res  = await fetch("/api/perfil/avatar", {
             method:"PUT", headers:{"Content-Type":"application/json"},
+            // Enviamos la URL completa como valor del campo avatar
             body: JSON.stringify({ usuarioId: usuarioLocal.id, avatar: avatarSelecto }),
         });
         const data = await res.json();
         if (res.ok) {
+            // 1. Persistir en localStorage
             usuarioLocal.avatar = avatarSelecto;
             localStorage.setItem("usuario", JSON.stringify(usuarioLocal));
-            mostrarToast("Avatar guardado correctamente!", "success");
+
+            // 2. Actualizar el <img id="avatarUsuario"> del menú lateral inmediatamente
+            const imgNavbar = document.getElementById("avatarUsuario");
+            if (imgNavbar) imgNavbar.src = avatarSelecto;
+
+            // 3. Notificar a otras pestañas (ej. test.html abierta en paralelo)
+            window.dispatchEvent(new StorageEvent("storage", {
+                key: "usuario",
+                newValue: localStorage.getItem("usuario"),
+            }));
+
+            mostrarToast("¡Avatar guardado correctamente!", "success");
         } else {
             mostrarToast(data.error || "No se pudo guardar el avatar.", "error");
         }
     } catch(err) {
-        mostrarToast("Error de conexion.", "error");
+        mostrarToast("Error de conexión.", "error");
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-save"></i> Guardar Avatar';
@@ -359,11 +462,11 @@ async function cambiarPassword() {
     const nueva     = document.getElementById("passNueva").value.trim();
     const confirmar = document.getElementById("passConfirmar").value.trim();
 
-    if (!actual)           { mostrarToast("Ingresa tu contrasena actual.", "error"); return; }
-    if (!nueva)            { mostrarToast("Ingresa la nueva contrasena.", "error"); return; }
-    if (nueva.length < 6)  { mostrarToast("La nueva contrasena debe tener minimo 6 caracteres.", "error"); return; }
-    if (nueva !== confirmar){ mostrarToast("Las contrasenias no coinciden.", "error"); return; }
-    if (actual === nueva)  { mostrarToast("La nueva contrasena debe ser diferente a la actual.", "error"); return; }
+    if (!actual)           { mostrarToast("Ingresa tu contraseña actual.", "error"); return; }
+    if (!nueva)            { mostrarToast("Ingresa la nueva contraseña.", "error"); return; }
+    if (nueva.length < 6)  { mostrarToast("La nueva contraseña debe tener mínimo 6 caracteres.", "error"); return; }
+    if (nueva !== confirmar){ mostrarToast("Las contraseñas no coinciden.", "error"); return; }
+    if (actual === nueva)  { mostrarToast("La nueva contraseña debe ser diferente a la actual.", "error"); return; }
 
     const btn = document.getElementById("btnCambiarPass");
     btn.disabled = true;
@@ -375,18 +478,20 @@ async function cambiarPassword() {
         });
         const data = await res.json();
         if (res.ok) {
-            mostrarToast("Contrasena actualizada correctamente!", "success");
+            mostrarToast("¡Contraseña actualizada correctamente!", "success");
             ["passActual","passNueva","passConfirmar"].forEach(id => document.getElementById(id).value = "");
             document.getElementById("strengthFill").style.width = "0%";
             document.getElementById("strengthText").textContent = "";
+            // Cerrar la sección colapsable tras guardar
+            togglePassSection();
         } else {
-            mostrarToast(data.error || "No se pudo actualizar la contrasena.", "error");
+            mostrarToast(data.error || "No se pudo actualizar la contraseña.", "error");
         }
     } catch(err) {
-        mostrarToast("Error de conexion.", "error");
+        mostrarToast("Error de conexión.", "error");
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-lock-open"></i> Actualizar Contrasena';
+        btn.innerHTML = '<i class="fas fa-lock-open"></i> Actualizar Contraseña';
     }
 }
 
@@ -408,8 +513,8 @@ function calcularFortaleza(pass) {
     if (/[^A-Za-z0-9]/.test(pass))score++;
     const niveles = [
         { pct:"0%",   color:"transparent", label:"" },
-        { pct:"25%",  color:"#ff5f52",     label:"Muy debil" },
-        { pct:"50%",  color:"#ffd166",     label:"Debil" },
+        { pct:"25%",  color:"#ff5f52",     label:"Muy débil" },
+        { pct:"50%",  color:"#ffd166",     label:"Débil" },
         { pct:"75%",  color:"#00c2cb",     label:"Aceptable" },
         { pct:"90%",  color:"#06d6a0",     label:"Fuerte" },
         { pct:"100%", color:"#06d6a0",     label:"Muy fuerte" },

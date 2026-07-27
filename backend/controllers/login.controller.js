@@ -1,31 +1,32 @@
 const db = require("../db");
-const bcrypt = require("bcrypt");
-const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
 // ======================
 // LOGIN
 // ======================
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  const { uid, email } = req.body;
 
-  console.log("[LOGIN] Intento de login para:", email);
+  console.log("[LOGIN] Solicitud de sesión para:", email || uid);
 
-  if (!email || !password) {
-    return res.status(400).json({ error: "Correo y contraseña son requeridos" });
+  if (!email && !uid) {
+    return res.status(400).json({ error: "Faltan datos de autenticación del cliente" });
   }
 
   try {
-    // 1. Buscar usuario en Firestore por email
-    const snapshot = await db
-      .collection("users")
-      .where("email", "==", email)
-      .limit(1)
-      .get();
+    // 1. Buscar usuario en Firestore (por email para asegurar compatibilidad con cuentas antiguas)
+    let snapshot;
+    if (email) {
+      snapshot = await db.collection("users").where("email", "==", email).limit(1).get();
+    } else {
+      // Fallback si solo envían uid y lo estamos usando como ID de documento
+      const doc = await db.collection("users").doc(uid).get();
+      snapshot = { empty: !doc.exists, docs: [doc] };
+    }
 
     if (snapshot.empty) {
-      console.warn("[LOGIN] Usuario no encontrado:", email);
-      return res.status(401).json({ error: "Credenciales incorrectas" });
+      console.warn("[LOGIN] Usuario autenticado en Auth pero no encontrado en Firestore:", email || uid);
+      return res.status(401).json({ error: "No se encontraron los datos del usuario en el sistema" });
     }
 
     // 2. Extraer datos del documento
@@ -34,22 +35,7 @@ exports.login = async (req, res) => {
 
     console.log("[LOGIN] Usuario encontrado en Firestore. ID:", user.id, "| Rol:", user.rol);
 
-    // 3. Verificar que existe el campo password en el documento
-    if (!user.password) {
-      console.error("[LOGIN] El documento del usuario no tiene campo 'password'");
-      return res.status(500).json({ error: "Error de configuración de cuenta" });
-    }
-
-    // 4. Comparar contraseña con bcrypt
-    const passwordValida = await bcrypt.compare(password, user.password);
-    console.log("[LOGIN] Resultado bcrypt.compare:", passwordValida);
-
-    if (!passwordValida) {
-      console.warn("[LOGIN] Contraseña incorrecta para:", email);
-      return res.status(401).json({ error: "Credenciales incorrectas" });
-    }
-
-    // 5. Generar JWT
+    // 3. Generar JWT
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       console.error("[LOGIN] JWT_SECRET no está definido en .env");
@@ -74,14 +60,15 @@ exports.login = async (req, res) => {
       console.error("[LOGIN] Error al registrar evento:", err)
     );
 
-    // 7. Responder con datos + token
+    // 7. Responder con datos + token (incluye avatar para persistencia en frontend)
     res.json({
       token,
-      id: user.id,
-      nombre: user.nombre,
-      email: user.email,
-      rol: user.rol,
+      id:            user.id,
+      nombre:        user.nombre,
+      email:         user.email,
+      rol:           user.rol,
       nivel_general: user.nivel_general,
+      avatar:        user.avatar || null,   // ← URL completa del avatar DiceBear (o null)
     });
 
   } catch (error) {
@@ -91,8 +78,11 @@ exports.login = async (req, res) => {
 };
 
 // ======================
-// FORGOT PASSWORD
+// FORGOT PASSWORD — DESACTIVADO
+// El correo de recuperación ahora lo envía Firebase Auth directamente
+// desde el frontend con sendPasswordResetEmail(). No se necesita Nodemailer.
 // ======================
+/*
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -104,7 +94,6 @@ exports.forgotPassword = async (req, res) => {
       .get();
 
     if (snapshot.empty) {
-      // Respuesta genérica por seguridad
       return res.json({ msg: "Si el correo existe, recibirás un enlace." });
     }
 
@@ -112,20 +101,17 @@ exports.forgotPassword = async (req, res) => {
     const user = { id: userDoc.id, ...userDoc.data() };
 
     const token = crypto.randomBytes(32).toString("hex");
-    const expira = new Date(Date.now() + 60 * 60 * 1000); // +1 hora
+    const expira = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.collection("users").doc(user.id).update({
       reset_token: token,
       reset_expira: expira.toISOString(),
     });
 
-    // APP_URL se configura en .env: en local = http://localhost:3000,
-    // en producción = la URL real del servidor (ej. https://skillsyntax-2war.onrender.com)
     const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
     const link = `${appUrl}/pages/reset-password.html?token=${token}`;
 
     const nodemailer = require("nodemailer");
-
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -152,10 +138,13 @@ exports.forgotPassword = async (req, res) => {
     res.status(500).json({ error: "Error en el servidor" });
   }
 };
+*/
 
 // ======================
-// RESET PASSWORD
+// RESET PASSWORD — DESACTIVADO
+// Firebase Auth gestiona el flujo de reset de contraseña de forma nativa.
 // ======================
+/*
 exports.resetPassword = async (req, res) => {
   const { token, password } = req.body;
 
@@ -175,7 +164,6 @@ exports.resetPassword = async (req, res) => {
     const userDoc = snapshot.docs[0];
     const user = userDoc.data();
 
-    // Verificar expiración manualmente
     if (!user.reset_expira || user.reset_expira < ahora) {
       return res.status(400).json({ error: "Token inválido o expirado" });
     }
@@ -195,3 +183,4 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ error: "Error al actualizar contraseña" });
   }
 };
+*/

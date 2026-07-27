@@ -271,17 +271,17 @@ document.addEventListener('DOMContentLoaded', () => {
         btnGuardar.textContent = 'Creando...';
 
         try {
-            const payload = { nombre, email, password, nivel_general: nivel || null };
+            const payload = { nombre, email, password, rol: 'alumno', nivel_general: nivel || 'A1' };
             if (grupoId) payload.grupoId = grupoId;
 
-            const res  = await fetch('/guardar_usuario', {
+            const res  = await fetch('/api/usuarios', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify(payload),
             });
             const data = await res.json();
 
-            if (res.ok && data.success) {
+            if (res.ok) {
                 cerrarModal();
                 const grupoMsg = grupoId ? ' y asignado al grupo.' : '.';
                 mostrarToastDash(`Usuario "${nombre}" creado correctamente${grupoMsg}`, 'success');

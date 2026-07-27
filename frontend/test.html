@@ -184,6 +184,37 @@ function logout(){
 }
 
 /* Cargar usuario */
+
+/** Actualiza el <img id="avatarUsuario"> con el avatar almacenado en localStorage.
+ *  El campo usuario.avatar ya es una URL completa (DiceBear o similar). */
+function aplicarAvatarMenu() {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  const imgEl   = document.getElementById("avatarUsuario");
+  if (!imgEl) return;
+  if (usuario && usuario.avatar && usuario.avatar.startsWith("http")) {
+    // Avatar guardado como URL directa (nuevo formato desde perfil.html)
+    imgEl.src = usuario.avatar;
+    imgEl.style.display = "inline-block";
+  } else if (usuario && usuario.nombre) {
+    // Fallback: iniciales generadas
+    imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(usuario.nombre)}&background=0a1f3b&color=fff`;
+    imgEl.style.display = "inline-block";
+  }
+}
+
+/** Escucha cambios en localStorage (actualizaciones desde perfil.html) en tiempo real. */
+window.addEventListener("storage", (e) => {
+  if (e.key === "usuario") {
+    aplicarAvatarMenu();
+    // Actualizar también el nombre si cambió
+    const usr = JSON.parse(e.newValue);
+    if (usr && usr.nombre) {
+      const nombreEl = document.getElementById("nombreUsuario");
+      if (nombreEl) nombreEl.innerText = usr.nombre;
+    }
+  }
+});
+
 async function cargarUsuario(){
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -192,23 +223,33 @@ async function cargarUsuario(){
     return;
   }
 
+  // 1. Aplicar avatar desde localStorage inmediatamente (sin esperar red)
+  aplicarAvatarMenu();
+
   try{
-    const res = await fetch(`/api/usuarios/${usuario.id}`);
+    const res  = await fetch(`/api/usuarios/${usuario.id}`);
     const data = await res.json();
 
     document.getElementById("nombreUsuario").innerText = data.nombre;
 
-    // FIX: avatar opcional (evita error null)
-    const avatar = document.getElementById("avatarUsuario");
-    if (avatar) {
-      avatar.src =
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=0a1f3b&color=fff`;
+    // Si el servidor tiene un avatar más reciente, sincronizar localStorage
+    if (data.avatar && data.avatar !== usuario.avatar) {
+      usuario.avatar = data.avatar;
+      localStorage.setItem("usuario", JSON.stringify(usuario));
+      aplicarAvatarMenu();
+    } else if (!usuario.avatar) {
+      // Sin avatar configurado: mostrar iniciales como fallback
+      const imgEl = document.getElementById("avatarUsuario");
+      if (imgEl) {
+        imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=0a1f3b&color=fff`;
+      }
     }
 
   } catch(error){
     console.error("Error al cargar usuario:", error);
   }
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
@@ -219,6 +260,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // Aplicar el avatar guardado en localStorage de forma INMEDIATA (sin esperar red).
+  // Esto cubre el caso de: login → navegar a test.html → el avatar ya está en localStorage.
+  aplicarAvatarMenu();
+
   cargarUsuario();
 
   // Inyectar barra de retorno admin si estamos en modo impersonación
@@ -226,6 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
     RoleSwitch.inyectarBarraRetorno();
   }
 });
+
 
 /* VARIABLES */
 let ejercicioActual=null;

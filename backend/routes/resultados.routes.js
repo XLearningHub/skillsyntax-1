@@ -58,16 +58,23 @@ router.get("/", async (req, res) => {
         const usuarioId = sesion.usuario_id || null;
         const user = usersMap[usuarioId] || {};
         return {
-          id: r.id,
+          id:        r.id,
           usuarioId,                          // ← UID de Firebase para filtrado
-          usuario: user.nombre || "Desconocido",
-          email: user.email || "",
+          usuario:   user.nombre || "Desconocido",
+          email:     user.email  || "",
           habilidad: r.habilidad,
-          puntaje: r.puntaje,
-          feedback: r.feedback,
+          puntaje:   r.puntaje,
+          feedback:  r.feedback,
+          fecha:     r.fecha || null,         // ← campo de fecha para ordenamiento en frontend
         };
       })
-      .reverse(); // más reciente primero
+      .sort((a, b) => {
+        // Orden DESC por fecha: el resultado más reciente va primero
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return  1;
+        if (!b.fecha) return -1;
+        return new Date(b.fecha) - new Date(a.fecha);
+      });
 
     res.json(enriched);
 
