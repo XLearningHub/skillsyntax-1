@@ -41,6 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function cargarUsuarios() {
     const tabla = document.getElementById("tablaUsuarios");
+    const buscador = document.getElementById("buscadorUsuarios");
+    if (buscador) buscador.value = ''; // Limpiar input de búsqueda al actualizar la lista
     
     try {
         const res = await fetch("/api/usuarios");
@@ -391,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('createPassword')?.value.trim() ?? '';
         const nivel    = document.getElementById('createNivel')?.value            ?? '';
         const grupoId  = document.getElementById('createGrupo')?.value            ?? '';
+        console.log('[DEBUG-FRONTEND] Valor del select extraído:', grupoId);
 
         // Validaciones básicas
         if (!nombre) {
@@ -412,7 +415,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const payload = { nombre, email, password, rol: 'alumno', nivel_general: nivel || 'A1' };
-            if (grupoId) payload.grupoId = grupoId;   // solo si el admin seleccionó uno
+            if (grupoId && grupoId.trim() !== '') {
+                payload.grupo_id = grupoId.trim();
+            }
 
             const res = await fetch('/api/usuarios', {
                 method:  'POST',

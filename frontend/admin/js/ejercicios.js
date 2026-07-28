@@ -782,40 +782,93 @@ function renderDetalleGrupo(gid) {
 
 // ── ELIMINAR EJERCICIO ─────────────────────────────────────────────────────────
 /**
- * Elimina un ejercicio y recarga la vista actual (sin volver a "Todos").
+ * Estado pendiente para el modal de confirmación de borrado.
+ * Se rellena al hacer clic en "Eliminar" y se consume cuando el usuario confirma.
+ */
+let _pendingDelete = null; // { id, vista, extraId }
+
+/**
+ * Inicializa los listeners del modal de confirmación de ejercicios.
+ * Se llama una sola vez en DOMContentLoaded — mismo patrón que usuarios.js y grupos.js.
+ */
+function _initModalEjercicio() {
+    const modal     = document.getElementById("modalEliminarEjercicio");
+    const btnCancel = document.getElementById("btnEjercicioCancelar");
+    const btnOk     = document.getElementById("btnEjercicioConfirmar");
+
+    if (!modal) return; // Guard: el modal no está en el DOM
+
+    // Cancelar: cerrar sin hacer nada
+    btnCancel?.addEventListener("click", () => {
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+        _pendingDelete = null;
+    });
+
+    // Confirmar: ejecutar el DELETE real
+    btnOk?.addEventListener("click", async () => {
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+
+        if (!_pendingDelete) return;
+        const { id, vista, extraId } = _pendingDelete;
+        _pendingDelete = null;
+
+        try {
+            const res = await fetch(`/api/resultados/${id}`, { method: "DELETE" });
+
+            if (res.ok) {
+                // Actualizar caché en memoria (evita refetch completo)
+                _cache.ejercicios = _cache.ejercicios.filter(e => String(e.id) !== String(id));
+                mostrarToast("Ejercicio eliminado correctamente.", "success");
+
+                // Re-renderizar la vista actual
+                if (vista === "alumno" && extraId) {
+                    renderDetalleAlumno(extraId);
+                } else if (vista === "grupo" && extraId) {
+                    renderDetalleGrupo(extraId);
+                } else if (vista === "alumno") {
+                    renderVistaAlumnos();
+                } else if (vista === "grupo") {
+                    renderVistaGrupos();
+                } else {
+                    renderVistaTodos();
+                }
+            } else {
+                mostrarToast("No se pudo eliminar el ejercicio.", "error");
+            }
+        } catch (err) {
+            console.error("[EJERCICIOS] Error al eliminar:", err);
+            mostrarToast("Error de conexión al intentar eliminar.", "error");
+        }
+    });
+
+    // Cerrar al hacer clic en el overlay oscuro (fuera del card)
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.classList.remove("active");
+            document.body.style.overflow = "";
+            _pendingDelete = null;
+        }
+    });
+}
+
+// Registrar los listeners del modal en cuanto el DOM esté listo
+document.addEventListener("DOMContentLoaded", _initModalEjercicio);
+
+/**
+ * Muestra el modal de confirmación en lugar de window.confirm (nativo del navegador).
+ * Guarda el contexto en _pendingDelete; el DELETE real se ejecuta en el listener de btnOk.
  * @param {string}      id      - ID del ejercicio en Firestore.
  * @param {string}      vista   - Vista activa para recargar tras eliminar.
  * @param {string|null} extraId - UID o GID si estamos en una sub-vista.
  */
-async function eliminarEjercicio(id, vista = "todos", extraId = null) {
-    if (!confirm("¿Estás seguro de eliminar este ejercicio? Esta acción no se puede deshacer.")) return;
-
-    try {
-        const res = await fetch(`/api/resultados/${id}`, { method: "DELETE" });
-
-        if (res.ok) {
-            // Actualizar caché en memoria (evita refetch completo)
-            _cache.ejercicios = _cache.ejercicios.filter(e => String(e.id) !== String(id));
-            mostrarToast("Ejercicio eliminado correctamente.", "success");
-
-            // Re-renderizar la vista actual
-            if (vista === "alumno" && extraId) {
-                renderDetalleAlumno(extraId);
-            } else if (vista === "grupo" && extraId) {
-                renderDetalleGrupo(extraId);
-            } else if (vista === "alumno") {
-                renderVistaAlumnos();
-            } else if (vista === "grupo") {
-                renderVistaGrupos();
-            } else {
-                renderVistaTodos();
-            }
-        } else {
-            mostrarToast("No se pudo eliminar el ejercicio.", "error");
-        }
-    } catch (err) {
-        console.error("[EJERCICIOS] Error al eliminar:", err);
-        mostrarToast("Error de conexión al intentar eliminar.", "error");
+function eliminarEjercicio(id, vista = "todos", extraId = null) {
+    _pendingDelete = { id, vista, extraId };
+    const modal = document.getElementById("modalEliminarEjercicio");
+    if (modal) {
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
     }
 }
 

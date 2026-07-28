@@ -272,7 +272,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const payload = { nombre, email, password, rol: 'alumno', nivel_general: nivel || 'A1' };
-            if (grupoId) payload.grupoId = grupoId;
+            if (grupoId && grupoId.trim() !== '') { 
+                payload.grupo_id = grupoId.trim(); 
+            }
 
             const res  = await fetch('/api/usuarios', {
                 method:  'POST',

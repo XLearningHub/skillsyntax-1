@@ -527,6 +527,89 @@
         }
         .btn-back i { font-size: 0.82rem; }
 
+
+        /* ── Modal de Confirmación de Borrado ──────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 36px 32px 28px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            animation: modalFadeIn 0.2s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.93) translateY(-12px); }
+            to   { opacity: 1; transform: scale(1)   translateY(0); }
+        }
+        .modal-icon {
+            font-size: 2.8rem;
+            margin-bottom: 14px;
+        }
+        .modal-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+        .modal-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0 0 24px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .btn-modal-cancel {
+            padding: 10px 24px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-dim);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .btn-modal-cancel:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-main);
+        }
+        .btn-modal-confirm {
+            padding: 10px 24px;
+            border-radius: 10px;
+            border: none;
+            background: var(--danger);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .btn-modal-confirm:hover {
+            background: #e84040;
+            transform: translateY(-1px);
+        }
+
         /* ── Responsive helpers ────────────────────────────────────────────── */
         @media (max-width: 900px) {
             .sidebar { display: none; }
@@ -578,6 +661,19 @@
         <!-- Contenedor principal dinámico -->
         <div id="vistaContainer"></div>
 
+    </div>
+
+    <!-- ── Modal confirmación eliminar ejercicio ───────────────────────────── -->
+    <div class="modal-overlay" id="modalEliminarEjercicio">
+        <div class="modal-card">
+            <div class="modal-icon">🗑️</div>
+            <h3>¿Eliminar ejercicio?</h3>
+            <p>Esta acción es permanente y no se puede deshacer.<br>El registro del ejercicio será eliminado definitivamente.</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" id="btnEjercicioCancelar">Cancelar</button>
+                <button class="btn-modal-confirm" id="btnEjercicioConfirmar">Sí, eliminar</button>
+            </div>
+        </div>
     </div>
 
     <!-- ── Toasts ────────────────────────────────────────────────────────────── -->

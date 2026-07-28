@@ -190,6 +190,8 @@ document.addEventListener("DOMContentLoaded", () => {
 async function cargarGrupos(scrollPos = 0) {
     const tabla         = document.getElementById("tablaGrupos");
     const sinResultados = document.getElementById("sinResultados");
+    const buscador      = document.getElementById("buscadorGrupos");
+    if (buscador) buscador.value = ''; // Limpiar input de búsqueda al actualizar la lista
 
     // Solo mostramos el spinner en la carga inicial (scrollPos === 0)
     // para evitar el salto brusco al recargar tras una acción

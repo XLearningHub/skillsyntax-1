@@ -1,5 +1,6 @@
 const db    = require("../db");
 const admin = require("firebase-admin");
+const { FieldValue } = require("firebase-admin/firestore");
 
 // ── Mapeo de códigos de error de Firebase Auth → mensajes legibles ────────────
 const AUTH_ERROR_MAP = {
@@ -12,12 +13,12 @@ const AUTH_ERROR_MAP = {
 
 // =============================================================================
 // CREAR USUARIO  ─  POST /api/usuarios
-// Body: { nombre, email, password, rol, nivel_general? }
-// Flujo: Firebase Auth → Firestore (uid sincronizado)
+// Body: { nombre, email, password, rol, nivel_general?, grupo_id? }
+// Flujo: Firebase Auth → Firestore (uid sincronizado) → Grupo (arrayUnion)
 // =============================================================================
 exports.crearUsuario = async (req, res) => {
   console.log("\n[DEBUG] Iniciando creación de usuario...");
-  const { nombre, email, password, rol, nivel_general } = req.body;
+  const { nombre, email, password, rol, nivel_general, grupo_id } = req.body;
 
   // ── Validaciones básicas ───────────────────────────────────────────────────
   if (!nombre || !email || !password || !rol) {
@@ -73,6 +74,24 @@ exports.crearUsuario = async (req, res) => {
     await db.collection("users").doc(userRecord.uid).set(docData);
 
     console.log(`[DEBUG] Éxito en Firestore. Usuario guardado correctamente en la colección 'users'.`);
+
+    // ── PASO 2.5: Asignar al grupo si viene grupo_id en el body ────────────
+    // REGRESIÓN RESTAURADA: lógica omitida durante la migración a Firebase Auth.
+    if (grupo_id && typeof grupo_id === "string" && grupo_id.trim() !== "") {
+      console.log(`[DEBUG] grupo_id recibido: "${grupo_id}". Añadiendo uid al grupo...`);
+      try {
+        console.log('[DEBUG] Intentando agregar al grupo:', grupo_id);
+        await db.collection("grupos").doc(grupo_id.trim()).update({
+          alumnos: FieldValue.arrayUnion(userRecord.uid),
+        });
+        console.log(`[DEBUG] UID ${userRecord.uid} añadido al grupo "${grupo_id}" correctamente.`);
+      } catch (grupoErr) {
+        // No es un error fatal — el usuario ya fue creado; sólo logueamos la advertencia.
+        console.error('[DEBUG-ERROR] Falló asignación a grupo:', grupoErr);
+      }
+    } else {
+      console.log(`[DEBUG] Sin grupo_id en el body — el usuario no será asignado a ningún grupo.`);
+    }
 
     // ── PASO 3: Registrar evento en Audit Trail (no bloqueante) ────────────
     console.log(`[DEBUG] Registrando evento en Audit Trail...`);
