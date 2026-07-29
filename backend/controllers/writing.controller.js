@@ -25,6 +25,8 @@ exports.generarWriting = async (req, res) => {
     const tema = req.body.tema || req.body.topic || "daily life";
     const nivel = req.body.nivel || "A1";
 
+    // (selector dinámico eliminado — el tema lo controla el usuario)
+
     // ── SWITCH DE NIVEL: cada nivel puede tener su propio super-prompt ──
     let prompt;
 
@@ -37,6 +39,8 @@ exports.generarWriting = async (req, res) => {
         prompt = `
 You are a specialist English teacher for complete beginners (CEFR level A1).
 Create a simple WRITING exercise strictly about the topic: "${tema}".
+
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level A1.
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
@@ -64,6 +68,8 @@ Return ONLY valid JSON in this EXACT format — no markdown, no extra text:
 You are a specialist English teacher for elementary learners (CEFR level A2).
 Create a WRITING exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level A2.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it internally. DO NOT output any Spanish words.
 1. The exercise must have EXACTLY 5 fill-in-the-blank spaces (____). No more, no less.
@@ -89,6 +95,8 @@ Return ONLY valid JSON in this EXACT format — no markdown, no extra text:
         prompt = `
 You are a specialist English teacher for intermediate learners (CEFR level B1).
 Create a WRITING exercise strictly about the topic: "${tema}".
+
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level B1.
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is in Spanish or has typos, translate it internally. NO Spanish output.
@@ -116,6 +124,8 @@ Return ONLY valid JSON in this EXACT format — no markdown, no extra text:
 You are a specialist English teacher for upper-intermediate learners (CEFR level B2).
 Create a WRITING exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level B2.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
 1. The exercise must have EXACTLY 8 fill-in-the-blank spaces (____). No more, no less.
@@ -142,6 +152,8 @@ Return ONLY valid JSON in this EXACT format — no markdown, no extra text:
 You are a specialist English teacher for advanced learners (CEFR level C1).
 Create a WRITING exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level C1.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
 1. The exercise must have EXACTLY 10 fill-in-the-blank spaces (____). No more, no less.
@@ -167,6 +179,8 @@ Return ONLY valid JSON in this EXACT format — no markdown, no extra text:
         prompt = `
 You are a specialist English teacher for proficiency/mastery learners (CEFR level C2).
 Create a WRITING exercise strictly about the topic: "${tema}".
+
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level C2.
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it internally. DO NOT output any Spanish words.

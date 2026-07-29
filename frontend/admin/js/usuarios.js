@@ -393,7 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('createPassword')?.value.trim() ?? '';
         const nivel    = document.getElementById('createNivel')?.value            ?? '';
         const grupoId  = document.getElementById('createGrupo')?.value            ?? '';
-        console.log('[DEBUG-FRONTEND] Valor del select extraído:', grupoId);
 
         // Validaciones básicas
         if (!nombre) {

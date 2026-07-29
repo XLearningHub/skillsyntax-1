@@ -8,6 +8,132 @@
 <!-- Iconos para los botones de habilidades -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   GRAMMAR — DRAG & DROP GAMIFICATION STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Word bank pill (draggable) ───────────────────────────────── */
+.dnd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.93rem;
+  cursor: grab;
+  user-select: none;
+  border: 1.5px solid #d1d5db;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.2s ease;
+  outline: none;
+  letter-spacing: 0.01em;
+}
+.dnd-pill:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+.dnd-pill:active { cursor: grabbing; transform: scale(0.97); }
+.dnd-pill.used {
+  opacity: 0.2;
+  pointer-events: none;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Drop zone (blank slot) ───────────────────────────────────── */
+.dnd-zone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  height: 36px;
+  border-radius: 8px;
+  border: 2px dashed #a855f7;
+  background: rgba(168, 85, 247, 0.06);
+  color: #7c3aed;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: default;
+  vertical-align: middle;
+  margin: 0 4px;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  position: relative;
+  letter-spacing: 0.01em;
+}
+.dnd-zone.drag-over {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: #7c3aed;
+  border-style: solid;
+  transform: scale(1.04);
+}
+.dnd-zone.filled {
+  background: #ede9fe;
+  border-style: solid;
+  border-color: #7c3aed;
+  color: #4c1d95;
+  cursor: grab;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.18);
+  font-weight: 700;
+}
+.dnd-zone.filled:hover {
+  background: #ddd6fe;
+  border-color: #6d28d9;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.28);
+}
+/* Bug #3 fix: NO × pseudo-element — re-drag directly from zone */
+
+.dnd-pill.dragging, .dnd-zone.dragging {
+  opacity: 0.4;
+}
+.dnd-remove {
+  margin-left: 8px;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+  user-select: none;
+}
+.dnd-remove:hover {
+  color: #ef4444;
+}
+
+/* ── Word bank container ─────────────────────────────────────── */
+.dnd-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 18px 20px;
+  background: #fafbff;
+  border: 1px solid #e9d5ff;
+  border-radius: 14px;
+  min-height: 64px;
+  align-items: center;
+}
+
+/* ── Score reveal animation ──────────────────────────────────── */
+@keyframes dndPop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  70%  { transform: scale(1.08); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.dnd-zone.correct  { animation: dndPop 0.4s ease forwards;
+  background: linear-gradient(135deg,#10b981,#34d399) !important;
+  border-color: #059669 !important; color:#fff !important; }
+.dnd-zone.incorrect { animation: dndPop 0.4s ease forwards;
+  background: linear-gradient(135deg,#ef4444,#f87171) !important;
+  border-color: #dc2626 !important; color:#fff !important; }
+</style>
 </head>
 
 <body>
@@ -538,40 +664,74 @@ if (tipo === "speaking") {
     }
 
 if (tipo === "grammar") {
-  let texto = data.texto || "";
+  // ── 1. Parsear el texto y construir drop-zones ──────────────
+  let textoHTML = data.texto || "";
   const palabras = data.palabras || [];
-  let index = 0;
+  let zoneIndex  = 0;
 
-  texto = texto.replace(/____/g, () => {
-    const i = index++;
-    return `<input class="input-blank" oninput="guardarWriting(${i}, this.value)" 
-    style="border: none; border-bottom: 2px solid #673ab7; width: 110px; text-align: center; background: rgba(103, 58, 183, 0.05);">`;
+  // Replace each ____ with a drop-zone <span>
+  textoHTML = textoHTML.replace(/____/g, () => {
+    const i = zoneIndex++;
+    return `<span
+      class="dnd-zone"
+      data-index="${i}"
+      data-word=""
+      ondragover="dndDragOver(event)"
+      ondragleave="dndDragLeave(event)"
+      ondrop="dndDrop(event, ${i})"
+      ondragstart="dndZoneDragStart(event, ${i})"
+      ondragend="dndDragEnd(event)"
+    >&#160;&#160;&#160;&#160;&#160;</span>`;
   });
+
+  // ── 2. Build the draggable word-bank pills ──────────────────
+  const pillsHTML = palabras.map((p, i) => `
+    <span
+      class="dnd-pill"
+      id="pill-${i}"
+      draggable="true"
+      data-word="${p.replace(/"/g, '&quot;')}"
+      data-pill-index="${i}"
+      ondragstart="dndDragStart(event, '${p.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${i})"
+      ondragend="dndDragEnd(event)"
+    >
+      ${p}
+    </span>
+  `).join("");
 
   contenido = `
   <div class="writing-container" style="animation: fadeIn 0.5s ease;">
-    <div class="pregunta" style="background: #fdfbff; border-left: 5px solid #673ab7; padding: 30px; border-radius: 12px;">
-      <h3 style="color: #673ab7;">
-        <i class="fas fa-pen-nib"></i> Use of English
+
+    <!-- Passage with drop zones -->
+    <div class="pregunta" style="background:#fdfbff; border-left:5px solid #7c3aed; padding:30px; border-radius:14px;">
+      <h3 style="color:#7c3aed; margin-top:0;">
+        <i class="fas fa-spell-check"></i> Use of English — Drag & Drop
       </h3>
-      <div class="texto-writing" style="line-height: 2.8; font-size: 1.15rem;">
-        ${texto}
+      <p style="color:#6b7280; font-size:0.88rem; margin-bottom:18px;">
+        <i class="fas fa-info-circle"></i>
+        Drag each word from the bank below into the correct blank. Click a filled slot to return it.
+      </p>
+      <div class="texto-writing" style="line-height:3.2; font-size:1.12rem;">
+        ${textoHTML}
       </div>
     </div>
 
-    <div class="pregunta" style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; margin-top: 20px; padding: 20px;">
-      <strong>Word Bank:</strong>
-      <div class="banco-palabras" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top:10px;">
-        ${palabras.map(p => `
-          <span class="palabra" style="background: #f3f0f7; padding: 6px 14px; border-radius: 8px; color: #673ab7;">
-            ${p}
-          </span>
-        `).join("")}
+    <!-- Word bank -->
+    <div class="pregunta" style="background:white; border:1px solid #e9d5ff; border-radius:14px; margin-top:20px; padding:20px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+        <i class="fas fa-layer-group" style="color:#7c3aed;"></i>
+        <strong style="color:#7c3aed;">Word Bank</strong>
+        <span id="dnd-progress" style="margin-left:auto; font-size:0.82rem; color:#6b7280;">0 / ${palabras.length} filled</span>
+      </div>
+      <div class="dnd-bank" id="dnd-bank">
+        ${pillsHTML}
       </div>
     </div>
+
   </div>`;
+
   btnEnviar.style.display = "block";
-  btnEnviar.onclick = enviarWriting;
+  btnEnviar.onclick = enviarGrammar;
 }
 
 
@@ -597,6 +757,193 @@ function guardarWriting(i,val){
   respuestasUsuario[i]=val;
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  GRAMMAR — DRAG & DROP ENGINE  (v2 — 4-bug fix)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Which pill/zone is currently being dragged.
+ * shape: { type:'pill'|'zone', pillIdx, zoneIdx, word }
+ */
+let _dndDragSource = null;
+
+/**
+ * Called on dragstart of a BANK PILL.
+ */
+function dndDragStart(event, word, pillIdx) {
+  _dndDragSource = { type: 'pill', pillIdx, word };
+  event.dataTransfer.setData("text/plain", word);
+  event.dataTransfer.setData("pillIdx", String(pillIdx));
+  event.dataTransfer.setData("srcZoneIdx", ""); // empty = from bank
+  event.dataTransfer.effectAllowed = "move";
+  setTimeout(() => {
+    const pill = document.getElementById(`pill-${pillIdx}`);
+    if (pill) pill.classList.add("dragging");
+  }, 0);
+}
+
+/**
+ * Called on dragstart of a FILLED ZONE (Bug #3 fix — re-drag from slot).
+ */
+function dndZoneDragStart(event, zoneIdx) {
+  const zone = document.querySelector(`.dnd-zone[data-index="${zoneIdx}"]`);
+  if (!zone || !zone.classList.contains("filled")) {
+    event.preventDefault();
+    return;
+  }
+  const word    = zone.dataset.word;
+  const pillIdx = parseInt(zone.dataset.pillIdx, 10);
+  _dndDragSource = { type: 'zone', zoneIdx, pillIdx, word };
+  event.dataTransfer.setData("text/plain", word);
+  event.dataTransfer.setData("pillIdx", String(pillIdx));
+  event.dataTransfer.setData("srcZoneIdx", String(zoneIdx));
+  event.dataTransfer.effectAllowed = "move";
+  setTimeout(() => { zone.classList.add("dragging"); }, 0);
+}
+
+/**
+ * Bug #2 fix — if drop lands outside any valid zone, restore everything.
+ */
+function dndDragEnd(event) {
+  if (!_dndDragSource) return;
+  // If the drop was handled by dndDrop, _dndDragSource is already null.
+  // If it's still set, the drop was in the limbo — restore original state.
+  const src = _dndDragSource;
+  _dndDragSource = null;
+
+  if (src.type === 'pill') {
+    const pill = document.getElementById(`pill-${src.pillIdx}`);
+    if (pill) { pill.classList.remove("dragging"); } 
+  } else if (src.type === 'zone') {
+    // Restore opacity on the source zone
+    const zone = document.querySelector(`.dnd-zone[data-index="${src.zoneIdx}"]`);
+    if (zone) zone.classList.remove("dragging");
+  }
+}
+
+/**
+ * Called on dragover of a drop zone — MUST preventDefault to allow drop.
+ */
+function dndDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  event.currentTarget.classList.add("drag-over");
+}
+
+/**
+ * Called on dragleave of a drop zone.
+ */
+function dndDragLeave(event) {
+  event.currentTarget.classList.remove("drag-over");
+}
+
+/**
+ * Called on drop into a drop zone.
+ * Handles drops from both the word bank and from other filled zones.
+ */
+function dndDrop(event, zoneIdx) {
+  event.preventDefault();
+  const zone = event.currentTarget;
+  zone.classList.remove("drag-over");
+  zone.classList.remove("dragging");
+
+  const word       = event.dataTransfer.getData("text/plain");
+  const pillIdx    = parseInt(event.dataTransfer.getData("pillIdx"), 10);
+  const srcZoneIdx = event.dataTransfer.getData("srcZoneIdx"); // "" = from bank
+
+  // Mark drop as handled so dndDragEnd doesn't also try to restore
+  _dndDragSource = null;
+
+  // ── If dragging FROM another zone, clear that zone first ──
+  if (srcZoneIdx !== "") {
+    const srcZone = document.querySelector(`.dnd-zone[data-index="${srcZoneIdx}"]`);
+    if (srcZone) {
+      srcZone.textContent    = "\u00a0\u00a0\u00a0\u00a0\u00a0";
+      srcZone.dataset.word   = "";
+      srcZone.dataset.pillIdx = "";
+      srcZone.classList.remove("dragging");
+      srcZone.removeAttribute("draggable");
+      srcZone.classList.remove("filled");
+      respuestasUsuario[parseInt(srcZoneIdx, 10)] = "";
+    }
+  }
+
+  // ── If the TARGET zone already had a different word, send it back ──
+  const prevWord    = zone.dataset.word;
+  const prevPillIdx = parseInt(zone.dataset.pillIdx, 10);
+  if (prevWord && zone.dataset.pillIdx !== "") {
+    // Only return to bank if it came from the bank originally (not from another zone drag)
+    _dndReturnPillToBank(prevPillIdx);
+    respuestasUsuario[zoneIdx] = "";
+  }
+
+  // ── Fill the target zone ──
+  zone.innerHTML         = `${word} <span class="dnd-remove" onclick="dndRemoveClick(event, ${zoneIdx})" title="Remove">&times;</span>`;
+  zone.dataset.word      = word;
+  zone.dataset.pillIdx   = String(pillIdx);
+  zone.setAttribute("draggable", "true"); // Bug #3: zone is now re-draggable
+  zone.classList.add("filled");
+
+  // ── Mark pill as used (if coming from bank) ──
+  const pill = document.getElementById(`pill-${pillIdx}`);
+  if (pill) {
+    pill.classList.remove("dragging");
+    pill.classList.add("used");
+  }
+
+  respuestasUsuario[zoneIdx] = word;
+
+  // Bug #4 fix: use DOM count, not incrementing variable
+  _dndUpdateProgress();
+}
+
+/**
+ * Click on a filled zone returns the word to the bank.
+ * (Kept for accessibility — drag is the primary interaction.)
+ */
+function dndReturnWord(zoneIdx) {
+  const zone = document.querySelector(`.dnd-zone[data-index="${zoneIdx}"]`);
+  if (!zone || !zone.classList.contains("filled")) return;
+
+  const pillIdx = parseInt(zone.dataset.pillIdx, 10);
+
+  zone.textContent      = "\u00a0\u00a0\u00a0\u00a0\u00a0";
+  zone.dataset.word     = "";
+  zone.dataset.pillIdx  = "";
+  zone.removeAttribute("draggable");
+  zone.classList.remove("filled", "correct", "incorrect");
+
+  _dndReturnPillToBank(pillIdx);
+  respuestasUsuario[zoneIdx] = "";
+
+  _dndUpdateProgress();
+}
+
+/** Click handler for the '×' button */
+function dndRemoveClick(event, zoneIdx) {
+  event.stopPropagation();
+  dndReturnWord(zoneIdx);
+}
+
+
+/** Re-enables a bank pill */
+function _dndReturnPillToBank(pillIdx) {
+  const pill = document.getElementById(`pill-${pillIdx}`);
+  if (pill) {
+    pill.classList.remove("used");
+    pill.style.opacity = "";
+  }
+}
+
+/** Bug #4 fix — count filled zones from the DOM, not from an accumulator */
+function _dndUpdateProgress() {
+  const label = document.getElementById("dnd-progress");
+  if (!label) return;
+  const totalZones  = document.querySelectorAll(".dnd-zone").length;
+  const filledZones = document.querySelectorAll(".dnd-zone.filled").length;
+  label.textContent = `${filledZones} / ${totalZones} filled`;
+}
+
 async function enviarReading(){
   const res=await fetch("/api/reading/calificar",{
     method:"POST",
@@ -620,6 +967,36 @@ async function enviarWriting(){
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({ejercicio:ejercicioActual,respuestaUsuario:respuestasUsuario})
+  });
+  mostrarResultado(await res.json());
+}
+
+/**
+ * Grammar (Drag & Drop) evaluation.
+ * Reads answers from the drop-zones' textContent instead of <input>.value.
+ * Shows correct/incorrect colors on each zone before sending to the backend.
+ */
+async function enviarGrammar() {
+  // Build answers array from drop-zone textContent (in document order)
+  const zones   = document.querySelectorAll(".dnd-zone");
+  const answers = Array.from(zones).map(z => (z.dataset.word || "").trim());
+
+  // Visual feedback: color each zone immediately
+  const correctas = ejercicioActual.respuestas || ejercicioActual.palabras || [];
+  zones.forEach((zone, i) => {
+    const userAns    = answers[i]  ? answers[i].toLowerCase()  : "";
+    const correctAns = (correctas[i] || "").toLowerCase();
+    zone.classList.remove("filled");
+    zone.classList.add(userAns === correctAns ? "correct" : "incorrect");
+    // Remove the ×-indicator after marking
+    if (zone.dataset) zone.dataset.word = answers[i];
+  });
+
+  // Send to backend for full score + feedback
+  const res = await fetch("/api/writing/calificar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ejercicio: ejercicioActual, respuestaUsuario: answers })
   });
   mostrarResultado(await res.json());
 }

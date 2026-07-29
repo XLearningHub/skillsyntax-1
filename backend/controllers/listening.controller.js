@@ -27,6 +27,8 @@ exports.generarListening = async (req, res) => {
       return res.status(400).json({ error: "Faltan datos" });
     }
 
+    // (selector dinámico eliminado — el tema lo controla el usuario)
+
     // ── LÓGICA DINÁMICA DE PREGUNTAS (calculada ANTES del switch) ──────
     let numPreguntas;
     switch (nivel) {
@@ -68,6 +70,10 @@ exports.generarListening = async (req, res) => {
 You are a specialist English teacher for complete beginners (CEFR level A1).
 Create a very simple LISTENING exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level A1.
+
+CEFR CONTEXT SCALING (A1 — MANDATORY): Since this is level A1, the situation MUST involve a very simple, familiar, everyday topic — for example: describing a home, ordering food, greeting someone, or a daily routine. Never use abstract concepts, professional jargon, or complex cultural references at this level.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
 1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
@@ -96,6 +102,10 @@ ${schemaPreguntas}
         prompt = `
 You are a specialist English teacher for elementary learners (CEFR level A2).
 Create a LISTENING exercise strictly about the topic: "${tema}".
+
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level A2.
+
+CEFR CONTEXT SCALING (A2 — MANDATORY): Since this is level A2, the situation must be realistic and close to daily life — for example: a radio announcement, a short phone message, a conversation at a shop, or someone describing a recent event. Slightly more detail than A1 but still very concrete and accessible. Never use abstract or academic themes.
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
@@ -126,6 +136,10 @@ ${schemaPreguntas}
 You are a specialist English teacher for intermediate learners (CEFR level B1).
 Create a LISTENING exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level B1.
+
+CEFR CONTEXT SCALING (B1 — MANDATORY): Since this is level B1, the situation should involve opinions, past experiences, or interpersonal situations — for example: a podcast about a travel experience, a news report about a local issue, a conversation about giving advice, or a commentary about a lifestyle choice. Language can be more varied but context must remain relatable and grounded.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is in Spanish or has typos, translate it to English internally. NO Spanish output.
 1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
@@ -154,6 +168,10 @@ ${schemaPreguntas}
         prompt = `
 You are a specialist English teacher for upper-intermediate learners (CEFR level B2).
 Create a LISTENING exercise strictly about the topic: "${tema}".
+
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level B2.
+
+CEFR CONTEXT SCALING (B2 — MANDATORY): Since this is level B2, the situation should involve argumentation, analysis, or structured information — for example: a news editorial, a documentary excerpt, a debate between two speakers, or an analytical commentary on a trend. The context can be professional or semi-academic. Avoid overly simple everyday scenarios.
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
@@ -184,6 +202,10 @@ ${schemaPreguntas}
 You are a specialist English teacher for advanced learners (CEFR level C1).
 Create a LISTENING exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level C1.
+
+CEFR CONTEXT SCALING (C1 — MANDATORY): Since this is level C1, the situation should involve complex, abstract, or academic themes — for example: an academic lecture excerpt, a philosophical argument, an interview with an expert on a nuanced topic, or an analytical editorial. Language and context must be sophisticated and intellectually demanding. Avoid simple or everyday scenarios.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
 1. WORD COUNT RULE (MANDATORY): The "audio_texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
@@ -213,6 +235,10 @@ ${schemaPreguntas}
         prompt = `
 You are a specialist English teacher for proficiency/mastery learners (CEFR level C2).
 Create a LISTENING exercise strictly about the topic: "${tema}".
+
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level C2.
+
+CEFR CONTEXT SCALING (C2 — MANDATORY): Since this is level C2, the situation must be intellectually and philosophically challenging — for example: a philosophical debate, a literary critique, a cross-disciplinary academic discussion, or a nuanced analysis of a socio-political paradox. Expect near-native critical thinking and mastery. Never use simple or concrete everyday scenarios.
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it internally. DO NOT output any Spanish words.
@@ -251,13 +277,20 @@ Return ONLY valid JSON: { "tipo": "opcion_multiple", "audio_texto": "...", "preg
 
     } // end switch
 
-    const response = await openai.responses.create({
+    const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
-      instructions: `You are a teacher who only communicates in English and provides structured JSON. CRITICAL RULE: The "audio_texto" field in your JSON response MUST contain EXACTLY ${exactWordCount} words — no more, no less. Count the words meticulously before returning.`,
-      input: prompt
+      messages: [
+        {
+          role: "system",
+          content: `You are a teacher who only communicates in English and provides structured JSON. CRITICAL RULE: The "audio_texto" field in your JSON response MUST contain EXACTLY ${exactWordCount} words — no more, no less. Count the words meticulously before returning.`
+        },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.75,
+      response_format: { type: "json_object" }
     });
 
-    let contenido = response.output[0].content[0].text;
+    let contenido = response.choices[0].message.content;
     contenido = limpiarJSON(contenido);
 
     let ejercicio;

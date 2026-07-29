@@ -17,18 +17,15 @@ const AUTH_ERROR_MAP = {
 // Flujo: Firebase Auth → Firestore (uid sincronizado) → Grupo (arrayUnion)
 // =============================================================================
 exports.crearUsuario = async (req, res) => {
-  console.log("\n[DEBUG] Iniciando creación de usuario...");
   const { nombre, email, password, rol, nivel_general, grupo_id } = req.body;
 
   // ── Validaciones básicas ───────────────────────────────────────────────────
   if (!nombre || !email || !password || !rol) {
-    console.warn("[DEBUG] Faltan campos obligatorios en el body.");
     return res.status(400).json({
       error: "Los campos nombre, email, password y rol son obligatorios.",
     });
   }
   if (password.length < 6) {
-    console.warn("[DEBUG] La contraseña es demasiado corta.");
     return res.status(400).json({
       error: "La contraseña debe tener al menos 6 caracteres.",
     });
@@ -38,7 +35,6 @@ exports.crearUsuario = async (req, res) => {
 
   try {
     // ── PASO 1: Crear en Firebase Authentication ───────────────────────────
-    console.log(`[DEBUG] Intentando guardar en Auth con email: ${email}`);
     // Firebase Admin hashea la contraseña de forma nativa — no usamos bcrypt.
     userRecord = await admin.auth().createUser({
       email,
@@ -46,10 +42,7 @@ exports.crearUsuario = async (req, res) => {
       displayName: nombre,
     });
 
-    console.log(`[DEBUG] Éxito en Auth. UID generado: ${userRecord.uid}`);
-
     // ── PASO 2: Guardar en Firestore usando el uid como ID del documento ───
-    console.log(`[DEBUG] Intentando guardar en Firestore con el UID: ${userRecord.uid}`);
     // Se excluye explícitamente la contraseña — Firebase Auth la gestiona.
 
     // Obtener el siguiente id_num de forma atómica vía transacción
@@ -73,28 +66,19 @@ exports.crearUsuario = async (req, res) => {
 
     await db.collection("users").doc(userRecord.uid).set(docData);
 
-    console.log(`[DEBUG] Éxito en Firestore. Usuario guardado correctamente en la colección 'users'.`);
-
     // ── PASO 2.5: Asignar al grupo si viene grupo_id en el body ────────────
-    // REGRESIÓN RESTAURADA: lógica omitida durante la migración a Firebase Auth.
     if (grupo_id && typeof grupo_id === "string" && grupo_id.trim() !== "") {
-      console.log(`[DEBUG] grupo_id recibido: "${grupo_id}". Añadiendo uid al grupo...`);
       try {
-        console.log('[DEBUG] Intentando agregar al grupo:', grupo_id);
         await db.collection("grupos").doc(grupo_id.trim()).update({
           alumnos: FieldValue.arrayUnion(userRecord.uid),
         });
-        console.log(`[DEBUG] UID ${userRecord.uid} añadido al grupo "${grupo_id}" correctamente.`);
       } catch (grupoErr) {
         // No es un error fatal — el usuario ya fue creado; sólo logueamos la advertencia.
-        console.error('[DEBUG-ERROR] Falló asignación a grupo:', grupoErr);
+        console.error('Falló asignación a grupo:', grupoErr);
       }
-    } else {
-      console.log(`[DEBUG] Sin grupo_id en el body — el usuario no será asignado a ningún grupo.`);
     }
 
     // ── PASO 3: Registrar evento en Audit Trail (no bloqueante) ────────────
-    console.log(`[DEBUG] Registrando evento en Audit Trail...`);
     db.collection("eventos_sistema").add({
       tipo:        "USUARIO_CREADO",
       descripcion: `Nuevo usuario creado: ${nombre} (${email}) — Rol: ${rol}`,
@@ -103,7 +87,6 @@ exports.crearUsuario = async (req, res) => {
     }).catch((err) => console.error("[AUDIT] Error al registrar evento:", err));
 
     // ── Respuesta exitosa ──────────────────────────────────────────────────
-    console.log(`[DEBUG] Respondiendo al frontend con estado 201.`);
     res.status(201).json({
       mensaje:  "Usuario creado correctamente.",
       id:       userRecord.uid,
@@ -113,19 +96,14 @@ exports.crearUsuario = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("\n[DEBUG-ERROR] ❌ Ocurrió un error en el flujo de creación de usuario:");
-    console.error("[DEBUG-ERROR] Código de error:", err.code);
-    console.error("[DEBUG-ERROR] Mensaje original:", err.message);
-    console.error("[DEBUG-ERROR] Stacktrace completo:", err.stack);
+    console.error("Ocurrió un error en el flujo de creación de usuario:", err);
 
     // ── COMPENSACIÓN: si Firestore falló pero Auth ya fue creado, revertir ─
     if (userRecord) {
       try {
-        console.warn(`[DEBUG-WARNING] Iniciando rollback: eliminando cuenta huérfana de Auth para UID ${userRecord.uid}...`);
         await admin.auth().deleteUser(userRecord.uid);
-        console.warn(`[DEBUG-WARNING] Rollback exitoso.`);
       } catch (rollbackErr) {
-        console.error("[DEBUG-ERROR] ❌ Error CRÍTICO en rollback de Auth:", rollbackErr);
+        console.error("Error CRÍTICO en rollback de Auth:", rollbackErr);
       }
     }
 

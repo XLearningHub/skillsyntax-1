@@ -304,7 +304,7 @@ function renderVistaAlumnos() {
     const { ejercicios, usuarios } = _cache;
     const container = document.getElementById("vistaContainer");
 
-    // ── MEJORA 1: Padrón completo ──────────────────────────────────────────────
+    // ── Padrón completo ──────────────────────────────────────────────
     // Comenzar con TODOS los usuarios registrados (con total 0)
     /** @type {Map<string, {nombre:string, email:string, total:number}>} */
     const mapa = new Map();
@@ -343,7 +343,7 @@ function renderVistaAlumnos() {
 
     container.innerHTML = `
         <div class="card">
-            <!-- ── MEJORA 2: Buscador en tiempo real ──────────────────────── -->
+            <!-- ── Buscador en tiempo real ──────────────────────── -->
             <div class="search-wrapper">
                 <i class="fas fa-search search-icon"></i>
                 <input
@@ -410,7 +410,7 @@ function renderVistaAlumnos() {
 }
 
 /**
- * MEJORA 2: Filtra dinámicamente las filas de la tabla de alumnos.
+ * Filtra dinámicamente las filas de la tabla de alumnos.
  * @param {string} query - Texto escrito en el buscador.
  */
 function filtrarTablaAlumnos(query) {
@@ -446,7 +446,7 @@ function renderDetalleAlumno(uid) {
         { label: nombre,        vista: "alumno", id: uid },
     ]);
 
-    // ── MEJORA 3: Determinar el origen para el botón Regresar ─────────────────
+    // ── Determinar el origen para el botón Regresar ─────────────────
     // Si _origenDetalle fue establecido al navegar desde un grupo, lo usamos.
     // Caso contrario, regresamos a la lista de alumnos.
     const origenVista = _origenDetalle?.vista || "alumno";

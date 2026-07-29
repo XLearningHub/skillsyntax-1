@@ -15,6 +15,8 @@ exports.generarReading = async (req, res) => {
       .replace(/(generame|genera|quiero aprender|hazme|hacer|una) (leccion|lección|clase|ejercicio) (de|sobre)/gi, "")
       .trim();
 
+    // (selector dinámico eliminado — el tema lo controla el usuario)
+
     // ── LÓGICA DINÁMICA DE PREGUNTAS (calculada ANTES del switch) ──────
     let numPreguntas;
     switch (nivel) {
@@ -56,6 +58,10 @@ exports.generarReading = async (req, res) => {
 You are a specialist English teacher for complete beginners (CEFR level A1).
 Create a SHORT reading exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level A1.
+
+CEFR CONTEXT SCALING (A1 — MANDATORY): Since this is level A1, the situation MUST involve a very simple, familiar, everyday topic that a complete beginner would recognise immediately — for example: describing a home, ordering food, greeting someone, a basic shopping list, or a daily routine. Never use abstract concepts, professional jargon, or complex cultural references at this level.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
 1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
@@ -90,6 +96,10 @@ ${schemaPreguntas}
 You are a specialist English teacher for elementary learners (CEFR level A2).
 Create a SHORT reading exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level A2.
+
+CEFR CONTEXT SCALING (A2 — MANDATORY): Since this is level A2, the situation must be realistic and close to daily life — for example: sending a text to a friend, describing a place or recent event, talking about plans, or writing a simple note. Slightly more detail than A1 but still very concrete and accessible. Never use abstract or academic themes.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise (text, questions, options, etc.) MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it internally. DO NOT output any Spanish words.
 1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
@@ -123,6 +133,10 @@ ${schemaPreguntas}
 You are a specialist English teacher for intermediate learners (CEFR level B1).
 Create a READING exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level B1.
+
+CEFR CONTEXT SCALING (B1 — MANDATORY): Since this is level B1, the situation should involve opinions, past experiences, or interpersonal situations — for example: giving a review, recounting a travel anecdote, expressing a preference, describing a problem at work or school, or writing an informal complaint. Language can be more varied but context must remain relatable and grounded.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is in Spanish or has typos, translate it internally. NO Spanish output.
 1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
@@ -155,6 +169,10 @@ ${schemaPreguntas}
 You are a specialist English teacher for upper-intermediate learners (CEFR level B2).
 Create a READING exercise strictly about the topic: "${tema}".
 
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level B2.
+
+CEFR CONTEXT SCALING (B2 — MANDATORY): Since this is level B2, the situation should involve argumentation, analysis, or structured opinion — for example: debating a social or environmental issue, writing a semi-formal letter, analysing a trend, or evaluating a professional problem. The context can be professional or semi-academic. Avoid overly simple or overly abstract themes.
+
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
 1. WORD COUNT RULE (MANDATORY): The "texto" field MUST contain EXACTLY ${exactWordCount} words. Count every word carefully before returning. This is non-negotiable.
@@ -185,6 +203,10 @@ ${schemaPreguntas}
         prompt = `
 You are a specialist English teacher for advanced learners (CEFR level C1).
 Create a READING exercise strictly about the topic: "${tema}".
+
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level C1.
+
+CEFR CONTEXT SCALING (C1 — MANDATORY): Since this is level C1, the situation should involve complex, abstract, or academic themes — for example: analysing a philosophical concept, arguing a professional or ethical position, evaluating a policy or socio-cultural dilemma. Language and context must be sophisticated, nuanced, and intellectually demanding. Avoid simple or everyday scenarios.
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: Generate EVERYTHING in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it to English internally. DO NOT output any Spanish words.
@@ -217,6 +239,10 @@ ${schemaPreguntas}
         prompt = `
 You are a specialist English teacher for proficiency/mastery learners (CEFR level C2).
 Create a READING exercise strictly about the topic: "${tema}".
+
+CONTEXT VARIETY DIRECTIVE (MANDATORY): The core topic for this exercise is strictly "${tema}". You MUST write about this topic, but generate a UNIQUE and highly specific real-world situation, perspective, or format for this generation. For example, if the topic is "Food", do not write a generic text about food; instead, write a restaurant review, a conversation about a grocery list, or a chef's interview. Vary the angle wildly on each request, but keep the content 100% logical, realistic, and strictly appropriate for CEFR level C2.
+
+CEFR CONTEXT SCALING (C2 — MANDATORY): Since this is level C2, the situation must be intellectually challenging and philosophically nuanced — for example: a philosophical paradox, a rhetorical analysis, a cross-disciplinary academic debate, or a critique of a socio-political system. Expect near-native critical thinking and mastery of the language. Never use simple or concrete everyday scenarios.
 
 ABSOLUTE RULES — follow every rule without exception:
 0. STRICT LANGUAGE RULE: The ENTIRE exercise MUST be generated in ENGLISH. If the topic '${tema}' is written in Spanish or has typos, translate it internally. DO NOT output any Spanish words.
@@ -266,7 +292,7 @@ Return ONLY valid JSON: { "tipo": "reading", "nivel": "${nivel}", "tema": "${tem
         },
         { role: "user", content: prompt }
       ],
-      temperature: 0.5,
+      temperature: 0.75,
       response_format: { type: "json_object" }
     });
 
