@@ -165,11 +165,11 @@
         <div class="subtitle">Continúa tu aprendizaje</div>
 
         <div class="input-group">
-          <input id="email" type="email" placeholder="Correo">
+          <input id="email" type="email" placeholder="Correo" autocomplete="email">
         </div>
 
         <div class="input-group">
-          <input id="password" type="password" placeholder="Contraseña">
+          <input id="password" type="password" placeholder="Contraseña" autocomplete="current-password">
         </div>
 
         <button onclick="login()">Entrar</button>
@@ -210,7 +210,7 @@
   <!-- Firebase Client SDK v9 (CDN módulos — no requiere empaquetador) -->
   <script type="module">
     import { initializeApp }             from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey:            "AIzaSyCglctEjMo6G6lE264KG878-7BtyiqhEMM",
@@ -234,32 +234,50 @@
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       return userCredential.user;
     };
+
+    // Exponer función para cerrar sesión Firebase
+    window._firebaseSignOut = () => signOut(auth);
   </script>
 
   <script>
 
+    // ── Protección BFCache: limpiar inputs al navegar con 'Atrás' ─────────────
+    window.addEventListener('pageshow', function(e) {
+      if (e.persisted) {
+        document.getElementById('email').value    = '';
+        document.getElementById('password').value = '';
+      }
+    });
+
     // ── Al cargar la página ───────────────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", () => {
 
-      // 1. Si ya hay sesión activa, redirigir directamente al dashboard
-      const sesionActiva = JSON.parse(localStorage.getItem("usuario"));
-      if (sesionActiva && sesionActiva.id) {
-        window.location.href = sesionActiva.rol === "admin"
-          ? "/admin/dashboard.html"
-          : "/test.html";
-        return;
-      }
-
-      // 2. Limpiar sesión vieja y los inputs (evita datos residuales al pulsar 'Atrás')
-      localStorage.removeItem("usuario");
-      localStorage.removeItem("usuario_id");
-      localStorage.removeItem("token");
+      // ── Limpiar inputs de forma inmediata (anti-BFCache residual) ──
       ["email", "password", "emailRecuperar"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = "";
       });
 
-      // 3. Soporte de tecla Enter en los campos de login
+      // ── Auth Guard: Auto-Logout si hay sesión activa ──────────────────────────
+      // Si el usuario llegó aquí (via 'Atrás' u otra navegación) y tiene sesión,
+      // interpretamos que desea cambiar de cuenta → cerrar sesión silenciosamente.
+      const sesionActiva = localStorage.getItem("usuario");
+      if (sesionActiva) {
+        // 1. Cerrar sesión en Firebase Auth (async, no bloqueante)
+        if (typeof window._firebaseSignOut === 'function') {
+          window._firebaseSignOut().catch(() => {}); // silenciar errores de red
+        }
+        // 2. Limpiar todo el estado de sesión local
+        localStorage.removeItem("usuario");
+        localStorage.removeItem("usuario_id");
+        localStorage.removeItem("token");
+        localStorage.removeItem("session_start");
+        // 3. Limpiar campos visualmente (ya hecho arriba, refuerzo defensivo)
+        document.getElementById('email').value    = '';
+        document.getElementById('password').value = '';
+      }
+
+      // ── Soporte de tecla Enter en los campos de login ─────────────────────────
       ["email", "password"].forEach(id => {
         const input = document.getElementById(id);
         if (input) {
@@ -310,6 +328,8 @@
         localStorage.setItem("usuario", JSON.stringify(data));
         localStorage.setItem("usuario_id", data.id);
         if (data.token) localStorage.setItem("token", data.token);
+        // ✅ Registrar timestamp de inicio de sesión (para expiración de 12h)
+        localStorage.setItem("session_start", Date.now());
 
         msg.innerText = "Bienvenido";
         msg.style.color = "green";

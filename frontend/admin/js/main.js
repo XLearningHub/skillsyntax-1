@@ -1,6 +1,37 @@
 // js/main.js
 
+// ── Control de expiración de sesión (12 horas) ──────────────────────────────
+const SESSION_LIMIT = 43200000; // 12 horas en milisegundos
+
+/**
+ * Verifica si la sesión ha superado las 12 horas.
+ * Si expiró, limpia el localStorage y redirige al login.
+ * @returns {boolean} true si la sesión es válida, false si expiró o no existe.
+ */
+function checkSessionExpiry() {
+    const usuario      = JSON.parse(localStorage.getItem('usuario'));
+    const sessionStart = parseInt(localStorage.getItem('session_start'), 10);
+
+    if (!usuario || !usuario.id) {
+        // Sin sesión → redirigir al login
+        window.location.href = '/login.html';
+        return false;
+    }
+
+    if (!sessionStart || (Date.now() - sessionStart > SESSION_LIMIT)) {
+        // Sesión expirada o sin timestamp
+        console.warn('[Auth] Sesión expirada. Redirigiendo al login...');
+        localStorage.clear();
+        window.location.href = '/login.html';
+        return false;
+    }
+
+    return true; // Sesión vigente
+}
+
 function inyectarMenu() {
+    // Verificar sesión antes de renderizar el menú
+    if (!checkSessionExpiry()) return;
     const sidebarContainer = document.getElementById('sidebar-container');
     if (!sidebarContainer) return;
 
@@ -80,8 +111,11 @@ function inyectarMenu() {
 
 function logout() {
     console.log("Cerrando sesión...");
-    localStorage.clear();
-    window.location.href = "/";
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('usuario_id');
+    localStorage.removeItem('token');
+    localStorage.removeItem('session_start');  // ✅ Limpiar timestamp de sesión
+    window.location.href = "/login.html";
 }
 
 // Ejecutar al cargar

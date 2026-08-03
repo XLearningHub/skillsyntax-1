@@ -342,9 +342,22 @@ window.addEventListener("storage", (e) => {
 });
 
 async function cargarUsuario(){
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  const usuario      = JSON.parse(localStorage.getItem("usuario"));
+  const sessionStart = parseInt(localStorage.getItem("session_start"), 10);
+  const SESSION_LIMIT = 43200000; // 12 horas en ms
 
   if (!usuario) {
+    window.location.href = "/login.html";
+    return;
+  }
+
+  // ✅ Verificar expiración de sesión de 12 horas
+  if (!sessionStart || (Date.now() - sessionStart > SESSION_LIMIT)) {
+    console.warn('[Auth] Sesión expirada. Redirigiendo al login...');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('usuario_id');
+    localStorage.removeItem('token');
+    localStorage.removeItem('session_start');
     window.location.href = "/login.html";
     return;
   }
@@ -378,10 +391,23 @@ async function cargarUsuario(){
 
 
 document.addEventListener("DOMContentLoaded", () => {
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-  const usuarioId = usuario?.id;
+  const usuario      = JSON.parse(localStorage.getItem("usuario"));
+  const usuarioId    = usuario?.id;
+  const sessionStart = parseInt(localStorage.getItem("session_start"), 10);
+  const SESSION_LIMIT = 43200000; // 12 horas en ms
 
   if (!usuarioId) {
+    window.location.href = "/login.html";
+    return;
+  }
+
+  // ✅ Verificar expiración de sesión de 12 horas
+  if (!sessionStart || (Date.now() - sessionStart > SESSION_LIMIT)) {
+    console.warn('[Auth] Sesión expirada. Redirigiendo al login...');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('usuario_id');
+    localStorage.removeItem('token');
+    localStorage.removeItem('session_start');
     window.location.href = "/login.html";
     return;
   }
