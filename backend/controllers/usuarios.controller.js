@@ -176,7 +176,6 @@ exports.actualizarUsuario = async (req, res) => {
 
     if (Object.keys(authUpdate).length > 0) {
       await admin.auth().updateUser(id, authUpdate);
-      console.log(`[USUARIOS] Auth actualizado para ${id}`);
     }
 
     // ── Actualizar Firestore ───────────────────────────────────────────────
@@ -207,8 +206,6 @@ exports.actualizarUsuario = async (req, res) => {
 exports.eliminarUsuario = async (req, res) => {
   const { id: uid } = req.params;
 
-  console.log(`\n[CASCADE-DELETE] Iniciando borrado en cascada para UID: ${uid}`);
-
   // ── Utilidad: ejecuta un array de refs en batches de 500 ops ───────────────
   async function deletarEnBatches(docRefs) {
     const BATCH_LIMIT = 500;
@@ -217,13 +214,11 @@ exports.eliminarUsuario = async (req, res) => {
       const batch = db.batch();
       chunk.forEach((ref) => batch.delete(ref));
       await batch.commit();
-      console.log(`[CASCADE-DELETE] Batch ejecutado: ${chunk.length} documentos eliminados.`);
     }
   }
 
   try {
     // ── PASO 1: Obtener todas las sesiones del usuario ─────────────────────
-    console.log(`[CASCADE-DELETE] 1/5 → Buscando sesiones de usuario_id: ${uid}...`);
     const sesionesSnap = await db
       .collection("sesiones")
       .where("usuario_id", "==", uid)
@@ -237,11 +232,8 @@ exports.eliminarUsuario = async (req, res) => {
       sesionRefs.push(doc.ref);
     });
 
-    console.log(`[CASCADE-DELETE]   → ${sesionIds.length} sesión(es) encontrada(s).`);
-
     // ── PASO 2: Obtener y eliminar resultados ligados a esas sesiones ──────
     if (sesionIds.length > 0) {
-      console.log(`[CASCADE-DELETE] 2/5 → Buscando resultados vinculados...`);
       const resultadosRefs = [];
       const CHUNK = 30; // límite de Firestore para operador 'in'
 
@@ -254,24 +246,15 @@ exports.eliminarUsuario = async (req, res) => {
         snap.forEach((doc) => resultadosRefs.push(doc.ref));
       }
 
-      console.log(`[CASCADE-DELETE]   → ${resultadosRefs.length} resultado(s) encontrado(s).`);
-
       if (resultadosRefs.length > 0) {
         await deletarEnBatches(resultadosRefs);
-        console.log(`[CASCADE-DELETE]   ✓ Resultados eliminados.`);
       }
 
       // ── PASO 3: Eliminar las sesiones ─────────────────────────────────────
-      console.log(`[CASCADE-DELETE] 3/5 → Eliminando sesiones...`);
       await deletarEnBatches(sesionRefs);
-      console.log(`[CASCADE-DELETE]   ✓ Sesiones eliminadas.`);
-    } else {
-      console.log(`[CASCADE-DELETE] 2/5 → Sin resultados que eliminar (no hay sesiones).`);
-      console.log(`[CASCADE-DELETE] 3/5 → Sin sesiones que eliminar.`);
     }
 
     // ── PASO 3: Eliminar eventos_sistema del usuario ───────────────────────
-    console.log(`[CASCADE-DELETE] 3/6 → Buscando eventos_sistema de usuarioId: ${uid}...`);
     const eventosSnap = await db
       .collection("eventos_sistema")
       .where("usuarioId", "==", uid)
@@ -279,22 +262,17 @@ exports.eliminarUsuario = async (req, res) => {
 
     const eventosRefs = [];
     eventosSnap.forEach((doc) => eventosRefs.push(doc.ref));
-    console.log(`[CASCADE-DELETE]   → ${eventosRefs.length} evento(s) encontrado(s).`);
 
     if (eventosRefs.length > 0) {
       await deletarEnBatches(eventosRefs);
-      console.log(`[CASCADE-DELETE]   ✓ Eventos del sistema eliminados.`);
     }
 
     // ── PASO 4: Remover uid del array 'alumnos' en todos los grupos ────────
     // Usamos arrayRemove para no eliminar el grupo, sólo desasignar al alumno.
-    console.log(`[CASCADE-DELETE] 4/6 → Buscando grupos que contengan al alumno ${uid}...`);
     const gruposSnap = await db
       .collection("grupos")
       .where("alumnos", "array-contains", uid)
       .get();
-
-    console.log(`[CASCADE-DELETE]   → ${gruposSnap.size} grupo(s) encontrado(s).`);
 
     if (!gruposSnap.empty) {
       const BATCH_LIMIT = 500;
@@ -306,23 +284,16 @@ exports.eliminarUsuario = async (req, res) => {
         const batch = db.batch();
         chunk.forEach((doc) => batch.update(doc.ref, { alumnos: arrayRemove }));
         await batch.commit();
-        console.log(`[CASCADE-DELETE]   Batch grupos: ${chunk.length} grupo(s) actualizados.`);
       }
-
-      console.log(`[CASCADE-DELETE]   ✓ Alumno removido de ${gruposSnap.size} grupo(s).`);
     }
 
     // ── PASO 5: Eliminar documento del usuario en Firestore ────────────────
-    console.log(`[CASCADE-DELETE] 5/6 → Eliminando documento users/${uid} en Firestore...`);
     await db.collection("users").doc(uid).delete();
-    console.log(`[CASCADE-DELETE]   ✓ Documento Firestore eliminado.`);
 
     // ── PASO 6: Eliminar cuenta en Firebase Auth ───────────────────────────
     // Try/catch anidado para tolerar usuarios legacy que no existen en Auth.
-    console.log(`[CASCADE-DELETE] 6/6 → Eliminando cuenta de Firebase Auth...`);
     try {
       await admin.auth().deleteUser(uid);
-      console.log(`[CASCADE-DELETE]   ✓ Cuenta de Auth eliminada.`);
     } catch (authErr) {
       if (authErr.code === "auth/user-not-found") {
         console.warn(`[CASCADE-DELETE] El usuario no existía en Auth. Omitiendo...`);
@@ -340,8 +311,6 @@ exports.eliminarUsuario = async (req, res) => {
       usuarioId:   uid,
       fecha:       new Date().toISOString(),
     }).catch((err) => console.error("[AUDIT] Error al registrar evento de eliminación:", err));
-
-    console.log(`[CASCADE-DELETE] ✅ Borrado en cascada completado para UID: ${uid}\n`);
 
     res.json({
       mensaje: "Usuario y todos sus datos asociados eliminados correctamente.",

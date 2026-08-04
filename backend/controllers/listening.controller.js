@@ -27,7 +27,6 @@ exports.generarListening = async (req, res) => {
       return res.status(400).json({ error: "Faltan datos" });
     }
 
-    // (selector dinámico eliminado — el tema lo controla el usuario)
 
     // ── LÓGICA DINÁMICA DE PREGUNTAS (calculada ANTES del switch) ──────
     let numPreguntas;
@@ -307,14 +306,12 @@ try {
     ejercicio.nivel = nivel;
 
     // GENERAR AUDIO
-    // GENERAR AUDIO
 const audioResponse = await openai.audio.speech.create({
   model: "gpt-4o-mini-tts",
   voice: "alloy",
   input: ejercicio.audio_texto
 });
 
-// 🔥 ASEGURAR CARPETA
 const dir = path.join(__dirname, "../public/audio");
 
 if (!fs.existsSync(dir)) {
@@ -328,8 +325,6 @@ const buffer = Buffer.from(await audioResponse.arrayBuffer());
 
 fs.writeFileSync(filePath, buffer);
 
-// 👇 opcional pero recomendado para debug
-console.log("Audio guardado en:", filePath);
 
     // URL relativa — funciona en local y producción sin cambios
     ejercicio.audio_url = `/audio/${fileName}`;

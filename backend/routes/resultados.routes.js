@@ -102,19 +102,16 @@ router.get("/reporte-usuarios", async (req, res) => {
     const resultadosSnap = await db.collection("resultados").get();
     let resultados = resultadosSnap.docs.map((d) => d.data());
 
-    console.log(`[reporte-usuarios] Total en Firestore: ${resultados.length}`);
 
     // ── Histórico: sin ?dias o ?dias=all → devolver TODO sin tocar fechas
     const diasRaw = req.query.dias;
     if (!diasRaw || diasRaw === "all") {
-      console.log("[reporte-usuarios] Modo histórico: sin filtro de fecha");
     } else {
       // ── Filtro 7 / 30 días: parseo ISO directo
       const dias = parseInt(diasRaw, 10);
       const fechaMinima = new Date();
       fechaMinima.setDate(fechaMinima.getDate() - dias);
       fechaMinima.setHours(0, 0, 0, 0);
-      console.log(`[reporte-usuarios] Filtrando últimos ${dias} días desde: ${fechaMinima.toISOString()}`);
 
       const antes = resultados.length;
       resultados = resultados.filter((r) => {
@@ -122,7 +119,6 @@ router.get("/reporte-usuarios", async (req, res) => {
         const fechaRegistro = new Date(r.fecha);           // ISO string → Date
         return fechaRegistro.getTime() >= fechaMinima.getTime();
       });
-      console.log(`[reporte-usuarios] Tras filtro: ${resultados.length} de ${antes}`);
     }
 
     // ── Agrupación por usuario (enriquecida con sesiones → users)
@@ -152,7 +148,6 @@ router.get("/reporte-usuarios", async (req, res) => {
     });
 
     const rows = Object.entries(conteo).map(([usuario, total]) => ({ usuario, total }));
-    console.log(`[reporte-usuarios] Filas devueltas: ${rows.length}`);
     res.json(rows);
 
   } catch (error) {
@@ -165,21 +160,18 @@ router.get("/reporte-usuarios", async (req, res) => {
 router.get("/reporte-habilidades", async (req, res) => {
   try {
     const snapshot = await db.collection("resultados").get();
-    console.log(`[reporte-habilidades] Total en Firestore: ${snapshot.size}`);
 
     // ── Histórico: sin ?dias o ?dias=all → devolver TODO sin tocar fechas
     const diasRaw = req.query.dias;
     let fechaMinima = null;
 
     if (!diasRaw || diasRaw === "all") {
-      console.log("[reporte-habilidades] Modo histórico: sin filtro de fecha");
     } else {
       // ── Filtro 7 / 30 días: parseo ISO directo
       const dias = parseInt(diasRaw, 10);
       fechaMinima = new Date();
       fechaMinima.setDate(fechaMinima.getDate() - dias);
       fechaMinima.setHours(0, 0, 0, 0);
-      console.log(`[reporte-habilidades] Filtrando últimos ${dias} días desde: ${fechaMinima.toISOString()}`);
     }
 
     const conteo = {};
@@ -197,7 +189,6 @@ router.get("/reporte-habilidades", async (req, res) => {
     });
 
     const rows = Object.entries(conteo).map(([habilidad, total]) => ({ habilidad, total }));
-    console.log(`[reporte-habilidades] Filas devueltas: ${rows.length}`);
     res.json(rows);
 
   } catch (error) {
@@ -246,7 +237,6 @@ router.get("/reporte-grupal-usuarios", async (req, res) => {
   const { grupoId, dias: diasRaw } = req.query;
 
   try {
-    console.log(`[reporte-grupal-usuarios] grupoId=${grupoId} dias=${diasRaw}`);
 
     // 1. Alumnos del grupo
     const alumnoIds = await obtenerAlumnosDeGrupo(grupoId);
@@ -297,7 +287,6 @@ router.get("/reporte-grupal-usuarios", async (req, res) => {
     });
 
     const rows = Object.entries(conteo).map(([usuario, total]) => ({ usuario, total }));
-    console.log(`[reporte-grupal-usuarios] Filas: ${rows.length}`);
     res.json(rows);
 
   } catch (error) {
@@ -311,7 +300,6 @@ router.get("/reporte-grupal-habilidades", async (req, res) => {
   const { grupoId, dias: diasRaw } = req.query;
 
   try {
-    console.log(`[reporte-grupal-habilidades] grupoId=${grupoId} dias=${diasRaw}`);
 
     // 1. Alumnos del grupo
     const alumnoIds = await obtenerAlumnosDeGrupo(grupoId);
@@ -352,7 +340,6 @@ router.get("/reporte-grupal-habilidades", async (req, res) => {
     });
 
     const rows = Object.entries(conteo).map(([habilidad, total]) => ({ habilidad, total }));
-    console.log(`[reporte-grupal-habilidades] Filas: ${rows.length}`);
     res.json(rows);
 
   } catch (error) {
@@ -370,7 +357,6 @@ router.get("/reporte-general-grupos", async (req, res) => {
   const { dias: diasRaw } = req.query;
 
   try {
-    console.log(`[reporte-general-grupos] dias=${diasRaw}`);
     const chunkSize = 30;
 
     // 1. Obtener todos los grupos con sus alumnos
@@ -455,7 +441,6 @@ router.get("/reporte-general-grupos", async (req, res) => {
     // Ordenar por promedio desc para visualización más clara
     filas.sort((a, b) => b.promedioGeneral - a.promedioGeneral);
 
-    console.log(`[reporte-general-grupos] Grupos devueltos: ${filas.length}`);
     res.json(filas);
 
   } catch (error) {

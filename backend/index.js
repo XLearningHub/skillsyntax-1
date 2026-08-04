@@ -48,28 +48,11 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/grupos", gruposRoutes);
 app.use("/api/perfil", perfilRoutes);
 
-// REGISTRO DE USUARIO (Firestore) — DESACTIVADO
-// Esta ruta "fantasma" escribía solo en Firestore y evadía Firebase Auth.
-// El flujo correcto ahora está en: POST /api/usuarios (usuarios.controller.js)
-/*
-app.post("/guardar_usuario", async (req, res) => {
-  // ... código antiguo comentado por seguridad
-});
-*/
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/login.html"));
 });
 
-// RUTAS HTML
-/*app.get("/", (req, res) =>
-  res.sendFile(path.join(__dirname, "../frontend/login.html"))
-);
-
-app.get("/test", (req, res) =>
-  res.sendFile(path.join(__dirname, "../frontend/test.html"))
-);
-*/
 // SERVIDOR
 const PORT = process.env.PORT || 3000;
 

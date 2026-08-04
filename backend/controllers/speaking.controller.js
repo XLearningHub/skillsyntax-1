@@ -15,7 +15,6 @@ exports.generarSpeaking = async (req, res) => {
       return res.status(400).json({ error: "Faltan datos" });
     }
 
-    // (selector dinámico eliminado — el tema lo controla el usuario)
 
     // ── SWITCH DE NIVEL: cada nivel puede tener su propio super-prompt ──
     let prompt;
@@ -273,10 +272,9 @@ Return ONLY valid JSON: { "titulo": "...", "escenario": "...", "objetivo": "..."
     let contenido = response.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
     let speaking = JSON.parse(contenido);
     
-    // Mantenemos compatibilidad con tu frontend actual
     speaking.nivel = nivel;
-    speaking.instruccion = speaking.objetivo; // El objetivo será la instrucción
-    speaking.fluency = speaking.escenario;    // El escenario será el texto principal
+    speaking.instruccion = speaking.objetivo;
+    speaking.fluency = speaking.escenario;
 
     res.json(speaking);
 

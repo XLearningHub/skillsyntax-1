@@ -7,7 +7,6 @@ const jwt = require("jsonwebtoken");
 exports.login = async (req, res) => {
   const { uid, email } = req.body;
 
-  console.log("[LOGIN] Solicitud de sesión para:", email || uid);
 
   if (!email && !uid) {
     return res.status(400).json({ error: "Faltan datos de autenticación del cliente" });
@@ -33,7 +32,6 @@ exports.login = async (req, res) => {
     const userDoc = snapshot.docs[0];
     const user = { id: userDoc.id, ...userDoc.data() };
 
-    console.log("[LOGIN] Usuario encontrado en Firestore. ID:", user.id, "| Rol:", user.rol);
 
     // 3. Generar JWT
     const secret = process.env.JWT_SECRET;
@@ -48,7 +46,6 @@ exports.login = async (req, res) => {
       { expiresIn: "8h" }
     );
 
-    console.log("[LOGIN] Login exitoso para:", email);
 
     // 6. Registrar el evento de login en el Audit Trail (no bloqueante)
     db.collection("eventos_sistema").add({
@@ -79,108 +76,11 @@ exports.login = async (req, res) => {
 
 // ======================
 // FORGOT PASSWORD — DESACTIVADO
-// El correo de recuperación ahora lo envía Firebase Auth directamente
+// El correo de recuperación lo envía Firebase Auth directamente
 // desde el frontend con sendPasswordResetEmail(). No se necesita Nodemailer.
 // ======================
-/*
-exports.forgotPassword = async (req, res) => {
-  const { email } = req.body;
-
-  try {
-    const snapshot = await db
-      .collection("users")
-      .where("email", "==", email)
-      .limit(1)
-      .get();
-
-    if (snapshot.empty) {
-      return res.json({ msg: "Si el correo existe, recibirás un enlace." });
-    }
-
-    const userDoc = snapshot.docs[0];
-    const user = { id: userDoc.id, ...userDoc.data() };
-
-    const token = crypto.randomBytes(32).toString("hex");
-    const expira = new Date(Date.now() + 60 * 60 * 1000);
-
-    await db.collection("users").doc(user.id).update({
-      reset_token: token,
-      reset_expira: expira.toISOString(),
-    });
-
-    const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
-    const link = `${appUrl}/pages/reset-password.html?token=${token}`;
-
-    const nodemailer = require("nodemailer");
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: '"SkillSyntax" <no-reply@skillsyntax.com>',
-      to: email,
-      subject: "Recuperar contraseña",
-      html: `
-        <h3>Recuperar contraseña</h3>
-        <p>Haz clic en el siguiente enlace:</p>
-        <a href="${link}">${link}</a>
-      `,
-    });
-
-    res.json({ msg: "Revisa tu correo para continuar." });
-
-  } catch (error) {
-    console.error("Error forgotPassword:", error);
-    res.status(500).json({ error: "Error en el servidor" });
-  }
-};
-*/
 
 // ======================
 // RESET PASSWORD — DESACTIVADO
 // Firebase Auth gestiona el flujo de reset de contraseña de forma nativa.
-// ======================
-/*
-exports.resetPassword = async (req, res) => {
-  const { token, password } = req.body;
-
-  try {
-    const ahora = new Date().toISOString();
-
-    const snapshot = await db
-      .collection("users")
-      .where("reset_token", "==", token)
-      .limit(1)
-      .get();
-
-    if (snapshot.empty) {
-      return res.status(400).json({ error: "Token inválido o expirado" });
-    }
-
-    const userDoc = snapshot.docs[0];
-    const user = userDoc.data();
-
-    if (!user.reset_expira || user.reset_expira < ahora) {
-      return res.status(400).json({ error: "Token inválido o expirado" });
-    }
-
-    const hash = await bcrypt.hash(password, 10);
-
-    await db.collection("users").doc(userDoc.id).update({
-      password: hash,
-      reset_token: null,
-      reset_expira: null,
-    });
-
-    res.json({ msg: "Contraseña actualizada correctamente" });
-
-  } catch (error) {
-    console.error("Error resetPassword:", error);
-    res.status(500).json({ error: "Error al actualizar contraseña" });
-  }
-};
-*/
+// ======================

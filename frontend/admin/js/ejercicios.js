@@ -211,7 +211,17 @@ function _getScoreClass(score) {
 }
 
 // ── VISTA: TODOS ───────────────────────────────────────────────────────────────
-function renderVistaTodos() {
+
+/** Página activa en la vista 'Todos' (0-indexed internamente, 1-indexed en UI) */
+let _paginaTodos = 0;
+const TODOS_POR_PAGINA = 20;
+
+/**
+ * Renderiza la tabla de la vista "Todos" con paginación client-side.
+ * Llama a _renderPaginacionTodos() para inyectar los controles al final.
+ * @param {number} [pagina=0] - Índice de página a mostrar (0-indexed).
+ */
+function renderVistaTodos(pagina = 0) {
     _mostrarBreadcrumb(null);
 
     const { ejercicios } = _cache;
@@ -228,6 +238,25 @@ function renderVistaTodos() {
         return;
     }
 
+    // Ordenar por 'fecha' DESC
+    const ejerciciosOrdenados = [...ejercicios].sort((a, b) => {
+        const fa = a.fecha || "";
+        const fb = b.fecha || "";
+        if (!fa && !fb) return 0;
+        if (!fa) return  1;  // sin fecha → al final
+        if (!fb) return -1;
+        return new Date(b.fecha) - new Date(a.fecha); // DESC: más reciente arriba
+    });
+
+    const totalPaginas  = Math.ceil(ejerciciosOrdenados.length / TODOS_POR_PAGINA);
+    // Guardar la página activa en estado del módulo
+    _paginaTodos = Math.max(0, Math.min(pagina, totalPaginas - 1));
+
+    // Extraer el bloque de esta página con slice()
+    const inicio = _paginaTodos * TODOS_POR_PAGINA;
+    const fin    = inicio + TODOS_POR_PAGINA;
+    const paginaEjercicios = ejerciciosOrdenados.slice(inicio, fin);
+
     container.innerHTML = `
         <div class="card">
             <table>
@@ -243,27 +272,17 @@ function renderVistaTodos() {
                 </thead>
                 <tbody id="tbodyTodos"></tbody>
             </table>
+            <div id="paginacionTodos"></div>
         </div>`;
 
     const tbody = document.getElementById("tbodyTodos");
-    const { usuarios } = _cache;
 
-    // Ordenar por 'fecha' DESC — campo confirmado en resultados.routes.js
-    // El backend ya envía 'fecha' (ISO string) en cada resultado enriquecido.
-    const ejerciciosOrdenados = [...ejercicios].sort((a, b) => {
-        const fa = a.fecha || "";
-        const fb = b.fecha || "";
-        if (!fa && !fb) return 0;
-        if (!fa) return  1;  // sin fecha → al final
-        if (!fb) return -1;
-        return new Date(b.fecha) - new Date(a.fecha); // DESC: más reciente arriba
-    });
-
-    ejerciciosOrdenados.forEach(e => {
-        const inicial = (e.usuario || "?").charAt(0).toUpperCase();
-        const hab     = e.habilidad || "—";
-        const habCls  = _getHabilidadClass(hab);
-        const scoreCls = _getScoreClass(e.puntaje);
+    paginaEjercicios.forEach((e, relIdx) => {
+        const numGlobal = inicio + relIdx + 1;  // número secuencial global
+        const inicial   = (e.usuario || "?").charAt(0).toUpperCase();
+        const hab       = e.habilidad || "—";
+        const habCls    = _getHabilidadClass(hab);
+        const scoreCls  = _getScoreClass(e.puntaje);
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -271,10 +290,10 @@ function renderVistaTodos() {
             <td class="texto-largo-wrap" style="max-width: 150px; white-space: normal; word-break: break-word;">
                 <div class="user-chip">
                     <div class="avatar">${inicial}</div>
-                    <div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-start;">
                         <div class="user-info-name">${escapeHtml(e.usuario || "Desconocido")}</div>
                         ${e.usuarioId
-                            ? `<button class="btn-link" style="font-size:0.75rem; font-weight:500; color:var(--text-dim);"
+                            ? `<button class="btn-link" style="font-size:0.75rem; font-weight:500; color:var(--text-dim); text-align:left;"
                                   onclick="navegar('alumno','${escapeHtml(e.usuarioId)}')">
                                     Ver todos sus ejercicios
                                </button>`
@@ -292,6 +311,77 @@ function renderVistaTodos() {
             </td>`;
         tbody.appendChild(tr);
     });
+
+    // Inyectar controles de paginación
+    _renderPaginacionTodos(totalPaginas, ejerciciosOrdenados.length);
+}
+
+/**
+ * Genera e inyecta los controles de navegación al estilo Google debajo de la tabla.
+ * Muestra: ← Anterior  [1] [2] … [N]  Siguiente →
+ * @param {number} totalPaginas  - Número total de páginas.
+ * @param {number} totalItems    - Número total de ejercicios (para el contador).
+ */
+function _renderPaginacionTodos(totalPaginas, totalItems) {
+    const contenedor = document.getElementById("paginacionTodos");
+    if (!contenedor || totalPaginas <= 1) {
+        if (contenedor) contenedor.innerHTML = "";
+        return;
+    }
+
+    const paginaActual = _paginaTodos;
+
+    // Construir la lista de números de página a mostrar (ventana de 5 alrededor de la activa)
+    const VENTANA = 2; // páginas a cada lado de la activa
+    let paginas = [];
+    for (let i = 0; i < totalPaginas; i++) {
+        if (
+            i === 0 ||                          // primera siempre
+            i === totalPaginas - 1 ||           // última siempre
+            Math.abs(i - paginaActual) <= VENTANA // ventana alrededor de la activa
+        ) {
+            paginas.push(i);
+        }
+    }
+
+    // Insertar '…' donde haya saltos
+    let botonesHTML = "";
+    let anterior = -1;
+    paginas.forEach(p => {
+        if (anterior !== -1 && p - anterior > 1) {
+            botonesHTML += `<span class="pag-ellipsis">…</span>`;
+        }
+        const esActiva = p === paginaActual;
+        botonesHTML += `<button
+            class="pag-btn${esActiva ? ' pag-activa' : ''}"
+            onclick="renderVistaTodos(${p})"
+            aria-label="Ir a página ${p + 1}"
+            ${esActiva ? 'aria-current="page" disabled' : ''}>
+            ${p + 1}
+        </button>`;
+        anterior = p;
+    });
+
+    const inicio    = paginaActual * TODOS_POR_PAGINA + 1;
+    const fin       = Math.min((paginaActual + 1) * TODOS_POR_PAGINA, totalItems);
+    const esPrimera = paginaActual === 0;
+    const esUltima  = paginaActual === totalPaginas - 1;
+
+    contenedor.innerHTML = `
+        <div class="paginacion-wrapper">
+            <span class="pag-info">Mostrando ${inicio}–${fin} de ${totalItems} ejercicios</span>
+            <div class="pag-controles">
+                <button class="pag-btn pag-nav" onclick="renderVistaTodos(${paginaActual - 1})"
+                    ${esPrimera ? 'disabled' : ''} aria-label="Página anterior">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                ${botonesHTML}
+                <button class="pag-btn pag-nav" onclick="renderVistaTodos(${paginaActual + 1})"
+                    ${esUltima ? 'disabled' : ''} aria-label="Página siguiente">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>`;
 }
 
 // ── VISTA: LISTA DE ALUMNOS ────────────────────────────────────────────────────

@@ -21,7 +21,6 @@ router.put("/avatar", async (req, res) => {
 
   try {
     await db.collection("users").doc(usuarioId).update({ avatar });
-    console.log(`[PERFIL] Avatar actualizado para ${usuarioId}: ${avatar}`);
     res.json({ mensaje: "Avatar actualizado correctamente." });
   } catch (err) {
     console.error("[PERFIL] Error al actualizar avatar:", err);
@@ -54,7 +53,6 @@ router.put("/password", async (req, res) => {
       password: nuevaPassword
     });
 
-    console.log(`[PERFIL] Contraseña actualizada en Firebase Auth para usuario ${usuarioId}`);
     res.json({ mensaje: "Contraseña actualizada correctamente." });
 
   } catch (err) {

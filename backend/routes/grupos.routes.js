@@ -52,7 +52,6 @@ router.post("/", async (req, res) => {
       id_num,   // ← ID numérico secuencial para mostrar en el frontend
     });
 
-    console.log("[GRUPOS] Grupo creado con ID:", docRef.id);
 
     // Registrar evento en el Audit Trail (no bloqueante)
     db.collection("eventos_sistema").add({
@@ -123,7 +122,6 @@ router.put("/:id", async (req, res) => {
 
     await docRef.update({ nombre: nombre.trim() });
 
-    console.log(`[GRUPOS] Nombre actualizado en grupo ${id}:`, nombre.trim());
 
     res.json({ success: true, mensaje: "Grupo actualizado correctamente." });
   } catch (err) {
@@ -152,7 +150,6 @@ router.put("/:id/alumnos", async (req, res) => {
 
     await docRef.update({ alumnos });
 
-    console.log(`[GRUPOS] Alumnos actualizados en grupo ${id}:`, alumnos.length, "alumno(s)");
 
     res.json({
       success: true,

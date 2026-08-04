@@ -25,7 +25,6 @@ exports.generarWriting = async (req, res) => {
     const tema = req.body.tema || req.body.topic || "daily life";
     const nivel = req.body.nivel || "A1";
 
-    // (selector dinámico eliminado — el tema lo controla el usuario)
 
     // ── SWITCH DE NIVEL: cada nivel puede tener su propio super-prompt ──
     let prompt;
@@ -235,7 +234,6 @@ Return ONLY valid JSON: { "tipo": "fill_blanks", "texto": "...", "palabras": ["w
       return res.status(500).json({ error: "No se generó contenido" });
     }
 
-    console.log("RESPUESTA IA:", contenido);
 
     contenido = contenido
       .replace(/```json/g, "")
@@ -456,7 +454,6 @@ EXAMPLE of the expected output style for level ${nivelCEFR}:
       return res.status(500).json({ error: "La IA no generó una instrucción." });
     }
 
-    console.log(`[generateWritingPrompt] Level=${nivelCEFR} | Topic="${tema}" | Prompt="${prompt.substring(0,80)}..."`);
 
     res.json({ prompt });
 
@@ -592,7 +589,6 @@ Evaluate the above submission strictly following the instructions and return val
     // Asegurar rango del score
     evaluation.score = Math.max(0, Math.min(100, Math.round(evaluation.score)));
 
-    console.log(`[evaluateWriting] Level=${nivelCEFR} | Score=${evaluation.score} | Corrections=${evaluation.corrections.length}`);
 
     res.json(evaluation);
 
