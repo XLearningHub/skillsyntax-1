@@ -54,7 +54,7 @@ app.get("/", (req, res) => {
 });
 
 // Red de seguridad para interceptar navegaciones del frontend y evitar errores Cannot GET
-app.get("*", (req, res) => {
+app.get(/(.*)/, (req, res) => {
   const requestedFile = path.join(__dirname, "../frontend", req.path);
 
   res.sendFile(requestedFile, (err) => {
