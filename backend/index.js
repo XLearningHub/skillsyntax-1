@@ -53,6 +53,17 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/login.html"));
 });
 
+// Red de seguridad para interceptar navegaciones del frontend y evitar errores Cannot GET
+app.get("*", (req, res) => {
+  const requestedFile = path.join(__dirname, "../frontend", req.path);
+
+  res.sendFile(requestedFile, (err) => {
+    if (err) {
+      res.sendFile(path.join(__dirname, "../frontend/login.html"));
+    }
+  });
+});
+
 // SERVIDOR
 const PORT = process.env.PORT || 3000;
 
