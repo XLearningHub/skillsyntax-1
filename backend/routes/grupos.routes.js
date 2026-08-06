@@ -35,6 +35,16 @@ router.post("/", async (req, res) => {
   }
 
   try {
+    // Prevención de duplicidad de nombres en grupos
+    const duplicado = await db.collection(COLECCION)
+      .where("nombre", "==", nombre.trim())
+      .limit(1)
+      .get();
+
+    if (!duplicado.empty) {
+      return res.status(400).json({ error: "Ya existe un grupo con este nombre" });
+    }
+
     // Obtener el siguiente id_num de forma atómica vía transacción
     const contadorRef = db.collection("contadores").doc("grupos");
     let id_num;

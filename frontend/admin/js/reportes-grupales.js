@@ -8,17 +8,24 @@
 window.chartDesempeno    = window.chartDesempeno    ?? null;
 window.chartDistribucion = window.chartDistribucion ?? null;
 
-// ── Paleta de colores para grupos (se cicla si hay más de N grupos) ──────────
+// ── Paleta de 10 colores altamente contrastantes para la gráfica circular ─────
+// Basada en la escala categórica D3/Matplotlib, validada para máxima
+// distinguibilidad entre segmentos adyacentes en gráficas de dona.
+// El gris queda reservado exclusivamente para la categoría "Otros".
 const GRUPO_COLORS = [
-    "#9b5de5",  // púrpura
-    "#00c2cb",  // cyan
-    "#f15bb5",  // rosa
-    "#ffd166",  // ámbar
-    "#06d6a0",  // verde menta
-    "#ef476f",  // rojo coral
-    "#118ab2",  // azul acero
-    "#ffa552",  // naranja suave
+    "#1f77b4",  // azul acero
+    "#ff7f0e",  // naranja
+    "#2ca02c",  // verde
+    "#d62728",  // rojo
+    "#9467bd",  // violeta
+    "#8c564b",  // marrón
+    "#e377c2",  // rosa
+    "#17becf",  // cyan
+    "#ffffff",  // blanco — contraste explícito contra segmentos saturados
+    "#ffd700",  // dorado
 ];
+
+const COLOR_OTROS = "#808080"; // gris neutro — exclusivo para la categoría "Otros"
 
 function colorForIndex(i) {
     return GRUPO_COLORS[i % GRUPO_COLORS.length];
@@ -197,7 +204,7 @@ function renderGraficaDistribucion(datos) {
     if (sumaResto > 0) {
         labels.push(`Otros (${resto.length})`);
         values.push(sumaResto);
-        colors.push("#4a5568"); // gris neutro para "Otros"
+        colors.push(COLOR_OTROS); // gris reservado exclusivamente para la categoría "Otros"
     }
 
     const total = values.reduce((a, b) => a + b, 0);
@@ -209,8 +216,10 @@ function renderGraficaDistribucion(datos) {
             datasets: [{
                 data:             values,
                 backgroundColor:  colors,
-                borderWidth:      3,
-                borderColor:      "#060e1a",
+                // Borde por segmento: el segmento blanco recibe borde oscuro
+                // para no desaparecer contra fondos claros o blancos.
+                borderColor:      colors.map(c => c === "#ffffff" ? "#444444" : "#060e1a"),
+                borderWidth:      colors.map(c => c === "#ffffff" ? 2 : 1),
                 hoverOffset:      24,
                 hoverBorderWidth: 4,
                 hoverBorderColor: "rgba(255,255,255,0.15)",

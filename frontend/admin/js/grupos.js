@@ -673,6 +673,8 @@ let _pendingAsignarId    = null;
 let _usuariosCacheModal  = [];
 /** Alumnos ya en el grupo que se está editando */
 let _alumnosActualesSet  = new Set();
+/** Estado en memoria para persistir selección durante el filtrado DOM */
+let _seleccionMemoria    = new Set();
 
 /**
  * Cierra el modal de asignación y limpia el estado.
@@ -684,6 +686,7 @@ function _cerrarModalAsignar() {
     _pendingAsignarId   = null;
     _usuariosCacheModal = [];
     _alumnosActualesSet = new Set();
+    _seleccionMemoria   = new Set();
     // Limpiar controles
     const buscador = document.getElementById("buscadorModalAlumnos");
     const toggle   = document.getElementById("toggleMostrarTodos");
@@ -758,18 +761,19 @@ function _renderizarListaAlumnos() {
     if (sinMsg) sinMsg.style.display = "none";
 
     lista.innerHTML = usuariosFiltrados.map(usuario => {
-        const estaAsignado = _alumnosActualesSet.has(usuario.id);
-        const enOtroGrupo  = ocupadosMap.has(usuario.id);
-        const nombreGrupo  = enOtroGrupo ? escapeHtml(ocupadosMap.get(usuario.id)) : "";
+        // Estado leído desde memoria, no desde el DOM
+        const estaSeleccionado = _seleccionMemoria.has(usuario.id);
+        const enOtroGrupo      = ocupadosMap.has(usuario.id);
+        const nombreGrupo      = enOtroGrupo ? escapeHtml(ocupadosMap.get(usuario.id)) : "";
 
         const nombre = escapeHtml(usuario.nombre || "Sin nombre");
         const email  = escapeHtml(usuario.email  || "");
         const rol    = escapeHtml(usuario.rol    || "user");
 
         // Clases extra según el estado del alumno
-        const claseExtra = enOtroGrupo ? " alumno-ocupado" : "";
-        const checkedAttr = estaAsignado ? " checked" : "";
-        const itemCheckedClass = estaAsignado ? " checked" : "";
+        const claseExtra       = enOtroGrupo ? " alumno-ocupado" : "";
+        const checkedAttr      = estaSeleccionado ? " checked" : "";
+        const itemCheckedClass = estaSeleccionado ? " checked" : "";
 
         // Badge de estado: «ya en otro grupo» vs rol normal
         const badgeHtml = enOtroGrupo
@@ -788,7 +792,11 @@ function _renderizarListaAlumnos() {
                     id="chk-${usuario.id}"
                     value="${usuario.id}"
                     ${checkedAttr}
-                    onchange="this.closest('.alumno-item').classList.toggle('checked', this.checked)"
+                    onchange="
+                        if (this.checked) { _seleccionMemoria.add(this.value); }
+                        else              { _seleccionMemoria.delete(this.value); }
+                        this.closest('.alumno-item').classList.toggle('checked', this.checked);
+                    "
                 >
                 <div class="alumno-item-info">
                     <span class="alumno-item-name">${nombre}</span>
@@ -827,8 +835,9 @@ async function abrirModalAsignar(idGrupo) {
     const grupoActual   = (window.gruposGlobales || []).find(g => g.id === idGrupo);
     const alumnosActuales = grupoActual?.alumnos || [];
 
-    // Guardar en el estado del módulo
+    // Seed del estado en memoria con los alumnos actuales del grupo
     _alumnosActualesSet = new Set(alumnosActuales);
+    _seleccionMemoria   = new Set(alumnosActuales);
 
     // Mostrar modal con spinner de carga
     lista.innerHTML = `
@@ -880,9 +889,8 @@ async function _guardarAsignacion() {
 
     if (!_pendingAsignarId) return;
 
-    // Recolectar IDs marcados
-    const checkboxes  = document.querySelectorAll("#listaAlumnosModal input[type='checkbox']:checked");
-    const alumnosIds  = Array.from(checkboxes).map(cb => cb.value);
+    // Estado en memoria para persistir selección durante el filtrado DOM
+    const alumnosIds = Array.from(_seleccionMemoria);
 
     // Estado de carga en el botón
     const textoOriginal   = btnSave.innerHTML;
