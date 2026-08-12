@@ -209,19 +209,19 @@
 
   <!-- Firebase Client SDK v9 (CDN módulos — no requiere empaquetador) -->
   <script type="module">
-    import { initializeApp }             from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey:            "AIzaSyCglctEjMo6G6lE264KG878-7BtyiqhEMM",
-      authDomain:        "skillsyntax-977ef.firebaseapp.com",
-      projectId:         "skillsyntax-977ef",
-      storageBucket:     "skillsyntax-977ef.firebasestorage.app",
+      apiKey: "AIzaSyCglctEjMo6G6lE264KG878-7BtyiqhEMM",
+      authDomain: "skillsyntax-977ef.firebaseapp.com",
+      projectId: "skillsyntax-977ef",
+      storageBucket: "skillsyntax-977ef.firebasestorage.app",
       messagingSenderId: "7666267890",
-      appId:             "1:7666267890:web:90ca984cc0a13210b8426b"
+      appId: "1:7666267890:web:90ca984cc0a13210b8426b"
     };
 
-    const app  = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
     // Exponer función para recuperación
@@ -242,9 +242,9 @@
   <script>
 
     // ── Protección BFCache: limpiar inputs al navegar con 'Atrás' ─────────────
-    window.addEventListener('pageshow', function(e) {
+    window.addEventListener('pageshow', function (e) {
       if (e.persisted) {
-        document.getElementById('email').value    = '';
+        document.getElementById('email').value = '';
         document.getElementById('password').value = '';
       }
     });
@@ -265,7 +265,7 @@
       if (sesionActiva) {
         // 1. Cerrar sesión en Firebase Auth (async, no bloqueante)
         if (typeof window._firebaseSignOut === 'function') {
-          window._firebaseSignOut().catch(() => {}); // silenciar errores de red
+          window._firebaseSignOut().catch(() => { }); // silenciar errores de red
         }
         // 2. Limpiar todo el estado de sesión local
         localStorage.removeItem("usuario");
@@ -273,7 +273,7 @@
         localStorage.removeItem("token");
         localStorage.removeItem("session_start");
         // 3. Limpiar campos visualmente (ya hecho arriba, refuerzo defensivo)
-        document.getElementById('email').value    = '';
+        document.getElementById('email').value = '';
         document.getElementById('password').value = '';
       }
 
@@ -344,7 +344,7 @@
 
       } catch (error) {
         console.error(error);
-        
+
         // Mapear errores de Firebase Auth a mensajes amigables en español
         const errorCodes = {
           "auth/invalid-credential": "Correo o contraseña incorrectos",
@@ -366,33 +366,33 @@
 
     window.enviarRecuperacion = async () => {
       const email = document.getElementById("emailRecuperar").value.trim();
-      const msg   = document.getElementById("msgRecuperacion");
+      const msg = document.getElementById("msgRecuperacion");
 
       if (!email) {
-        msg.innerText   = "Ingresa tu correo";
+        msg.innerText = "Ingresa tu correo";
         msg.style.color = "red";
         return;
       }
 
-      msg.innerText   = "Enviando...";
+      msg.innerText = "Enviando...";
       msg.style.color = "#777";
 
       try {
         // ✅ Llamada directa a Firebase Auth (sin pasar por nuestro backend)
         await window._firebaseSendResetEmail(email);
 
-        msg.innerText   = "✅ Revisa tu correo para restablecer tu contraseña.";
+        msg.innerText = "✅ Revisa tu correo para restablecer tu contraseña.";
         msg.style.color = "green";
 
       } catch (error) {
         // Mapear los códigos de error de Firebase a mensajes amigables
         const errorMessages = {
-          "auth/user-not-found":   "❌ No existe una cuenta con ese correo.",
-          "auth/invalid-email":    "❌ El correo ingresado no es válido.",
-          "auth/too-many-requests":"❌ Demasiados intentos. Intenta más tarde.",
+          "auth/user-not-found": "❌ No existe una cuenta con ese correo.",
+          "auth/invalid-email": "❌ El correo ingresado no es válido.",
+          "auth/too-many-requests": "❌ Demasiados intentos. Intenta más tarde.",
           "auth/network-request-failed": "❌ Error de red. Verifica tu conexión.",
         };
-        msg.innerText   = errorMessages[error.code] || `❌ Error: ${error.message}`;
+        msg.innerText = errorMessages[error.code] || `❌ Error: ${error.message}`;
         msg.style.color = "red";
       }
     };
